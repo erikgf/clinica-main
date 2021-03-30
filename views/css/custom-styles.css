@@ -1,0 +1,66 @@
+.select-style {
+  border: 1px solid #aaa;
+  color: #444;
+  height: 40px;
+  border-radius: 4px;
+  line-height: 28px;
+  display: block;
+  padding-left: 15px;
+  padding-right: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  margin-top: 0;
+  background-color: #fffbc9;
+}
+
+.servicio-text-cont {
+  display: inline-block;
+}
+
+.counter {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  width: 60px;
+  height: 60px;
+}
+
+.card-cont {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+.subtotal-cont {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+
+.hide {
+  display: none;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+/*# sourceMappingURL=custom-styles.css.map */

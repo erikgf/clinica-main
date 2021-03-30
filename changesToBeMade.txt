@@ -1,0 +1,19 @@
+Add listener for fields that have been made red cus of obligatorio state so that when you start typing in them, they return to normal
+add a empty all fields for when you hit the save button on historial clinico and a success and warning message - historialFunctions.js ln. 385
+limitar numero de caracteres en campo de DNI
+hacer que algunos campos en historial solo acepten #s
+make sure to do a check if the user entered exists in DDBB when pressing continue
+caja
+tipoDePaciente
+medicoRealizante
+medicoOrdenante
+direccion
+documento
+nombreDeServicio
+costoTotal
+historial - campos numeros forzar
+historial - en redireccionamiento a registro de sevicios desde historia, arreglar autofill de usuario (quitar "- quitar  o crear usuario" que se pushea)
+histoiral - cuando redirigido de crear usuario y sea una persona con titular, es decir no tenga DNI, poner el DNI del titular right after (revisar que no cree conflictos con la busqueda por DNI)
+if user not found when "continuar" ->throw error
+
+when limpiar campos, numero de documento disables historial clinico

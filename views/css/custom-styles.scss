@@ -1,0 +1,38 @@
+.select-style {
+    border: 1px solid #aaa;
+    color: #444;
+    height: 40px;
+    border-radius: 4px;
+    line-height: 28px;
+    display: block;
+    padding-left: 15px;
+    padding-right: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+    margin-top:0;
+    background-color: #fffbc9;
+}.servicio-text-cont{
+    display: inline-block;
+}.counter{
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    width:60px;
+    height: 60px;
+}.card-cont{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}.subtotal-cont{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:20px;
+    margin-bottom:40px;
+}.hide{
+    display: none;
+}
+.uppercase {
+    text-transform: uppercase;
+}
