@@ -5,12 +5,15 @@ require_once 'configuracion.php';
 class Conexion{
     protected $dblink;
     private $estado = FALSE;
+    protected $transactionCounter = 0;
     
-    public function __construct($DB = null) {
-        if ($DB == null){
+    public function __construct($objDB = null) {
+        if ($objDB == null){
             $this->abrirConexion();    
         } else{
-            $this->dblink = $DB;
+            $this->estado = TRUE;   
+            $this->dblink = $objDB["DB"];
+            $this->transactionCounter = $objDB["transactionCounter"];
         }
         
     }
@@ -48,9 +51,13 @@ class Conexion{
         
         return $this->dblink;
     }
-    
+
     public function getDB(){
-        return $dblink;
+        return ["DB"=>$this->dblink, "transactionCounter"=>$this->transactionCounter];
+    }
+
+    public function setDB($dblink){
+        $this->dblink = $dblink;
     }
     
     public function beginTransaction()
@@ -123,6 +130,46 @@ class Conexion{
             $consulta->bindParam(':'.$this->reformatEne($p_campos[$i]), $p_valores[$i]);
         }
         
+        return $consulta->execute();
+    }
+
+    /*un insert que hara muchos registros.*/
+    public function insertMultiple($p_nombre_tabla, $p_campos, $p_valores_arreglo)
+    {
+        /*
+        "INSERT INTO XXX(a,b,c,d) VALUES
+        (:a00,:b01,:c02,:d13),
+        (:a10,:b11,:c12,:d13);";
+        */
+        $sql_campos = implode(",", $p_campos);
+        $sql_valores = "";
+
+        $cantidadValores = count($p_valores_arreglo);
+        $cantidadCols = count($p_campos);
+
+         for ($i=0; $i < $cantidadValores ; $i++) { 
+            if ($i > 0){
+              $sql_valores .= ",\n";
+            }
+            $sql_valores .= "(";
+            for ($j=0; $j <count($p_campos); $j++) { 
+                if ($j > 0){
+                    $sql_valores .= ",";
+                }
+                $sql_valores .= (":".$this->reformatEne($p_campos[$j])).$i.$j;
+            }
+            $sql_valores .= ")";
+        }
+        $sql_valores .= ";";
+
+        $consulta = $this->dblink->prepare("INSERT INTO $p_nombre_tabla ($sql_campos) VALUES \n $sql_valores");
+
+        for ($i=0; $i < $cantidadValores ; $i++) { 
+            for ($j=0; $j < $cantidadCols; $j++) { 
+                $consulta->bindParam(':'.$this->reformatEne($p_campos[$j]).$i.$j, $p_valores_arreglo[$i][$j]);
+            }
+        }
+
         return $consulta->execute();
     }
 
@@ -235,7 +282,7 @@ class Conexion{
             }
         }
 
-        $consulta->execute();
+        $r = $consulta->execute();
 
         switch($tipo){
             case "*":
@@ -244,6 +291,8 @@ class Conexion{
                 return $consulta->fetch(PDO::FETCH_ASSOC);
             case "1":
                 return $consulta->fetch(PDO::FETCH_NUM)[0];
+            case "!":
+                return $r;
         }
 
         return false;
@@ -275,6 +324,11 @@ class Conexion{
     {
         $consulta = $this->dblink->prepare($p_consulta);
         return $consulta->execute();
+    }
+
+    protected function ejecutarSimple($p_sql, $p_valores = null)
+    {
+        return $this->consulta_x($p_sql, $p_valores,"!");
     }
     
 

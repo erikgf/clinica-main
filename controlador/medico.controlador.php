@@ -7,38 +7,51 @@ $obj = new Medico();
 
 try {
     switch($op){
-        /*
-        case "registrar":
-            $obj->id_paciente = Funciones::sanitizar($_POST["p_idpaciente"]);
-            $obj->id_tipo_documento = Funciones::sanitizar($_POST["p_id_tipo_documento"]);
-            $obj->numero_documento = Funciones::sanitizar($_POST["p_numero_documento"]);
-            $obj->numero_historia = Funciones::sanitizar($_POST["p_numero_historia"]);
-            $obj->nombres = Funciones::sanitizar($_POST["p_nombres"]);
-            $obj->apellidos_paterno = Funciones::sanitizar($_POST["p_apellidos_paterno"]);
-            $obj->apellidos_materno = Funciones::sanitizar($_POST["p_apellidos_materno"]);
-            $obj->sexo = Funciones::sanitizar($_POST["p_sexo"]);
-            $obj->fecha_nacimiento = Funciones::sanitizar($_POST["p_fecha_nacimiento"]);
-            $obj->ocupacion = Funciones::sanitizar($_POST["p_ocupacion"]);
-            $obj->idtipo_paciente = Funciones::sanitizar($_POST["p_idtipo_paciente"]);
-            $obj->estado_civil = Funciones::sanitizar($_POST["p_estado_civil"]);
-            $obj->telefono_fijo = Funciones::sanitizar($_POST["p_telefono_fijo"]);
-            $obj->celular_uno = Funciones::sanitizar($_POST["p_celular_uno"]);
-            $obj->celular_dos = Funciones::sanitizar($_POST["p_celular_dos"]);
-            $obj->correo = Funciones::sanitizar($_POST["p_correo"]);
-            $obj->domicilio = Funciones::sanitizar($_POST["p_domicilio"]);
-            $obj->codigo_ubigeo_distrito = Funciones::sanitizar($_POST["p_codigo_ubigeo_distrito"]);
-            $obj->codigo_ubigeo_provincia = Funciones::sanitizar($_POST["p_codigo_ubigeo_provincia"]);
-            $obj->codigo_ubigeo_departamento = Funciones::sanitizar($_POST["p_codigo_ubigeo_departamento"]);
+        case "leer":
+            $id_medico = isset($_POST["p_id_medico"]) ? $_POST["p_id_medico"] : "";
 
-            $data = $obj->registrar();
-
+            if ($id_medico == ""){
+                throw new Exception("Médico ingresado no válido.", 1);
+            }
+            $obj->id_medico = $id_medico;
+            $data = $obj->leer();
             Funciones::imprimeJSON("200", "OK", $data);
         break;
-        case "obtener_pacientes_activos":
-            $data = $obj->obtenerPacientesActivos();
+
+        case "anular":
+            $id_medico = isset($_POST["p_id_medico"]) ? $_POST["p_id_medico"] : "";
+
+            if ($id_medico == ""){
+                throw new Exception("Médico ingresado no válido.", 1);
+            }
+            $obj->id_medico = $id_medico;
+            $data = $obj->anular();
             Funciones::imprimeJSON("200", "OK", $data);
         break;
-        */
+
+        case "guardar":
+            $obj->numero_documento = isset($_POST["p_numero_documento"]) ? $_POST["p_numero_documento"] : NULL;
+            $obj->apellidos_nombres = isset($_POST["p_apellidos_nombres"]) ? $_POST["p_apellidos_nombres"] : NULL;
+            $obj->colegiatura = isset($_POST["p_colegiatura"]) ? $_POST["p_colegiatura"] : NULL;
+            $obj->rne = isset($_POST["p_rne"]) ? $_POST["p_rne"] : NULL;
+            $obj->telefono_uno = isset($_POST["p_telefono_uno"]) ? $_POST["p_telefono_uno"] : NULL;
+            $obj->telefono_dos = isset($_POST["p_telefono_dos"]) ? $_POST["p_telefono_dos"] : NULL;
+            $obj->correo = isset($_POST["p_correo"]) ? $_POST["p_correo"] : NULL;
+
+            $obj->id_especialidad = isset($_POST["p_id_especialidad"]) ? $_POST["p_id_especialidad"] : NULL;
+            $obj->domicilio = isset($_POST["p_domicilio"]) ? $_POST["p_domicilio"] : NULL;
+            $obj->id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : NULL;
+            $obj->observaciones = isset($_POST["p_observaciones"]) ? $_POST["p_observaciones"] : NULL;
+
+            $obj->es_informante = isset($_POST["p_es_informante"]) ? $_POST["p_es_informante"] : "0";
+            $obj->tipo_personal_medico = isset($_POST["p_tipo_personal_medico"]) ? $_POST["p_tipo_personal_medico"] : "0";
+            $obj->es_realizante = isset($_POST["p_es_realizante"]) ? $_POST["p_es_realizante"] : "0";
+
+            $id_medico = isset($_POST["p_id_medico"]) ? $_POST["p_id_medico"] : NULL;
+            $obj->id_medico = $id_medico;
+            $data = $obj->guardar();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
 
         case "buscar":
             $cadenaBuscar = $_POST["p_cadenabuscar"];
@@ -46,11 +59,107 @@ try {
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 
+        case "listar":
+            $data = $obj->listar();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+        
+        case "listar_validos_promotoras":
+            $data = $obj->listarMedicosValidosParaPromotoras();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "listar_promotoras":
+            $data = $obj->listarPromotoras();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "listar_medicos_x_promotora":
+            $id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : "";
+
+            if ($id_promotora == ""){
+                throw new Exception("Promotora ingresada no válida.", 1);
+            }
+            $obj->id_promotora = $id_promotora;
+            $data = $obj->listarMedicosXPromotora();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "listar_para_liquidaciones":
+            $hoy = date("Y-m-d");
+
+            $fecha_inicio = isset($_POST["p_fecha_inicio"]) ? $_POST["p_fecha_inicio"] : $hoy;
+            $fecha_fin = isset($_POST["p_fecha_fin"]) ? $_POST["p_fecha_fin"] : $hoy;
+            $totales_mayores_a = isset($_POST["p_totales_mayores"]) ? $_POST["p_totales_mayores"] : "100";
+
+            $data = $obj->listarMedicosParaLiquidaciones($fecha_inicio, $fecha_fin, $totales_mayores_a);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "listar_atenciones_comision_liquidacion_medico":
+            $hoy = date("Y-m-d");
+
+            $obj->id_medico = isset($_POST["p_id_medico"]) ? $_POST["p_id_medico"] : "";
+            $fecha_inicio = isset($_POST["p_fecha_inicio"]) ? $_POST["p_fecha_inicio"] : $hoy;
+            $fecha_fin = isset($_POST["p_fecha_fin"]) ? $_POST["p_fecha_fin"] : $hoy;
+
+            $data = $obj->listarAtencionesComisionParaLiquidacionXMedico($fecha_inicio, $fecha_fin);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "listar_atenciones_comision_liquidacion_medico_imprimir":
+            $hoy = date("Y-m-d");
+
+            $obj->id_medico = isset($_POST["p_id_medico"]) ? $_POST["p_id_medico"] : "";
+            $fecha_inicio = isset($_POST["p_fecha_inicio"]) ? $_POST["p_fecha_inicio"] : $hoy;
+            $fecha_fin = isset($_POST["p_fecha_fin"]) ? $_POST["p_fecha_fin"] : $hoy;
+            $totales_mayores_a = isset($_POST["p_totales_mayores"]) ? $_POST["p_totales_mayores"] : "100";
+
+            $data = $obj->listarAtencionesComisionParaLiquidacionXMedicoImprimir($fecha_inicio, $fecha_fin, $totales_mayores_a);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+        
+        case "listar_liquidacion_medicos":
+            $hoy = date("Y-m-d");
+
+            $fecha_inicio = isset($_POST["p_fecha_inicio"]) ? $_POST["p_fecha_inicio"] : $hoy;
+            $fecha_fin = isset($_POST["p_fecha_fin"]) ? $_POST["p_fecha_fin"] : $hoy;
+            $totales_mayores_a = isset($_POST["p_totales_mayores"]) ? $_POST["p_totales_mayores"] : "0";
+
+            $data = $obj->listarLiquidacionesMedicos($fecha_inicio, $fecha_fin, $totales_mayores_a);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "listar_medicos_liquidacion_x_promotra_imprimir":
+            $hoy = date("Y-m-d");
+
+            $fecha_inicio = isset($_POST["p_fecha_inicio"]) ? $_POST["p_fecha_inicio"] : $hoy;
+            $fecha_fin = isset($_POST["p_fecha_fin"]) ? $_POST["p_fecha_fin"] : $hoy;
+            $obj->id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : "";
+
+            $data = $obj->listarMedicosLiquidacionXPromotoraImprimir($fecha_inicio, $fecha_fin);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "obtener_medicos_informantes":
+            $buscar = isset($_POST["p_cadenabuscar"]) ? $_POST["p_cadenabuscar"] : NULL;
+
+            $data = $obj->obtenerMedicosInformantes($buscar);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "obtener_medicos_realizantes":
+            $buscar = isset($_POST["p_cadenabuscar"]) ? $_POST["p_cadenabuscar"] : NULL;
+
+            $data = $obj->obtenerMedicosRealizantes($buscar);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+        
         default:
-            Funciones::imprimeJSON("500", "No existe la función consultada en el API.","");
+            throw new Exception( "No existe la función consultada en el API.", 1);
         break;
     }
 
 } catch (\Throwable $th) {
-    Funciones::imprimeJSON("500", "ERROR", $th->getMessage());
+    Funciones::imprimeJSON("500", "ERROR",mb_convert_encoding($th->getMessage(),'HTML-ENTITIES','UTF-8'));
 }

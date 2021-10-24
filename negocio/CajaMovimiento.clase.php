@@ -1,0 +1,427 @@
+<?php
+
+require_once '../datos/Conexion.clase.php';
+
+class CajaMovimiento extends Conexion {
+    public $id_caja_instancia;
+    public $id_caja_instancia_movimiento;
+    public $id_cliente;
+    public $id_registro_atencion;
+    public $id_registro_atencion_relacionada;
+    public $id_tipo_movimiento;
+    public $monto_efectivo;
+    public $monto_deposito;
+    public $id_banco;
+    public $numero_operacion;
+    public $monto_tarjeta;
+    public $numero_tarjeta;
+    public $numero_voucher;
+    public $monto_credito;
+    public $monto_descuento;
+    public $id_usuario_registrado;
+
+    public $id_tipo_comprobante;
+    public $factura_id_cliente;
+    public $factura_ruc;
+    public $factura_razon_social;
+    public $factura_direccion;
+
+    public $boleta_id_cliente;
+    public $boleta_tipo_documento;
+    public $boleta_numero_documento;
+    public $boleta_nombres;
+    public $boleta_apellido_paterno;
+    public $boleta_apellido_materno;
+    public $boleta_sexo;
+    public $boleta_fecha_nacimiento;
+
+    public $monto_pago_realizado = 0.00;
+    public $tipo_movimiento;
+    public $descripcion_movimiento;
+    public $fecha_hora_registrado;
+
+    public $ip_terminal;
+
+    //Ingresos
+    private $ID_ATENCION = "1";
+    private $ID_SALDO = "4";
+    private $ID_OTROS_INGRESOS = "10";
+
+    //Egresos
+    private $ID_DEVOLUCIONES_PACIENTE = "8";
+    private $ID_VUELTOS_PACIENTE = "7";
+    private $ID_GASTOS = "2";
+    private $ID_OTROS_EGRESOS = "11";
+
+    public function __construct($objDB = null){
+        if ($objDB != null){
+            parent::__construct($objDB);
+        } else {
+            parent::__construct();
+        }
+    }
+
+    public function registrarCajaMovimiento(){
+        try {
+
+            $this->beginTransaction();
+
+            $this->monto_pago_realizado = $this->monto_efectivo + $this->monto_deposito + $this->monto_tarjeta;
+
+            if ( $this->monto_pago_realizado < 0){
+                throw new Exception("El monto pagado no es valido. Debe ser un monto mayor a 0", 1);
+            }
+
+            $sql = "SELECT ci.estado_caja
+                    FROM caja_instancia ci
+                    WHERE ci.id_caja_instancia = :0 AND ci.estado_mrcb";
+            $obj = $this->consultarFila($sql, [$this->id_caja_instancia]);
+
+            if ($obj == false){
+                throw new Exception("ID Caja no existe.", 1);
+            }
+            
+            $estaCerrada = $obj["estado_caja"] == "C";
+
+            if ($estaCerrada){
+                throw new Exception("No puedo registrar movimientos en una caja CERRADA.", 1);
+            }
+
+            $campos_valores = [
+                "id_caja_instancia"=>$this->id_caja_instancia,
+                "id_cliente"=>$this->id_cliente == "" ? NULL : $this->id_cliente,
+                "id_registro_atencion"=>$this->id_registro_atencion == "" ? NULL : $this->id_registro_atencion,
+                "id_registro_atencion_relacionada"=>$this->id_registro_atencion_relacionada == "" ? NULL : $this->id_registro_atencion_relacionada,
+                "id_tipo_movimiento"=>$this->id_tipo_movimiento,
+                "monto_efectivo"=>$this->monto_efectivo,
+                "monto_deposito"=>$this->monto_deposito,
+                "id_banco"=>$this->id_banco,
+                "numero_operacion"=>$this->numero_operacion,
+                "monto_tarjeta"=>$this->monto_tarjeta,
+                "numero_tarjeta"=>$this->numero_tarjeta,
+                "numero_voucher"=>$this->numero_voucher,
+                "monto_credito"=>$this->monto_credito,
+                "monto_descuento"=>$this->monto_descuento,
+                "id_usuario_registrado"=>$this->id_usuario_registrado,
+                "fecha_hora_registrado"=>$this->fecha_hora_registrado,
+                "descripcion_movimiento"=>$this->descripcion_movimiento == "" ? NULL : $this->descripcion_movimiento,
+                "ip_terminal"=> $_SERVER['REMOTE_ADDR']
+            ];
+
+            $this->insert("caja_instancia_movimiento",  $campos_valores);
+            $this->commit();
+
+            return ["msj"=>"Registro realizado"];
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
+        }
+    }
+
+    public function registrarIngreso(){
+        try {
+
+            $this->beginTransaction();
+            
+            $this->fecha_hora_registrado = date("Y-m-d H:i:s");
+
+            $r = ["msj"=>"Ingreso realizado correctamente."];
+            switch ($this->id_tipo_movimiento) {
+                case $this->ID_SALDO:
+                    $r = $this->registrarIngresoSaldo();
+                    break;
+                case $this->ID_OTROS_INGRESOS:
+                    break;
+                default:
+                    throw new Exception("Tipo de ingreso no encontrado.", 1);
+                    break;
+            }
+
+            $this->registrarCajaMovimiento();
+
+            $this->commit();
+
+            return $r;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
+        }
+    }
+
+    public function registrarIngresoSaldo(){
+        try {
+            $this->beginTransaction();
+        
+            $sql = "SELECT am.id_atencion_medica, am.id_paciente,
+                        am.importe_total,
+                        am.observaciones,
+                        (am.pago_credito - (SELECT COALESCE(SUM(cim.monto_efectivo + cim.monto_tarjeta + cim.monto_deposito),'0.00')
+                                    FROM caja_instancia_movimiento cim 
+                                    WHERE cim.id_tipo_movimiento IN (4) AND cim.estado_mrcb AND cim.id_registro_atencion_relacionada = am.id_atencion_medica)) as monto_deuda  
+                        FROM atencion_medica am 
+                        WHERE am.estado_mrcb AND am.id_atencion_medica = :0";
+            $objAtencionMedica = $this->consultarFila($sql, [$this->id_registro_atencion_relacionada]);
+
+            if ($objAtencionMedica == false){
+                throw new Exception("Atención médica no encontrada", 1);
+            }
+
+            $deuda = $objAtencionMedica["monto_deuda"] - $this->monto_pago_realizado;
+            if ($deuda < 0){
+                throw new Exception("El monto pago de la deuda no es valido. Lo pagado superado lo adeudado.", 1);
+            }
+
+            $importe_total_atencion = $objAtencionMedica["importe_total"];
+            $this->id_cliente = $objAtencionMedica["id_paciente"]; 
+
+            //Generación de Comprobante
+            // Setear Data
+            $id_documento_electronico_registrado = "";
+            if ($this->id_tipo_comprobante != "00"){
+                /*La serie se saca de la caja donde se están pagando.*/
+                require "AtencionMedica.clase.php";
+                $objAtencionMedica = new AtencionMedica($this->getDB());
+
+                $objAtencionMedica->id_atencion_medica = $this->id_registro_atencion_relacionada;
+                $objAtencionMedica->fecha_atencion  = date("Y-m-d");
+
+                $objAtencionMedica->id_paciente = $this->id_cliente;
+                $objAtencionMedica->boleta_numero_documento = $this->boleta_numero_documento;
+                $objAtencionMedica->factura_ruc = $this->factura_ruc;
+                $objAtencionMedica->id_tipo_comprobante = $this->id_tipo_comprobante;
+                $objAtencionMedica->factura_razon_social = $this->factura_razon_social;
+                $objAtencionMedica->factura_direccion  = $this->factura_direccion;
+
+                $objAtencionMedica->boleta_tipo_documento =  $this->boleta_tipo_documento;
+                $objAtencionMedica->boleta_numero_documento =  $this->boleta_numero_documento;
+                $objAtencionMedica->boleta_nombres  =  $this->boleta_nombres;
+                $objAtencionMedica->boleta_apellido_paterno  =  $this->boleta_apellido_paterno;
+                $objAtencionMedica->boleta_apellido_materno  =  $this->boleta_apellido_materno;
+                $objAtencionMedica->boleta_sexo  =  $this->boleta_sexo;
+                $objAtencionMedica->boleta_fecha_nacimiento  =  $this->boleta_fecha_nacimiento;
+                $objAtencionMedica->id_usuario_registrado = $this->id_usuario_registrado;
+
+                $objAtencionMedica->pago_efectivo = $this->monto_efectivo;
+                $objAtencionMedica->pago_deposito = $this->monto_deposito;
+                $objAtencionMedica->id_banco = $this->id_banco;
+                $objAtencionMedica->numero_operacion = $this->numero_operacion;
+                $objAtencionMedica->pago_tarjeta = $this->monto_tarjeta;
+                $objAtencionMedica->numero_tarjeta = $this->numero_tarjeta;
+                $objAtencionMedica->numero_voucher = $this->numero_voucher;
+                $objAtencionMedica->pago_credito = $this->monto_credito;
+                $objAtencionMedica->monto_descuento = 0.00;
+
+                require "Paciente.clase.php";
+                $objPaciente = new Paciente($this->getDB());
+                $objPaciente->id_usuario_registrado = $this->id_usuario_registrado;
+
+                if ($objAtencionMedica->boleta_numero_documento == "" && $objAtencionMedica->factura_ruc == ""){
+                    $resPaciente = $objPaciente->obtenerPacienteXId($this->id_cliente);
+                    $resPaciente  = $resPaciente["datos"];
+
+                    $objPaciente->nombres_completos = $resPaciente["nombres_completos"];
+                    $objPaciente->numero_documento = $resPaciente["numero_documento"];
+                    $objPaciente->id_tipo_documento = $resPaciente["id_tipo_documento"];
+                    $objPaciente->direccion = $resPaciente["direccion"];
+                    $objPaciente->codigo_ubigeo_distrito = $resPaciente["codigo_ubigeo_distrito"];
+                } else {
+                    if ($this->id_tipo_comprobante == "01"){
+                        $objClienteCreado = $objPaciente->registrarClienteXRUC($this->factura_ruc, $this->factura_razon_social, $this->factura_direccion);
+                        $objAtencionMedica->factura_id_cliente = $objClienteCreado["cliente"]["id"];
+                    } else{
+                        $objClienteCreado = $objPaciente->registrarClienteXOTRO($this->boleta_tipo_documento, $this->boleta_numero_documento, $this->boleta_nombres, $this->boleta_apellido_paterno, $this->boleta_apellido_materno, $this->boleta_sexo, $this->boleta_fecha_nacimiento);
+                        $objAtencionMedica->boleta_id_cliente = $objClienteCreado["cliente"]["id"];
+                    }
+                }                
+
+                $sql = "SELECT serie_boleta, serie_factura 
+                                FROM caja
+                                WHERE id_caja IN (SELECT id_caja FROM caja_instancia WHERE id_caja_instancia = :0)
+                                    AND estado_mrcb";
+                $objSerie = $this->consultarFila($sql, [$this->id_caja_instancia]);
+
+                $objAtencionMedica->serie = $objSerie[$this->id_tipo_comprobante == "01" ? "serie_factura" : "serie_boleta"];
+
+                $sql = "SELECT ams.id_servicio, ams.nombre_servicio, ams.precio_unitario, 
+                            s.idunidad_medida, s.idtipo_afectacion, ams.cantidad
+                        FROM atencion_medica_servicio ams
+                        INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
+                        WHERE ams.id_atencion_medica = :0 AND ams.estado_mrcb";
+
+                $servicios = json_decode(json_encode($this->consultarFilas($sql, [$this->id_registro_atencion_relacionada])));
+            
+                $objAtencionMedica->servicios = $servicios;
+                $resComprobante = $objAtencionMedica->generarComprobante($objPaciente, $importe_total_atencion);
+
+                $id_documento_electronico_registrado = $resComprobante["id_documento_electronico_registrado"];
+                $r = $resComprobante["r"];
+            }
+
+            $this->commit();
+            return ["msj"=>"Saldo pagado correctamente.", 
+                    "id_documento_electronico_registrado"=>$id_documento_electronico_registrado];
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function generarDocumentoElectronicoDesdeAtencion($id_tipo_comprobante, $atencion_medica){
+        try {
+
+            require "Paciente.clase.php";
+            $objPaciente = new Paciente();
+
+            $resPaciente = $objPaciente->obtenerPacienteXId($this->id_paciente);
+            if (!$resPaciente["rpt"]){
+                throw new Exception("No existe el paciente ingresado.", 1);
+            }
+
+            $resPaciente  = $resPaciente["datos"];
+            $objPaciente->nombres_completos = $resPaciente["nombres_completos"];
+            $objPaciente->numero_documento = $resPaciente["numero_documento"];
+            $objPaciente->id_tipo_documento = $resPaciente["id_tipo_documento"];
+            $objPaciente->direccion = $resPaciente["direccion"];
+            $objPaciente->codigo_ubigeo_distrito = $resPaciente["codigo_ubigeo_distrito"];
+
+
+            require "AtencionMedica.clase.php";
+            $objAtencionMedica =  new AtencionMedica();
+
+            $objAtencionMedica->factura_id_cliente = $atencion_medica["aux_factura_id_cliente"];
+            $objAtencionMedica->factura_ruc = $atencion_medica["factura_ruc"];
+            $objAtencionMedica->factura_razon_social = $atencion_medica["factura_razon_social"];
+            $objAtencionMedica->factura_direccion = $atencion_medica["factura_direccion"];
+            $objAtencionMedica->id_tipo_comprobante = $atencion_medica["id_tipo_comprobante"];
+
+            $objAtencionMedica->generarComprobante($objPaciente);
+
+            require "DocumentoElectronico.clase.php";
+            $objComprobante = new DocumentoElectronico();
+
+            $objComprobante->id_atencion_medica = $this->id_atencion_medica;
+            $objComprobante->serie = $this->serie;
+            $objComprobante->fecha_emision = $this->fecha_atencion;
+            $objComprobante->descuento_global = $this->monto_descuento;
+            $objComprobante->importe_total = $costo_total_atencion;
+            $objComprobante->id_usuario_registrado = $this->id_usuario_registrado;
+
+            $objComprobante->detalle = $this->servicios;
+            $objComprobante->observaciones = $this->observaciones;
+            $objComprobante->registrar_en_bbdd = true;
+            $objComprobante->generar_xml = true;
+            $objComprobante->firmar_comprobante = true;
+
+            if ($this->id_tipo_comprobante == "01"){
+                $objComprobante->Cliente = [
+                    "id_cliente"=>$this->factura_id_cliente,
+                    "numero_documento"=>$this->factura_ruc,
+                    "nombres_completos"=>$this->factura_razon_social,
+                    "id_tipo_documento"=>"6",
+                    "direccion"=>$this->factura_direccion,
+                    "codigo_ubigeo_distrito"=>NULL
+                ];
+            } else {
+                $objComprobante->Cliente = [
+                    "id_cliente"=>$this->id_paciente,
+                    "numero_documento"=>$objPaciente->numero_documento,
+                    "nombres_completos"=>$objPaciente->nombres_completos,
+                    "id_tipo_documento"=>$objPaciente->id_tipo_documento,
+                    "direccion"=>$objPaciente->direccion,
+                    "codigo_ubigeo_distrito"=>$objPaciente->codigo_ubigeo_distrito
+                ];
+            }
+
+            $objComprobante->id_atencion_medica = $this->id_atencion_medica;
+            $objComprobante->serie = $this->serie;
+            $objComprobante->fecha_emision = $this->fecha_atencion;
+            $objComprobante->descuento_global = $this->monto_descuento;
+            $objComprobante->importe_total = $costo_total_atencion;
+            $objComprobante->id_usuario_registrado = $this->id_usuario_registrado;
+
+            $objComprobante->detalle = $this->servicios;
+            $objComprobante->observaciones = $this->observaciones;
+            $objComprobante->registrar_en_bbdd = true;
+            $objComprobante->generar_xml = true;
+            $objComprobante->firmar_comprobante = true;
+
+            if ($this->id_tipo_comprobante == "01"){
+                $r = $objComprobante->generarFactura();
+            } else {
+                $r = $objComprobante->generarBoleta();        
+            }
+
+            $id_documento_electronico_registrado = $objComprobante->id_documento_electronico;
+
+
+                
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage(), 1);
+        }
+    }
+    
+    public function anularMovimiento($motivo_anulacion){
+        try {
+            
+            $this->beginTransaction();
+            //ver que la 
+            if (!$this->id_caja_instancia_movimiento){
+                throw new Exception("ID Caja Diaria no válido.", 1);
+            }
+
+            $sql = "SELECT 
+                    id_caja_instancia, id_registro_atencion as id_atencion_medica, id_tipo_movimiento
+                    FROM caja_instancia_movimiento 
+                    WHERE id_caja_instancia_movimiento = :0 AND estado_mrcb";
+            $objCajaInstanciaMovimiento = $this->consultarFila($sql, [$this->id_caja_instancia_movimiento]);
+
+            if ($objCajaInstanciaMovimiento == false){
+                throw new Exception("Movimiento de caja no existe.", 1);
+            }
+
+            $objR = ["msj"=>""];
+            switch($objCajaInstanciaMovimiento["id_tipo_movimiento"]){
+                case $this->ID_ATENCION:
+                    include_once "AtencionMedica.clase.php";
+                    $objAtencion = new AtencionMedica();
+                    $objAtencion->id_usuario_registrado = $this->id_usuario_registrado;
+                    $objAtencion->id_atencion_medica = $objCajaInstanciaMovimiento["id_atencion_medica"];
+                    $objR = $objAtencion->anularAtencion($motivo_anulacion);
+                break;
+            }
+            
+            $this->commit();
+            return ["msj"=>$objR["msj"], "id_caja_instancia"=>$objCajaInstanciaMovimiento["id_caja_instancia"]];
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function registrarEgreso(){
+        try {
+
+            $this->beginTransaction();
+            
+            $this->fecha_hora_registrado = date("Y-m-d H:i:s");
+
+            $r = ["msj"=>"Egreso realizado correctamente."];
+            switch ($this->id_tipo_movimiento) {
+                case $this->ID_DEVOLUCIONES_PACIENTE:
+                case $this->ID_VUELTOS_PACIENTE:
+                case $this->ID_GASTOS:
+                case $this->ID_OTROS_EGRESOS:
+                    break;
+                default:
+                    throw new Exception("Tipo de egreso no encontrado.", 1);
+                    break;
+            }
+
+            $this->registrarCajaMovimiento();
+
+            $this->commit();
+
+            return $r;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
+        }
+    }
+
+
+}

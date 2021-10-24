@@ -1,17 +1,97 @@
 <?php
+
+require_once '../datos/variables.php';
 require_once '../datos/local_config_web.php';
 require_once '../negocio/Servicio.clase.php';
 
 $op = $_GET["op"];
 $obj = new Servicio();
 
+require_once '../negocio/Sesion.clase.php';
+$objUsuario = Sesion::obtenerSesion();
+if ($objUsuario == null){
+    Funciones::imprimeJSON("401", "ERROR", utf8_decode("No hay credenciales válidas."));
+}
+$obj->id_usuario_registrado = Sesion::obtenerSesionId();
+
 try {
     switch($op){
+        case "registrar":
+
+            $obj->id_servicio = isset($_POST["p_id_servicio"]) ? Funciones::sanitizar($_POST["p_id_servicio"]): NULL;
+            $obj->descripcion = isset($_POST["p_descripcion"]) ? Funciones::sanitizar($_POST["p_descripcion"]): "";
+
+            if ($obj->descripcion  == NULL || $obj->descripcion == ""){
+                throw new Exception("No se puede regisrar un servicio sin nombre.", 1);
+            }
+
+            $obj->descripcion_detallada = isset($_POST["p_descripcion_detallada"]) ? Funciones::sanitizar($_POST["p_descripcion_detallada"]): NULL;
+            $obj->precio_unitario = isset($_POST["p_precio_venta"]) ? Funciones::sanitizar($_POST["p_precio_venta"]): "0.00";
+
+            if ($obj->precio_unitario < 0.00){
+                throw new Exception("No se puede registrar un servicio con precio negativo.", 1);
+            }
+            $obj->idtipo_afectacion = isset($_POST["p_id_tipo_afectacion"]) ? Funciones::sanitizar($_POST["p_id_tipo_afectacion"]): "10";
+
+            if ($obj->idtipo_afectacion == "10"){
+                $obj->precio_unitario_sin_igv = round(($obj->precio_unitario / (1.00 + IGV)), 4);
+            } else {
+                $obj->precio_unitario_sin_igv = $obj->precio_unitario;
+            }
+            
+            $obj->id_categoria_servicio = isset($_POST["p_id_categoria_servicio"]) ? Funciones::sanitizar($_POST["p_id_categoria_servicio"]): NULL;
+            $obj->comision =isset($_POST["p_comision"]) ? Funciones::sanitizar($_POST["p_comision"]): "0.00";
+            $obj->cantidad_examenes = isset($_POST["p_cantidad_examenes"]) ? Funciones::sanitizar($_POST["p_cantidad_examenes"]): "1";
+
+            $obj->arreglo_perfil = isset($_POST["p_arreglo_perfil"]) ? Funciones::sanitizar($_POST["p_arreglo_perfil"]): NULL;
+            $data = $obj->registrar();
+
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+        case "listar":
+            $filtro = isset($_POST["p_filtro"]) ? Funciones::sanitizar($_POST["p_filtro"]): NULL;
+
+            $data = $obj->listar($filtro);
+            
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+        case "leer":
+            $obj->id_servicio = isset($_POST["id_servicio"]) ? $_POST["id_servicio"] : NULL;
+            $data = $obj->leer();
+            
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "leer_servicio_general":
+            $obj->id_servicio = isset($_POST["p_id_servicio"]) ? $_POST["p_id_servicio"] : NULL;
+            $data = $obj->leerServicioGeneral();
+            
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "anular":
+            $obj->id_servicio = isset($_POST["p_id_servicio"]) ? $_POST["p_id_servicio"] : "";
+            $data = $obj->anular();
+            
+            Funciones::imprimeJSON("200", "OK", $data);
+            break;
         case "buscar":
             $cadenaBuscar = $_POST["p_cadenabuscar"];
             $obj->id_categoria_servicio = isset($_POST["p_idcategoria"]) ? $_POST["p_idcategoria"] : NULL;
 
             $data = $obj->buscar($cadenaBuscar);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "obtener_servicio":
+            $obj->id_servicio = isset($_POST["p_idservicio"]) ? $_POST["p_idservicio"] : NULL;
+
+            $data = $obj->obtener();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "obtener_tipo_afectacion":
+            $data = $obj->obtenerTipoAfectacion();
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 
@@ -21,5 +101,5 @@ try {
     }
 
 } catch (\Throwable $th) {
-    Funciones::imprimeJSON("500", "ERROR", $th->getMessage());
+    Funciones::imprimeJSON("500", "ERROR",mb_convert_encoding($th->getMessage(),'HTML-ENTITIES','UTF-8'));
 }

@@ -5,11 +5,77 @@ require_once '../negocio/CategoriaServicio.clase.php';
 $op = $_GET["op"];
 $obj = new CategoriaServicio();
 
+require_once '../negocio/Sesion.clase.php';
+$objUsuario = Sesion::obtenerSesion();
+if ($objUsuario == null){
+    Funciones::imprimeJSON("401", "ERROR", utf8_decode("No hay credenciales válidas."));
+}
+
+$obj->id_usuario_registrado = Sesion::obtenerSesionId();
+
 try {
     switch($op){
         case "buscar":
             $cadenaBuscar = $_POST["p_cadenabuscar"];
             $data = $obj->buscar($cadenaBuscar);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "listar":
+            $data = $obj->listar();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "obtener":
+            $sin_laboratorio = isset($_POST["p_sin_laboratorio"]) ? $_POST["p_sin_laboratorio"] : "0";
+            $data = $obj->obtener($sin_laboratorio);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "guardar":
+            $obj->descripcion = isset($_POST["p_descripcion"]) ? $_POST["p_descripcion"] : NULL;
+
+            if ($obj->descripcion == NULL || $obj->descripcion == ""){
+                throw new Exception("No se ha enviado el nombre/descripción de promotora", 1);
+            }
+
+            $obj->porcentaje_comision = isset($_POST["p_comision"]) ? $_POST["p_comision"] / 100.00 : NULL;
+
+            if ($obj->porcentaje_comision == NULL || $obj->porcentaje_comision == ""){
+                throw new Exception("No se ha enviado el nombre/descripción de área.", 1);
+            }
+
+            $id_categoria_servicio = isset($_POST["p_id_categoria_servicio"]) ? $_POST["p_id_categoria_servicio"] : NULL;
+            $obj->id_categoria_servicio = $id_categoria_servicio;
+            $data = $obj->guardar();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "leer":
+            $id_categoria_servicio = isset($_POST["p_id_categoria_servicio"]) ? $_POST["p_id_categoria_servicio"] : "";
+            if ($id_categoria_servicio == ""){
+                throw new Exception("Promotora consultada no válida.", 1);
+            }
+            $obj->id_categoria_servicio = $id_categoria_servicio;
+
+            $data = $obj->leer();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "anular":
+           $id_categoria_servicio = isset($_POST["p_id_categoria_servicio"]) ? $_POST["p_id_categoria_servicio"] : "";
+            if ($id_categoria_servicio == ""){
+                throw new Exception("Promotora consultada no válida.", 1);
+            }
+            $obj->id_categoria_servicio = $id_categoria_servicio;
+
+            $data = $obj->anular();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "buscar_imagenes":
+            $cadenaBuscar = $_POST["p_cadenabuscar"];
+            $data = $obj->buscarParaAsistentes($cadenaBuscar);
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 
@@ -19,5 +85,5 @@ try {
     }
 
 } catch (\Throwable $th) {
-    Funciones::imprimeJSON("500", "ERROR", $th->getMessage());
+    Funciones::imprimeJSON("500", "ERROR",mb_convert_encoding($th->getMessage(),'HTML-ENTITIES','UTF-8'));
 }

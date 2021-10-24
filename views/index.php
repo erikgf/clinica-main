@@ -1,1 +1,3 @@
-<h1>Estamos en el index</h1>
+<?php
+
+header("Location: ./pages/login");

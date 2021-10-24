@@ -1,0 +1,29 @@
+ToDo:
+1.- registrar atencion
+fill up:
+atencion
+atencion_detalle
+
+delectronico
+delectronico_detalle
+
+[COMPROBANTE] => [REG. atencion]
+
+ticket rec
+Impresion en php/pdf
+
+ticket comprobante
+Formato
+
+CLEANER UP.
+delete from atencion_medica_servicio;
+delete from atencion_medica;
+
+DELETE FROM caja_instancia_movimiento;
+DELETE FROM caja_instancia;
+
+DELETE FROM documento_electronico_detalle;
+DELETE FROM documento_electronico;
+
+UPDATE serie_documento set numero = 1;
+====================================

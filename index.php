@@ -1,8 +1,3 @@
 <?php
 
-require_once "controllers/template.php";
-
-$template = new TemplateController();
-$template -> template();
-
-?>
+header("Location: ./views/pages/");

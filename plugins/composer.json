@@ -1,0 +1,7 @@
+{
+    "require": {
+        "picqer/php-barcode-generator": "^2.2",
+        "bigfish/pdf417": "^0.3.0",
+        "phpoffice/phpspreadsheet": "^1.17"
+    }
+}
