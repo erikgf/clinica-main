@@ -24,10 +24,10 @@ class AtencionMedicaServicio extends Conexion {
     
     public function listarExamenesAdministrador($fecha_inicio, $fecha_fin, $id_area = "*"){
         try {
-            $sqlEstado = "";
+            $sqlEstado = " ";
             switch ($this->fue_atendido){
                 case "*":
-                $sqlEstado = "";
+                $sqlEstado = " ";
                 break;
                 case "P":
                 $sqlEstado = " AND fue_atendido = '0'";
@@ -40,18 +40,18 @@ class AtencionMedicaServicio extends Conexion {
                 break;
             }
 
-            $sqlMedicoAtendido = "";
+            $sqlMedicoAtendido = " ";
             if (!($this->id_medico_atendido == NULL || $this->id_medico_atendido == "")){
                 $sqlMedicoAtendido = " AND id_medico_atendido = ".$this->id_medico_atendido;
             }
 
-            $sqlMedicoRealizante = "";
+            $sqlMedicoRealizante = " ";
             if (!($this->id_medico_realizante == NULL || $this->id_medico_realizante == "")){
                 $sqlMedicoRealizante = " AND id_medico_realizado = ".$this->id_medico_realizante;
             }
 
             $sqlArea = "";
-            if ($id_area != "*"){
+            if ($id_area != "*" && strlen($id_area) > 0){
                 $sqlArea = " AND s.id_categoria_servicio = ".$id_area;
             }
             
@@ -98,8 +98,8 @@ class AtencionMedicaServicio extends Conexion {
                             $sqlEstado
                             $sqlMedicoAtendido
                             $sqlMedicoRealizante
-                            $sqlArea
-                    ORDER BY am.numero_acto_medico DESC";
+                            $sqlArea  ORDER BY am.numero_acto_medico DESC";
+
             $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
 
             return $datos;
@@ -225,11 +225,11 @@ class AtencionMedicaServicio extends Conexion {
                         nivel,
                         descripcion,
                         resultado,
-                        unidad,
+                        COALESCE(unidad, '') as unidad,
                         valor_minimo,
                         valor_maximo,
                         valores_referencia as valor_referencial,
-                        metodo
+                        COALESCE(metodo, '') as metodo
                         FROM atencion_medica_servicio_laboratorio_resultados
                         WHERE id_atencion_medica_servicio = :0 AND estado_mrcb
                         ORDER BY orden_ubicacion";
@@ -241,120 +241,6 @@ class AtencionMedicaServicio extends Conexion {
             }
 
             $examenes_registros = $this->obtenerServiciosLaboratorioExamenesDescripciones($datos["arreglo_perfil"]);
-            /*
-            $sql = []; $examenes_registros = [];
-
-            $sql[0]  = "SELECT
-                        le.id_lab_examen,
-                        le.nivel,
-                        le.descripcion,
-                        '' as id_lab_examen_niveluno,
-                        '' as id_lab_examen_niveldos,
-                        '' as orden_niveluno,
-                        '' as orden_niveldos,
-                        '' as resultado,
-                        le.valor_maximo,
-                        le.valor_minimo,
-                        lu.descripcion as unidad,
-                        le.valor_referencial
-                        FROM atencion_medica_servicio ams
-                        LEFT JOIN lab_examen le ON le.id_servicio = ams.id_servicio
-                        LEFT JOIN lab_unidad lu ON lu.id_lab_unidad = le.id_lab_unidad
-                        WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0
-                        ORDER BY le.nivel";
-
-            $examen_principal = $this->consultarFila($sql[0], [$this->id_atencion_medica_servicio]);
-
-            if ($examen_principal == false){
-                throw new Exception("No se ha encontrado el examen en la base de datos.", 1);
-            }
-            
-            array_push($examenes_registros, $examen_principal);
-
-            $sql[1]  = "SELECT
-                    COALESCE(le.id_lab_examen,'') as id_lab_examen,
-                    le.nivel,
-                    le.descripcion,
-                    le.id_lab_examen_niveluno,
-                    le.id_lab_examen_niveldos,
-                    le.orden_niveluno,
-                    le.orden_niveldos,
-                    '' as resultado,
-                    le.valor_maximo,
-                    le.valor_minimo,
-                    lu.descripcion as unidad,
-                    le.valor_referencial
-                    FROM lab_examen le 
-                    LEFT JOIN lab_unidad lu ON lu.id_lab_unidad = le.id_lab_unidad
-                    WHERE le.estado_mrcb AND le.id_lab_examen_niveluno = :0
-                    ORDER BY le.orden_niveluno, le.orden_niveldos";
-
-            $sql[2]  = "SELECT
-                        id_lab_examen,
-                        le.nivel,
-                        le.descripcion,
-                        le.id_lab_examen_niveluno,
-                        le.id_lab_examen_niveldos,
-                        le.orden_niveluno,
-                        le.orden_niveldos,
-                        '' as resultado,
-                        le.valor_maximo,
-                        le.valor_minimo,
-                        lu.descripcion as unidad,
-                        le.valor_referencial
-                        FROM lab_examen le 
-                        LEFT JOIN lab_unidad lu ON lu.id_lab_unidad = le.id_lab_unidad
-                        WHERE le.estado_mrcb AND le.id_lab_examen_niveldos = :0
-                        ORDER BY le.orden_niveluno, le.orden_niveldos";
-
-            $sql[3] = "SELECT
-                        '' as id_lab_examen,
-                        '99' as nivel,
-                        '' as descripcion,
-                        '' as id_lab_examen_niveluno,
-                        '' as id_lab_examen_niveldos,
-                        '' as orden_niveluno,
-                        '' as orden_niveldos,
-                        '' as resultado,
-                        '' as valor_maximo,
-                        '' as valor_minimo,
-                        '' as unidad,
-                        le.descripcion as valor_referencial
-                        FROM lab_examendescripcion le 
-                        WHERE le.estado_mrcb AND le.id_lab_examen = :0
-                        ORDER BY le.numero_orden"; 
-
-            $examen_descripciones = $this->consultarFilas($sql[3], $examen_principal["id_lab_examen"]);
-            if (count($examen_descripciones) > 0){
-                 $examenes_registros = array_merge($examenes_registros, $examen_descripciones);
-            }
-
-            $examenes_secundarios = $this->consultarFilas($sql[1], $examen_principal["id_lab_examen"]);
-
-            if (count($examenes_secundarios) > 0 ){
-                foreach ($examenes_secundarios as $k0 => $examen_secundario) {                
-                    $examenes_terciarios = $this->consultarFilas($sql[2], $examen_secundario["id_lab_examen"]);
-                    array_push($examenes_registros, $examen_secundario);
-
-                    $examen_descripciones = $this->consultarFilas($sql[3], $examen_secundario["id_lab_examen"]);
-                    if (count($examen_descripciones) > 0){
-                        $examenes_registros = array_merge($examenes_registros, $examen_descripciones);
-                    }
-
-                    if (count($examenes_terciarios) > 0){
-                        foreach ($examenes_terciarios as $k1 => $examen_terciaria) {
-                            array_push($examenes_registros, $examen_terciaria);
-                            $examen_descripciones = $this->consultarFilas($sql[3], $examen_terciaria["id_lab_examen"]);
-                            if (count($examen_descripciones) > 0){
-                                $examenes_registros = array_merge($examenes_registros, $examen_descripciones);
-                            }
-                        }
-                    }
-
-                }
-            }
-            */
-
             $datos["detalle"] = $examenes_registros;
             return $datos;
         } catch (Exception $exc) {
@@ -736,11 +622,11 @@ class AtencionMedicaServicio extends Conexion {
                 '' as resultado,
                 le.valor_maximo,
                 le.valor_minimo,
-                lu.descripcion as unidad,
+                COALESCE(le.unidad, '') as unidad,
+                COALESCE(le.metodo, '') as metodo,
                 le.valor_referencial
                 FROM atencion_medica_servicio ams
                 LEFT JOIN lab_examen le ON le.id_servicio = ams.id_servicio
-                LEFT JOIN lab_unidad lu ON lu.id_lab_unidad = le.id_lab_unidad
                 WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0
                 ORDER BY le.nivel";
 
@@ -759,10 +645,10 @@ class AtencionMedicaServicio extends Conexion {
                 '' as resultado,
                 le.valor_maximo,
                 le.valor_minimo,
-                lu.descripcion as unidad,
-                le.valor_referencial
+                COALESCE(le.unidad, '') as unidad,
+                le.valor_referencial,
+                COALESCE(le.metodo,'') as metodo
                 FROM lab_examen le 
-                LEFT JOIN lab_unidad lu ON lu.id_lab_unidad = le.id_lab_unidad
                 WHERE le.id_lab_examen IN ($cadena_arreglo_perfil)
                 ORDER BY le.id_lab_examen, le.nivel";
 
@@ -786,10 +672,10 @@ class AtencionMedicaServicio extends Conexion {
                     '' as resultado,
                     le.valor_maximo,
                     le.valor_minimo,
-                    lu.descripcion as unidad,
-                    le.valor_referencial
+                    COALESCE(le.unidad, '') as unidad,
+                    le.valor_referencial,
+                    COALESCE(le.metodo, '') as metodo
                     FROM lab_examen le 
-                    LEFT JOIN lab_unidad lu ON lu.id_lab_unidad = le.id_lab_unidad
                     WHERE le.estado_mrcb AND le.id_lab_examen_niveluno = :0
                     ORDER BY le.orden_niveluno, le.orden_niveldos";
 
@@ -804,8 +690,9 @@ class AtencionMedicaServicio extends Conexion {
                         '' as resultado,
                         le.valor_maximo,
                         le.valor_minimo,
-                        lu.descripcion as unidad,
-                        le.valor_referencial
+                        COALESCE(le.unidad, '') as unidad,
+                        le.valor_referencial,
+                        COALESCE(le.metodo, '') as metodo
                         FROM lab_examen le 
                         LEFT JOIN lab_unidad lu ON lu.id_lab_unidad = le.id_lab_unidad
                         WHERE le.estado_mrcb AND le.id_lab_examen_niveldos = :0
@@ -823,6 +710,7 @@ class AtencionMedicaServicio extends Conexion {
                         '' as valor_maximo,
                         '' as valor_minimo,
                         '' as unidad,
+                        '' as metodo,
                         le.descripcion as valor_referencial
                         FROM lab_examendescripcion le 
                         WHERE le.estado_mrcb AND le.id_lab_examen = :0

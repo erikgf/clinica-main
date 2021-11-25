@@ -162,7 +162,6 @@ try {
             Funciones::imprimeJSON("200", "OK", $obj->consultarTicketsXID($id_por_comas));
         break;
         
-        
         default:
             Funciones::imprimeJSON("500","ERROR","No existe la función consultada en el API.");
         break;

@@ -38,7 +38,7 @@
                                 </div>
                             </div>
 
-                            <div class="form-group offset-md-2 col-md-3 col-sm-6" id="blk-descuentoenpago" style="display:none">
+                            <div class="form-group col-md-3 col-sm-6" id="blk-descuentoenpago" style="display:none">
                                 <label for="txt-descuentoenpago" class="text-red">Descuento</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
@@ -73,6 +73,12 @@
                                 <div class="form-group">
                                     <input type="radio" value="01" name="rad-tipocomprobantepago">
                                     <label class="form-check-label">FACTURA</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <input type="radio" value="CO" name="rad-tipocomprobantepago">
+                                    <label class="form-check-label">CONVENIO</label>
                                 </div>
                             </div>
                         </div>
@@ -155,6 +161,21 @@
                                 <div class="form-group">
                                     <label for="txt-facturadireccion">Dirección (<span style="color:red">*</span>)</label>
                                     <textarea class="form-control uppercase"  id="txt-facturadireccion"> </textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" id="blk-convenio" style="display:none">
+                            <div class="col-md-5 col-sm-12">
+                                <div class="form-group">
+                                    <label for="txt-convenioempresa">Empresa Convenio (<span style="color:red">*</span>)</label>
+                                    <select type="text" class="form-control uppercase"  id="txt-convenioempresa"></select>
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-sm-6">
+                                <div class="form-group">
+                                    <label for="txt-convenioporcentaje">% Convenio (<span style="color:red">*</span>)</label>
+                                    <input type="number" step="0.01" class="form-control uppercase"  id="txt-convenioporcentaje" value="0.00"> </input>
                                 </div>
                             </div>
                         </div>

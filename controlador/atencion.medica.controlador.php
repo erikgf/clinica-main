@@ -55,6 +55,8 @@ try {
             $obj->boleta_sexo = Funciones::sanitizar(isset($_POST["p_boleta_sexo"]) ? $_POST["p_boleta_sexo"] : "");
             $obj->boleta_fecha_nacimiento = Funciones::sanitizar(isset($_POST["p_boleta_fecha_nacimiento"]) ? $_POST["p_boleta_fecha_nacimiento"] : "");
 
+            $obj->id_convenio_empresa = (isset($_POST["p_id_convenio_empresa"]) && $_POST["p_id_convenio_empresa"] != "") ? $_POST["p_id_convenio_empresa"] : NULL;
+            $obj->convenio_porcentaje = Funciones::sanitizar(isset($_POST["p_convenio_porcentaje"]) ? $_POST["p_convenio_porcentaje"] : NULL);
 
             $data = $obj->registrar();
 
@@ -263,6 +265,20 @@ try {
             $tipo_filtro = Funciones::sanitizar($_POST["p_tipo_filtro"]);
 
             $data = $obj->listarAtencionesConSaldo($fecha_inicio, $fecha_fin, $tipo_filtro);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "listar_atenciones_convenio":
+            $fecha_inicio = Funciones::sanitizar($_POST["p_fecha_inicio"]);
+            $fecha_fin = Funciones::sanitizar($_POST["p_fecha_fin"]);
+
+            $data = $obj->listarAtencionesConvenio($fecha_inicio, $fecha_fin);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "obtener_ticket_convenio_facturar":
+            $numero_ticket = Funciones::sanitizar(isset($_POST["p_numero_ticket"]) ? $_POST["p_numero_ticket"] : "");
+            $data = $obj->obtenerTicketConvenioFactura($numero_ticket);
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 

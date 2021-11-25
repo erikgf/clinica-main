@@ -25,6 +25,9 @@ var ContinuarPago = function() {
         $lblCajaTotal,
         $btnGuardar;
 
+    var $blkDescuentoEnPago,
+        $txtDescuentoEnPago;
+
     var $chkPacienteDiferenteBoleta;
 
     var $mdlValidacion,
@@ -46,6 +49,10 @@ var ContinuarPago = function() {
         $txtBoletaApellidoMaterno,
         $txtBoletaFechaNacimiento,
         $txtBoletaSexo;
+
+    var $blkConvenio,
+        $txtConvenioEmpresa,
+        $txtConvenioPorcentaje;
 
     var tplServicioAgregadoContinuar;
     var SERIES = null;
@@ -113,13 +120,41 @@ var ContinuarPago = function() {
         $txtBoletaFechaNacimiento = $("#txt-boletafechanacimiento");
         $txtBoletaSexo = $("#txt-boletasexo");
 
+
+        $blkConvenio = $("#blk-convenio");
+        $txtConvenioEmpresa = $("#txt-convenioempresa");
+        $txtConvenioPorcentaje = $("#txt-convenioporcentaje");
+
     };
     
     this.setEventos = function(){
         $radTipoComprobantePago.on("change", function(){
-            mostrarSerie(this.value != "00");
+            if (this.value == "01" || this.value == "03" || this.value == "00"){
+                if (this.value == "01" || this.value == "03"){
+                    mostrarSerie(true);
+                    mostrarBloqueFactura(this.value == "01");
+                } else {
+                    mostrarSerie(false);
+                    mostrarBloqueFactura(false);
+                }
+                mostrarBloqueConvenio(false);
+                mostrarBloqueBoleta(false);
+            } else {
+                mostrarSerie(false);
+                mostrarBloqueBoleta(false);
+                mostrarBloqueFactura(false);
+
+                if (this.value == "CO"){
+                    if (OBJETO_ATENCION.objDescuento && OBJETO_ATENCION.objDescuento.monto_descuento > 0.00){
+                        toastr.error("No se puede seleccionar tipo de pago por CONVENIO, el servicio ya tiene un DESCUENTO previo.")
+                        $radTipoComprobantePago[1].checked = true;
+                        return;
+                    }
+                    mostrarBloqueConvenio(true);
+                }
+            }
             setearSeries(this.value);
-            mostrarBloqueFactura(this.value == "01");
+            
         });
 
         $txtCaja.on("change",function () {
@@ -411,14 +446,29 @@ var ContinuarPago = function() {
             });
         });
 
+        $txtConvenioPorcentaje.on("change", function(e){
+            e.preventDefault();
+            if (this.value == "" || parseFloat(this.value) <= 0.000000){
+                this.value = "0.00";
+            }
+
+            var valor = parseFloat(this.value);
+            if (valor >= 100.0000){
+                this.value = "100.00";
+            }
+
+            aplicarDescuentoPorConvenio();
+        });
     };
 
     var mostrarSerie = function(deboMostrarSerie){
         if (deboMostrarSerie){
+            $("#blk-serie").show();
             $txtSerie.show();
             $txtSerie.val("");
             $txtSerie.prop("required", true);
         } else {    
+            $("#blk-serie").hide();
             $txtSerie.hide();
             $txtSerie.val("");
             $txtSerie.prop("required", false);
@@ -544,9 +594,6 @@ var ContinuarPago = function() {
         } else{
             _$btnGuardar = $btnGuardarValidacion;
         }
-        
-        _$btnGuardar.attr("disabled", true);
-        GUARDANDO_ATENCION = true;
 
         if (!OBJETO_ATENCION){
             toastr.error("Hay un problema recuperando los datos del registro.");
@@ -601,12 +648,12 @@ var ContinuarPago = function() {
 
         if (idTipoComprobante == "01"){
             if (factura_ruc.length != "11"){
-                toastr.error("Se debe escribir un número de RUC válido.")
+                toastr.error("Se debe escribir un número de RUC válido.");
                 return;
             }
 
             if (!factura_razon_social.length){
-                toastr.error("Debe ingresar una razón social válida.")
+                toastr.error("Debe ingresar una razón social válida.");
                 return;
             }
         } 
@@ -639,7 +686,25 @@ var ContinuarPago = function() {
                 toastr.error("Debe ingresar apellido materno válido.")
                 return;
             }
-        } 
+        }
+
+        var id_convenio_empresa =  $txtConvenioEmpresa.val(),
+            convenio_porcentaje = $txtConvenioPorcentaje.val();
+        
+        if ($radTipoComprobantePago[3].checked){
+            if (convenio_porcentaje == "0.00"){
+                toastr.error("El porcentaje debe estar en 1% y 100%.");
+                return;
+            }
+    
+            if (id_convenio_empresa == ""){
+                toastr.error("No se ha elegido una empresa de convenio.");
+                return;
+            }
+        }
+
+        _$btnGuardar.attr("disabled", true);
+        GUARDANDO_ATENCION = true;
 
         var data_formulario = {
             p_id_paciente : OBJETO_ATENCION.id_paciente,
@@ -677,6 +742,8 @@ var ContinuarPago = function() {
             p_boleta_apellido_materno : boleta_apellido_materno,
             p_boleta_sexo : boleta_sexo,
             p_boleta_fecha_nacimiento : boleta_fecha_nacimiento,
+            p_id_convenio_empresa : id_convenio_empresa,
+            p_convenio_porcentaje: convenio_porcentaje
         };
         
         $.ajax({ 
@@ -806,6 +873,88 @@ var ContinuarPago = function() {
             $txtSerie.find("option:first").prop("selected", true);
         }
     };
+
+    var EMPRESAS_CONVENIO_LOADED = false;
+    var mostrarBloqueConvenio = function(deboMostrar){
+        if (deboMostrar){
+            $blkConvenio.show();
+            $txtConvenioEmpresa.prop("required", true).removeClass("is-invalid").val("");
+            $txtConvenioPorcentaje.prop("required", true).removeClass("is-invalid");
+
+            if (!EMPRESAS_CONVENIO_LOADED){
+                $.ajax({ 
+                    url : VARS.URL_CONTROLADOR+"empresa.convenio.controlador.php?op=obtener_combo",
+                    type: "POST",
+                    dataType: 'json',
+                    delay: 250,
+                    success: function(resultado){
+                        EMPRESAS_CONVENIO_LOADED = true;
+                        new SelectComponente({
+                            $select : $txtConvenioEmpresa,
+                            opcion_vacia: true
+                        }).render(resultado);
+                    },
+                    error: function (request) {
+                        toastr.error(request.responseText);
+                        return;
+                    },
+                    cache: true
+                    }
+                );
+                
+            }
+        } else {
+            $blkConvenio.hide();
+            $txtConvenioEmpresa.prop("required", false).removeClass("is-invalid").val("");
+            $txtConvenioPorcentaje.prop("required", false).removeClass("is-invalid");
+
+            $blkDescuentoEnPago.find("label").html("Descuento");
+
+            if (!OBJETO_ATENCION.objDescuento){
+                $blkDescuentoEnPago.hide();
+                $txtDescuentoEnPago.val("0.00");
+                
+                var total = parseFloat(Math.round10(OBJETO_ATENCION.total, -2)).toFixed(2);
+                $txtPagoEfectivo.val(total);
+                $txtPagoDeposito.val("0.00").trigger("keyup");
+                $txtPagoTarjeta.val("0.00").trigger("keyup");
+
+                $lblCajaEfectivo.html(total);
+                $lblCajaDeposito.html("0.00");
+                $lblCajaCredito.html("0.00");
+                $lblCajaTarjeta.html("0.00");
+                $lblCajaTotal.html(total);
+            }
+            
+            
+
+        }
+        $txtConvenioPorcentaje.val("0.00");
+    };
+
+    var aplicarDescuentoPorConvenio = function(){
+        var porcentajeDescuento = $txtConvenioPorcentaje.val(),
+            total = OBJETO_ATENCION.total,
+            montoDescuentoConvenio = total * (porcentajeDescuento / 100);
+
+        total = OBJETO_ATENCION.total - montoDescuentoConvenio;
+        $blkDescuentoEnPago.show();
+        $txtDescuentoEnPago.val(parseFloat(Math.round10(montoDescuentoConvenio, -2)).toFixed(2));
+
+        total = parseFloat(Math.round10(total, -2)).toFixed(2);
+
+        $txtPagoEfectivo.val(total);
+        $txtPagoDeposito.val("0.00").trigger("keyup");
+        $txtPagoTarjeta.val("0.00").trigger("keyup");
+
+        $lblCajaEfectivo.html(total);
+        $lblCajaDeposito.html("0.00");
+        $lblCajaCredito.html("0.00");
+        $lblCajaTarjeta.html("0.00");
+        $lblCajaTotal.html(total);
+
+        $blkDescuentoEnPago.find("label").html("Descuento POR CONVENIO");
+    };
     
     getTemplates();
     this.setDOM();
@@ -877,11 +1026,16 @@ var ContinuarPago = function() {
             $txtDescuentoEnPago.val("0.00");
         }
 
+        $blkDescuentoEnPago.find("label").html("Descuento");
+
         total = parseFloat(Math.round10(total, -2)).toFixed(2);
 
         $txtPagoEfectivo.val(total);
         $txtPagoDeposito.val("0.00").trigger("keyup");
+        $txtNumeroOperacion.val("");
         $txtPagoTarjeta.val("0.00").trigger("keyup");
+        $txtNumeroVoucher.val("");
+        $numeroTarjeta.val("");        
 
         $lblCajaEfectivo.html(total);
         $lblCajaDeposito.html("0.00");
@@ -896,6 +1050,8 @@ var ContinuarPago = function() {
         },300);
 
         OBJETO_ATENCION = objAtencion;
+
+        mostrarBloqueConvenio(idTipoComprobante == "CO");
     };
 
     return this;

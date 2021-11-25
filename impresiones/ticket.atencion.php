@@ -74,6 +74,7 @@ $monto_tarjeta = $datos["total_tarjeta"];
 $monto_deposito = $datos["total_deposito"];
 
 $usuario_atendido = utf8_decode($datos["usuario_atendido"]);
+$empresa_convenio = utf8_decode($datos["empresa_convenio"]);
 
 $pdf->Image('logo_dpi.jpg', 25 , 0 ,30,0);
 $pdf->SetY(30 + 5);
@@ -141,6 +142,15 @@ $pdf->Cell($ANCHO_COLS[1], $ALTO_LINEA + .5, ":", $BORDES,0);
 $pdf->CellFitScale($ANCHO_COLS[2], $ALTO_LINEA + .5,  $medico_ordenante , $BORDES,1);
 
 $pdf->Ln($SALTO_LINEA);
+
+if ($empresa_convenio != ""){
+  $pdf->Cell($ANCHO_COLS[0], $ALTO_LINEA + .5, utf8_decode("CONVENIO"), $BORDES,0);
+  $pdf->Cell($ANCHO_COLS[1], $ALTO_LINEA + .5, ":", $BORDES,0);
+  $pdf->CellFitScale($ANCHO_COLS[2], $ALTO_LINEA + .5,  $empresa_convenio , $BORDES,1);
+  
+  $pdf->Ln($SALTO_LINEA);
+}
+
 
 $pdf->Cell($ANCHO_COLS[0], $ALTO_LINEA + .5, utf8_decode("FORMA PAGO"), $BORDES,0);
 $pdf->Cell($ANCHO_COLS[1], $ALTO_LINEA + .5, ":", $BORDES,0);
@@ -218,7 +228,7 @@ $pdf->SetFont($FONT,'B', 6.5 + $aumento_font);
 
 if ($descuento_global > 0.00){
   $pdf->Cell($ANCHO_COLS_DETALLE[0], $ALTO_LINEA + .5, "", $BORDES,0 ,"C");
-  $pdf->Cell($ANCHO_COLS_DETALLE[1], $ALTO_LINEA + .5, "DSCTO.", $BORDES,0,"R");
+  $pdf->Cell($ANCHO_COLS_DETALLE[1], $ALTO_LINEA + .5, ($empresa_convenio != "" ? "CONVENIO" : "DSCTO."), $BORDES,0,"R");
   $pdf->Cell($ANCHO_COLS_DETALLE[2], $ALTO_LINEA + .5, "S/", $BORDES,0,"R");
   $pdf->Cell($ANCHO_COLS_DETALLE[3], $ALTO_LINEA + .5, "-".number_format($descuento_global, 2) , $BORDES,1, "R");
 }

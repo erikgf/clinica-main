@@ -58,6 +58,9 @@ class AtencionMedica extends Conexion {
     public $id_medico_atendido;
     public $observaciones_atendido;
     public $fue_atendido;
+    public $id_convenio_empresa;
+    public $convenio_porcentaje;
+
 
     private $MAX_CREDITO = 0.50;
 
@@ -134,7 +137,6 @@ class AtencionMedica extends Conexion {
             require "Comision.clase.php";
             $objComision = new Comision();
             $objPromotoraComision = $objComision->obtenerComisionPromotoraXMedico($this->id_medico_ordenante);
-
             $sql = "SELECT id_promotora FROM medico WHERE id_medico = :0 AND estado_mrcb";
             $id_promotora_realizante = $this->consultarValor($sql, [$this->id_medico_realizante]);
 
@@ -150,7 +152,18 @@ class AtencionMedica extends Conexion {
                 $costo_total_atencion += $this->servicios[$i]->precio_unitario;
             }
 
-            $costo_total_atencion = $costo_total_atencion - $this->monto_descuento;
+            /*Descuento forzado basado en que el CONVENIO sí es un descuento.*/
+            if ($this->monto_descuento > 0 && $this->id_convenio_empresa != NULL){
+                throw new Exception("No se puede registrar una atención con CONVENIO y DESCUENTO.", 1);
+            }
+
+            if ($this->id_convenio_empresa != NULL){
+                $this->monto_descuento = round($costo_total_atencion * ($this->convenio_porcentaje / 100), 2, PHP_ROUND_HALF_UP);
+            }
+
+            
+            $costo_total_atencion = round($costo_total_atencion -  (float) $this->monto_descuento, 4, PHP_ROUND_HALF_UP);
+
 
             if ($this->pago_deposito > 0){
                 if ($this->id_banco == NULL  || $this->id_banco == ""){
@@ -176,10 +189,11 @@ class AtencionMedica extends Conexion {
             } else {
                 $this->numero_tarjeta = NULL;
                 $this->numero_voucher = NULL;
-            }
+            }   
 
-            $pago_totalizado = $this->pago_tarjeta + $this->pago_efectivo + $this->pago_deposito ;
-            $diferencia_entre_costo_y_pagado = $costo_total_atencion - $pago_totalizado;
+            $pago_totalizado = (float) $this->pago_tarjeta + (float) $this->pago_efectivo + (float) $this->pago_deposito;
+            $diferencia_entre_costo_y_pagado = round(($costo_total_atencion - $pago_totalizado), 4, PHP_ROUND_HALF_UP);
+
             if ($diferencia_entre_costo_y_pagado > 0){
                 $this->pago_credito = $diferencia_entre_costo_y_pagado;
                 $this->monto_vuelto = 0.00;
@@ -188,12 +202,17 @@ class AtencionMedica extends Conexion {
                 $this->pago_credito = 0.00;
             }
 
-            $objCreditoValido = $this->validarMontoCreditoValido();
+            if ($this->id_convenio_empresa != NULL &&            
+                ($this->pago_credito > 0.00 || $this->monto_vuelto > 0.00)
+                ){
+                throw new Exception("No se puede registrar un SALDO en una atencion con CONVENIO.", 1);
+            }
 
+            $objCreditoValido = $this->validarMontoCreditoValido();
             if ($objCreditoValido["r"] == false){
                 throw new Exception("Esta atencion contiene un monto de credito SUPERIOR al ".($this->MAX_CREDITO * 100)."% del total de la venta. Maximo permitido: ".number_format($objCreditoValido["monto_maximo"],2)." soles");
             }
-
+            
             $this->obtenerNumeroActoMedicoCorrelativo();
 
             $campos_valores = [
@@ -228,7 +247,9 @@ class AtencionMedica extends Conexion {
                 "id_usuario_validador"=>$this->id_usuario_validador == "" ? NULL : $this->id_usuario_validador,
                 "motivo_descuento"=>$this->motivo_descuento == "" ? NULL : $this->motivo_descuento,
                 "es_gratuito_descuento"=>$this->es_gratuito_descuento,
-                "id_usuario_validador_descuento_sin_efectivo"=>$this->id_usuario_validador_descuento_sin_efectivo == "" ? NULL : $this->id_usuario_validador_descuento_sin_efectivo
+                "id_usuario_validador_descuento_sin_efectivo"=>$this->id_usuario_validador_descuento_sin_efectivo == "" ? NULL : $this->id_usuario_validador_descuento_sin_efectivo,
+                "id_empresa_convenio"=>$this->id_convenio_empresa,
+                "porcentaje_convenio"=>$this->convenio_porcentaje
             ];
 
             $this->insert("atencion_medica",  $campos_valores);
@@ -273,7 +294,8 @@ class AtencionMedica extends Conexion {
             $this->insertMultiple("atencion_medica_servicio", $campos_servicios, $valores_servicios);
 
             if ($this->monto_descuento > 0.00 && 
-                ($this->pago_tarjeta > 0.00 || $this->pago_deposito > 0.00 || $this->pago_credito > 0.00)
+                ($this->pago_tarjeta > 0.00 || $this->pago_deposito > 0.00 || $this->pago_credito > 0.00) &&
+                ($this->id_convenio_empresa == NULL)
                 ){
 
                 $objValidacion = $this->verificarUsuarioValidarDescuentoSinEfectivo();
@@ -294,7 +316,11 @@ class AtencionMedica extends Conexion {
             $id_documento_electronico_registrado = "";
 
             $generar_comprobante = true;
-            if ($this->pago_credito > 0.00){
+            $MONTO_MAXIMO_GENERAR_COMPROBANTE = 5.00;
+            if ($this->pago_credito > 0.00 || 
+                    ($pago_totalizado < $MONTO_MAXIMO_GENERAR_COMPROBANTE && $this->id_convenio_empresa != NULL) ||
+                    (($objPaciente->numero_documento == "" || $objPaciente->numero_documento == NULL || $objPaciente->numero_documento == "SD") && $this->id_convenio_empresa != NULL)
+                    ){
                 $generar_comprobante = false;
             }
 
@@ -371,7 +397,7 @@ class AtencionMedica extends Conexion {
                     DATE_FORMAT(pa.fecha_nacimiento, '%d/%m/%Y') as fecha_nacimiento_formateada,
                     calcularEdad(pa.fecha_nacimiento) as edad,
                     am.numero_documento,
-                    CONCAT(COALESCE(pa.telefono_fijo,''),COALESCE(CONCAT(' - ', pa.celular_uno),''),COALESCE(CONCAT(' - ', pa.celular_dos),'')) as telefonos,
+                    CONCAT(COALESCE(pa.telefono_fijo,''),COALESCE(CONCAT(' ', pa.celular_uno),''),COALESCE(CONCAT(' ', pa.celular_dos),'')) as telefonos,
                     mo.nombres_apellidos as medico_ordenante,
                     COALESCE(am.observaciones,'') as observaciones,
                     pago_credito as total_credito,
@@ -380,12 +406,14 @@ class AtencionMedica extends Conexion {
                     pago_deposito as total_deposito,
                     pago_efectivo as total_efectivo,
                     pago_tarjeta as total_tarjeta,
-                    CONCAT(co.nombres,' ',co.apellido_paterno,' ',co.apellido_materno) as usuario_atendido
+                    CONCAT(co.nombres,' ',co.apellido_paterno,' ',co.apellido_materno) as usuario_atendido,
+                    COALESCE(eco.razon_social,'') as empresa_convenio
                     FROM atencion_medica am
                     INNER JOIN medico mo ON mo.id_medico = am.id_medico_ordenante
                     INNER JOIN paciente pa ON pa.id_paciente = am.id_paciente
                     INNER JOIN usuario u ON u.id_usuario = am.id_usuario_registrado
                     INNER JOIN colaborador co ON co.id_colaborador = u.id_colaborador
+                    LEFT JOIN empresa_convenio eco ON eco.id_empresa_convenio = am.id_empresa_convenio
                     WHERE id_atencion_medica = :0 AND am.estado_mrcb";
             $datos = $this->consultarFila($sql, [$id_atencion_medica]);
 
@@ -579,6 +607,15 @@ class AtencionMedica extends Conexion {
         try {
 
             $id_documento_electronico_registrado = "";
+            if ($this->id_convenio_empresa != NULL){
+                //marcar boleta cuando sea convenio con un monto comprobante
+                $this->id_tipo_comprobante = "03";
+                $sqlSerie = "SELECT c.serie_boleta 
+                                        FROM caja c
+                                        INNER JOIN caja_instancia ci ON ci.id_caja = c.id_caja AND ci.estado_mrcb
+                                        WHERE ci.id_caja_instancia = :0 AND c.estado_mrcb";
+                $this->serie = $this->consultarValor($sqlSerie, $this->id_caja_instancia);
+            }
 
             switch($this->id_tipo_comprobante){
                 case "01":
@@ -623,6 +660,7 @@ class AtencionMedica extends Conexion {
                     $objComprobante->id_usuario_registrado = $this->id_usuario_registrado;
                     $objComprobante->fecha_emision = $this->fecha_atencion;
                     $objComprobante->id_atencion_medica = $this->id_atencion_medica;
+                    $objComprobante->es_convenio = false;
                     $objComprobante->registrar_en_bbdd = true;
                     $objComprobante->generar_xml = true;
                     $objComprobante->firmar_comprobante = true;
@@ -1063,9 +1101,9 @@ class AtencionMedica extends Conexion {
                         DATE_FORMAT(MAX(fecha_hora_entrega),'%d/%m/%Y') as fecha_entrega
                     FROM atencion_medica_servicio ams
                     INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
-                    INNER JOIN lab_examen le ON le.id_servicio = s.id_servicio
+                    INNER JOIN lab_examen le ON le.id_servicio = s.id_servicio AND le.estado_mrcb
                     INNER JOIN lab_seccion ls ON ls.id_lab_seccion = le.id_lab_seccion
-                    WHERE ams.id_atencion_medica = :0 AND ams.fecha_hora_validado IS NOT NULL AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.") AND $sqlAtencionesServicios
+                    WHERE ams.id_atencion_medica = :0  AND le.estado_mrcb AND ams.fecha_hora_validado IS NOT NULL AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.") AND $sqlAtencionesServicios
                     GROUP BY le.id_lab_seccion";
             $secciones = $this->consultarFilas($sql, [$this->id_atencion_medica]);
 
@@ -1074,15 +1112,15 @@ class AtencionMedica extends Conexion {
                         FROM atencion_medica_servicio ams
                         INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
                         INNER JOIN lab_examen le ON le.id_servicio = s.id_servicio 
-                        WHERE le.id_lab_seccion = :0 AND ams.id_atencion_medica = :1 AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.") AND $sqlAtencionesServicios";
+                        WHERE le.id_lab_seccion = :0  AND le.estado_mrcb AND ams.id_atencion_medica = :1 AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.") AND $sqlAtencionesServicios";
                 $muestras = $this->consultarFilas($sql, [$seccion["id_lab_seccion"], $this->id_atencion_medica ]);
                 
                 foreach ($muestras as $key2 => $muestra) {
-                    $sql = "SELECT id_atencion_medica_servicio
+                    $sql = "SELECT distinct id_atencion_medica_servicio
                             FROM atencion_medica_servicio ams
                             INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
                             INNER JOIN lab_examen le ON le.id_servicio = s.id_servicio 
-                            WHERE le.id_lab_seccion = :0 AND id_lab_muestra = :1 AND ams.id_atencion_medica = :2 AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.")  AND $sqlAtencionesServicios";
+                            WHERE le.id_lab_seccion = :0 AND le.estado_mrcb AND id_lab_muestra = :1 AND ams.id_atencion_medica = :2 AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.")  AND $sqlAtencionesServicios";
                     $servicios = $this->consultarFilas($sql, [$seccion["id_lab_seccion"], $muestra["id_lab_muestra"], $this->id_atencion_medica ]);
 
                     foreach ($servicios as $key3 => $servicio) {
@@ -1315,4 +1353,67 @@ class AtencionMedica extends Conexion {
             throw new Exception($exc->getMessage(), 1);
         }
     }
+
+    public function listarAtencionesConvenio($fecha_inicio, $fecha_fin){
+        try {
+
+            $sql  = "SELECT  
+                        am.id_atencion_medica,
+                        am.numero_acto_medico as numero_ticket,
+                        ec.razon_social as empresa_convenio,
+                        DATE_FORMAT(am.fecha_atencion, '%d-%m-%Y') as fecha_registro,
+                        am.nombre_paciente as paciente,
+                        am.porcentaje_convenio,
+                        am.numero_acto_medico  as numero_atencion,
+                        am.monto_descuento as monto_cubierto,
+                        am.importe_total,
+                        (SELECT COUNT(iddocumento_electronico) FROM documento_electronico WHERE id_atencion_medica_convenio IN (am.id_atencion_medica) AND estado_mrcb) as existen_comprobantes,
+                        (SELECT iddocumento_electronico FROM documento_electronico WHERE idtipo_comprobante = '01' AND id_atencion_medica_convenio IN (am.id_atencion_medica) LIMIT 1) as id_documento_electronico_notacredito,
+                        (SELECT iddocumento_electronico FROM documento_electronico WHERE idtipo_comprobante = '07' AND id_atencion_medica_convenio IN (am.id_atencion_medica) LIMIT 1) as id_documento_electronico_factura
+                        FROM atencion_medica am
+                        INNER JOIN empresa_convenio ec ON ec.id_empresa_convenio = am.id_empresa_convenio
+                        WHERE am.id_empresa_convenio IS NOT NULL AND 
+                                am.estado_mrcb AND  (am.fecha_atencion BETWEEN :0 AND :1)";
+
+            $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
+
+            return $datos;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function obtenerTicketConvenioFactura($numero_ticket){
+        try {
+
+            $sql = "SELECT 
+                    am.id_atencion_medica,
+                    am.monto_descuento as monto_cubierto,
+                    COALESCE(ec.numero_documento,'') as numero_documento
+                    FROM atencion_medica am
+                    INNER JOIN empresa_convenio ec ON ec.id_empresa_convenio = am.id_empresa_convenio
+                    WHERE am.numero_acto_medico = :0 AND am.estado_mrcb AND am.id_empresa_convenio IS NOT NULL";
+
+            $registro = $this->consultarFila($sql, [$numero_ticket]);
+
+            if ($registro == false){
+                return ["msj"=>"No Encontrado.", "registro"=>false];
+            }
+
+            $sql = "SELECT 
+                    id_servicio as id,
+                    nombre_servicio as descripcion,
+                    precio_unitario as precio,
+                    cantidad 
+                    FROM atencion_medica_servicio 
+                    WHERE id_atencion_medica = :0 AND estado_mrcb";
+            $detalle = $this->consultarFilas($sql, [$registro["id_atencion_medica"]]);
+            $registro["detalle"] = $detalle;
+
+            return ["msj"=>"OK", "registro"=>$registro];
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+    
 }

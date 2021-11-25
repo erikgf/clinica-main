@@ -26,6 +26,7 @@ include_once 'ptr.modal.validacion.descuento.sin.efectivo.php';
 
 ?>
 
+<script type="text/javascript" src="../../componentes/Select.Componente.js" defer></script>
 <script type="text/javascript" src="index.paciente.js" defer></script>
 <script type="text/javascript" src="index.js" defer></script>
 <script type="text/javascript" src="index.continuar.pago.js" defer></script>

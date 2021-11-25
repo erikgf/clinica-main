@@ -71,7 +71,7 @@ class PDFComprobante extends PDF{
 
       $this->setXY($actualX,$actualY);
       $this->SetFont('Arial','B',15.5);
-      $this->Cell($CELDA_ANCHO,$CELDA_ALTO, $dataEmpresa["razon_social"],0,0,$alineacion);    
+      $this->Cell($CELDA_ANCHO,$CELDA_ALTO, utf8_decode($dataEmpresa["razon_social"]),0,0,$alineacion);    
       $actualY  = $actualY + $CELDA_ALTO;
       $this->setXY($actualX, $actualY);
 
@@ -147,7 +147,7 @@ class PDFComprobante extends PDF{
       $this->Cell($ANCHO_COLUMNAS[1], $ALTO_FILA, $obj["numero_documento_cliente"],$BORDES,0);
 
       $this->SetFont("Arial","B");
-      $this->Cell($ANCHO_COLUMNAS[2], $ALTO_FILA, "FECHA EMISION",$BORDES,0);
+      $this->Cell($ANCHO_COLUMNAS[2], $ALTO_FILA, utf8_decode("FECHA EMISIÓN"),$BORDES,0);
       $this->SetFont("Arial","");
       $this->Cell($ANCHO_COLUMNAS[3], $ALTO_FILA,  $obj["fecha_emision"],$BORDES,1);
 
@@ -326,14 +326,15 @@ class PDFComprobante extends PDF{
       $observaciones = utf8_decode(mb_strtoupper($obj["observaciones"],'UTF-8'));
       $extraAlturaMultiCell = $this->GetStringWidth( $observaciones ) > $ANCHO_COLUMNAS[1] ? 1.5: 0;
       $this->MultiCell($ANCHO_COLUMNAS[1], $ALTO_FILA - $extraAlturaMultiCell, $observaciones ,$BORDES,'');
-
+    
+      $this->Ln(2);
+  
       if ($obj["respuesta_sunat"] != ""){
         $this->SetFont("Arial","B");
         $this->Cell(30, $ALTO_FILA, "RESPUESTA SUNAT",$BORDES,0,'');
         $this->SetFont("Arial","");
         $this->Cell($ANCHO_COLUMNAS[1], $ALTO_FILA,  $obj["respuesta_sunat"],$BORDES,1,'');
       }
-
       
       $this->Ln(3.75);
       $this->SetFont("Arial","",7.5);
@@ -405,6 +406,9 @@ $valor_resumen = $datos["valor_resumen"]; //DigestValue
 $valor_firma = $datos["valor_firma"]; //SignatureValue
 $respuesta_sunat = $datos["respuesta_sunat"];
 
+$documento_afectado = $datos["documento_afectado"];
+$motivo_nota  = $datos["motivo_nota"];
+
 $usuario_atendido = utf8_decode($datos["usuario_atendido"]);
 
 $detalle = $datos["detalle"];
@@ -451,8 +455,8 @@ $totales = [
 
 $objMainComprobante = [
   "numero_documento_cliente"=>$numero_documento_cliente,
-  "razon_social_cliente"=>utf8_decode($razon_social_cliente),
-  "direccion_cliente"=>utf8_decode($direccion_cliente),
+  "razon_social_cliente"=>$razon_social_cliente,
+  "direccion_cliente"=>$direccion_cliente,
   "fecha_emision"=>$fecha_emision,
   "fecha_vencimiento"=>$fecha_emision,
   "moneda"=>"PEN"
@@ -465,9 +469,6 @@ $pdf->Ln(2);
 $pdf->imprimirTablaDetalle($detalle, $total_letras);
 
 $pdf->Ln(3.5);
-
-$documento_afectado = "";
-$motivo_nota  = "";
 
 $objFinalComprobante = [
     "totales"=>$totales,

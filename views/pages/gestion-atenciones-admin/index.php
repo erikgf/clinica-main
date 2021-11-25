@@ -13,7 +13,7 @@ if ($objUsuario == null){
 
 $objTemplate = new Template();
 
-if (!$objTemplate->validarPermisoRoles($objUsuario, [$objTemplate->ID_ROL_ADMINISTRADOR, $objTemplate->ID_ROL_LOGISTICA])){
+if (!$objTemplate->validarPermisoRoles($objUsuario, [$objTemplate->ID_ROL_ADMINISTRADOR, $objTemplate->ID_ROL_LOGISTICA, $objTemplate->ID_ROL_ASISTENTE_ADMINISTRADOR])){
 	$objTemplate->mostrarAccesoNoValido();
 	exit;
 }

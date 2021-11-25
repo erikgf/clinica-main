@@ -13,7 +13,7 @@ if ($objUsuario == null){
 
 $objTemplate = new Template();
 
-if (!$objTemplate->validarPermisoRoles($objUsuario, [$objTemplate->ID_ROL_ADMINISTRADOR, $objTemplate->ID_ROL_ASISTENTE_ADMINISTRADOR])){
+if (!$objTemplate->validarPermisoRoles($objUsuario, [$objTemplate->ID_ROL_ADMINISTRADOR, $objTemplate->ID_ROL_ASISTENTE_ADMINISTRADOR, $objTemplate->ID_ROL_LOGISTICA])){
 	$objTemplate->mostrarAccesoNoValido();
 	exit;
 }
@@ -27,9 +27,9 @@ $_HOY = date("Y-m-d");
 include_once "../../template.php";
 
 include_once 'prt.modal.servicio.general.php';
+include_once 'prt.modal.servicio.examen.php';
 /*
 include_once 'prt.modal.servicio.perfil.php';
-include_once 'prt.modal.servicio.examen.php';
 
 include_once 'prt.modal.seccion.php';
 include_once 'prt.modal.caracteristica.php';
@@ -42,8 +42,10 @@ include_once 'prt.modal.metodo.php';
 
 ?>
 
+<script type="text/javascript" src="../../componentes/PrecioVenta.componente.js" defer></script>
 <script type="text/javascript" src="../../componentes/Select.componente.js" defer></script>
 <script type="text/javascript" src="ClsServicioGeneral.js" defer></script>
+<script type="text/javascript" src="ClsExamenLaboratorio.js" defer></script>
 <script type="text/javascript" src="index.servicios.js" defer></script>
 
 <!--

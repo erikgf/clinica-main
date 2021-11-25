@@ -139,9 +139,34 @@ class Promotora extends Conexion {
 
     public function asignarMedicosPromotora($arregloIdMedicos){
         try {
+
+            $this->beginTransaction();
+
             $id_medicos_comas = implode(",", $arregloIdMedicos); 
             $sql = "UPDATE medico SET id_promotora = :0 WHERE id_medico IN (".$id_medicos_comas.")";
             $this->ejecutarSimple($sql, [$this->id_promotora]);
+
+            /*Todos los servicios (DE ESTE MES, el momento en que se asignó - 1 MES) 
+                que tengan este medico como ORDENANTE, deben ser acutalizados con la promotora recien asignada
+                 */
+           $numero_dia = date("d");
+           if ($numero_dia <= 7){
+                $desde  = date("Y-m-d", strtotime("first day of previous month"));
+                $hasta  = date("Y-m-d", strtotime("last day of previous month"));
+           } else {
+                $desde  = date("Y-m-d", strtotime("first day of month"));
+                $hasta  = date("Y-m-d", strtotime("last day of month"));
+           }
+
+            $sql = "UPDATE atencion_medica 
+                    SET id_promotora_ordenante = :2, 
+                        comision_promotora_ordenante = (SELECT porcentaje_comision 
+                            FROM promotora_porcentaje_comision
+                            WHERE estado_validez = 'A' AND estado_mrcb AND fecha_fin IS NULL AND id_promotora = :2)
+                    WHERE id_medico_ordenante IN (".$id_medicos_comas.") and fecha_atencion BETWEEN :0 AND :1 AND estado_mrcb ";
+            $this->ejecutarSimple($sql, [$desde, $hasta, $this->id_promotora]);
+            $this->commit();
+
             return ["msj"=>count($arregloIdMedicos)." Médicos reasignados"];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
@@ -150,9 +175,28 @@ class Promotora extends Conexion {
 
     public function quitarMedicosPromotora($arregloIdMedicos){
         try {
+            $this->beginTransaction();
+
             $id_medicos_comas = implode(",", $arregloIdMedicos); 
             $sql = "UPDATE medico SET id_promotora = NULL WHERE id_medico IN (".$id_medicos_comas.")";
             $this->ejecutarSimple($sql);
+
+           $numero_dia = date("d");
+           if ($numero_dia <= 7){
+                $desde  = date("Y-m-d", strtotime("first day of previous month"));
+                $hasta  = date("Y-m-d", strtotime("last day of previous month"));
+           } else {
+                $desde  = date("Y-m-d", strtotime("first day of month"));
+                $hasta  = date("Y-m-d", strtotime("last day of month"));
+           }
+
+             $sql = "UPDATE atencion_medica 
+                    SET id_promotora_ordenante = NULL, 
+                        comision_promotora_ordenante = 0.00
+                    WHERE id_medico_ordenante IN (".$id_medicos_comas.") and fecha_atencion BETWEEN :0 AND :1 AND estado_mrcb ";
+            $this->ejecutarSimple($sql, [$desde, $hasta]);
+            $this->commit();
+
             return ["msj"=>count($arregloIdMedicos)." Médicos quitados"];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);

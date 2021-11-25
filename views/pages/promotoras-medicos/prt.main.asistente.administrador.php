@@ -16,6 +16,11 @@
                 Promotoras y Médicos
                 </a>
             </li>
+            <li class="nav-item">
+            <a class="nav-link" id="tab-promotoras-medicos" data-toggle="pill" href="#blk-tab-promotoras-medicos" role="tab" aria-controls="blk-tab-promotoras-medicos" aria-selected="false">
+                Mantenimientos
+            </a>
+            </li>
         </ul>
     </div>
     <div class="card-body">
@@ -272,6 +277,41 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="tab-pane fade" id="blk-tab-promotoras-medicos" role="tabpanel" aria-labelledby="tab-promotoras-medicos">
+             <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Médicos</h3>
+                            <div class="card-tools m-0">
+                                <button id="btn-actualizar-medicos" class="btn btn-sm btn-success"><span class="fa fa-refresh"></span> ACTUALIZAR </button>
+                                <button id="btn-nuevo-medicos" class="btn btn-sm bg-gradient-blue"><span class="fa fa-plus"></span> NUEVO </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm" style="font-size: .85em;" id="tbl-medicos">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 75px">Opc.</th>
+                                        <th>Médico</th>
+                                        <th>Colegiatura</th>
+                                        <th>RNE</th>
+                                        <th>Teléfonos</th>
+                                        <th>Correo</th>
+                                        <th>Domicilio</th>
+                                        <th>Promotora</th>
+                                        <th>Especialidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbd-medicos">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+             </div>
         </div>
     </div>
     </div>

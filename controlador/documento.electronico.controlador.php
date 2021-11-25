@@ -183,6 +183,85 @@ try {
 
         break;
 
+        case "listar_comprobantes_convenio":
+            $fecha_inicio = Funciones::sanitizar($_POST["p_fecha_inicio"]);
+            $fecha_fin = Funciones::sanitizar($_POST["p_fecha_fin"]);
+
+            $data = $obj->listarComprobantesConvenio($fecha_inicio, $fecha_fin);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "obtener_tipo_motivos_nota":
+            $id_tipo_nota = Funciones::sanitizar($_POST["p_id_tipo_nota"]);
+
+            $data = $obj->obtenerTipoMotivosNota($id_tipo_nota);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "guardar_por_convenio":
+
+            $obj->registrar_en_bbdd = true;
+            $obj->generar_xml = true;
+            $obj->firmar_xml = true;
+
+            $obj->Cliente = [
+                "id_tipo_documento"=>"6",
+                "numero_documento"=> isset($_POST["p_numero_documento"]) ? $_POST["p_numero_documento"] : "",
+                "nombres_completos"=> isset($_POST["p_razon_social"]) ? $_POST["p_razon_social"] : "",
+                "direccion"=> isset($_POST["p_direccion"]) ? $_POST["p_direccion"] : "",
+                "codigo_ubigeo_distrito" =>  ""
+            ];
+
+            $obj->id_tipo_comprobante =  isset($_POST["p_id_tipo_comprobante"]) ? $_POST["p_id_tipo_comprobante"] : "";
+            $obj->serie =  isset($_POST["p_serie_comprobante"]) ? $_POST["p_serie_comprobante"] : "";
+            $obj->descuento_global  = 0.00;
+            $obj->fecha_emision =  isset($_POST["p_fecha_emision"]) ? $_POST["p_fecha_emision"] : "";
+            $obj->fecha_vencimiento =  $obj->fecha_emision;
+            $obj->importe_total =  isset($_POST["p_importe_total"]) ? $_POST["p_importe_total"] : 0.00;
+            $obj->observaciones =  isset($_POST["p_observaciones"]) ? $_POST["p_observaciones"] : NULL;
+
+            $obj->es_convenio = "1";
+            $numeroTicket = isset($_POST["p_numero_acto_medico"]) ? $_POST["p_numero_acto_medico"] : "";
+            if ($numeroTicket == ""){
+                $numeroTicket = NULL;
+            }
+
+            if ($obj->id_tipo_comprobante == "07"){
+                $obj->id_tipo_comprobante_previo =  isset($_POST["p_id_tipo_comprobante"]) ? $_POST["p_id_tipo_comprobante"] : "01";
+                $obj->serie_comprobante_previo =  isset($_POST["p_serie_comprobante_modificado"]) ? $_POST["p_serie_comprobante_modificado"] : "";
+                $obj->numero_correlativo_comprobante_previo =  isset($_POST["p_numero_comprobante_modificado"]) ? $_POST["p_numero_comprobante_modificado"] : "";
+                $obj->cod_tipo_motivo_nota =  isset($_POST["p_id_tipo_motivo"]) ? $_POST["p_id_tipo_motivo"] : "";
+                $obj->motivo_anulacion =  isset($_POST["p_descripcion_motivo"]) ? $_POST["p_descripcion_motivo"] : NULL;
+            }
+
+            $obj->detalle = json_decode($_POST["p_detalle"]);
+
+            $data = $obj->guardarPorConvenio($numeroTicket);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "enviar_sunat_x_id":
+            $id_documento_electronico = Funciones::sanitizar($_POST["p_id_documento_electronico"]);
+            if ($id_documento_electronico == ""){
+                throw new Exception("No se ha enviado ID Comprobante.", 1);
+            }
+
+            $obj->id_documento_electronico = $id_documento_electronico;
+            $data = $obj->enviarSUNATPorId();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "obtener_documento_electronico_x_id":
+            $id_documento_electronico = Funciones::sanitizar($_POST["p_id_documento_electronico"]);
+            if ($id_documento_electronico == ""){
+                throw new Exception("No se ha enviado ID Comprobante.", 1);
+            }
+
+            $obj->id_documento_electronico = $id_documento_electronico;
+            $data = $obj->obtenerDocumentoElectronicoPorId();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
         default:
             Funciones::imprimeJSON("500","ERROR","No existe la función consultada en el API.");
         break;

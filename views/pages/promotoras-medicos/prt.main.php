@@ -260,6 +260,7 @@
                                 <label for="">Promotora seleccionada</label>
                                 <select id="txt-promotoraasignar" type="search" class="form-control"> 
                                 </select>
+                                <small>Las comisiones asignadas a los médicos en este mes (+ 1 semana del siguiente mes) serán automáticamente actualizadas tras alguna ASIGNACIóN.</small>
                             </div>
 
                             <table class="table table-sm" id="tbl-medicospromotoraasignar">

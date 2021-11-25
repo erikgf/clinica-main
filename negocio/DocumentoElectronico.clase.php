@@ -16,13 +16,16 @@ class DocumentoElectronico extends Conexion {
 
     public $Cliente;
     public $id_documento_electronico_previo;
+    public $cod_tipo_motivo_nota;
     public $id_tipo_comprobante_previo;
     public $serie_comprobante_previo;
+    public $numero_correlativo_comprobante_previo;
     public $motivo_anulacion;
-
+    public $id_atencion_medica_convenio;
 
     public $detalle;
     public $id_usuario_registrado;
+    public $observaciones;
 
     public $registrar_en_bbdd = true;
     public $firmar_comprobante = true;
@@ -34,6 +37,7 @@ class DocumentoElectronico extends Conexion {
     private $RUTA_SISTEMA_FACTURACION_ENVIAR = "http://localhost/sistema_facturacion/api/xml.enviar.comprobante.facturas.php";
 
     public $id_documento_electronico_rd;
+    public $es_convenio;
     private $fecha_ahora;
 
     public function __construct($objDB = null){
@@ -63,7 +67,7 @@ class DocumentoElectronico extends Conexion {
             $this->id_tipo_comprobante = $id_tipo_comprobante;
 
             if ($this->registrar_en_bbdd){
-                if ( $this->id_tipo_comprobante == "07" ||  $this->id_tipo_comprobante == "08"){
+                if ( $this->serie_comprobante_previo == NULL && ($this->id_tipo_comprobante == "07" ||  $this->id_tipo_comprobante == "08")){
                     $this->serie = $this->serie_comprobante_previo;
                 }
 
@@ -91,7 +95,7 @@ class DocumentoElectronico extends Conexion {
 
             if ($this->registrar_en_bbdd){ 
                 /*actualizar los totales si está registrando.*/
-                if ($this->id_tipo_comprobante == "01" || $this->id_tipo_comprobante == "03"){
+                if ($id_tipo_nota == NULL){
                     $campos_valores["total_exoneradas"] = $objRegistroComprobante["total_exoneradas"];
                     $campos_valores["total_gravadas"] = $objRegistroComprobante["total_gravadas"];
                     $campos_valores["total_inafectas"] = $objRegistroComprobante["total_inafectas"];
@@ -197,8 +201,8 @@ class DocumentoElectronico extends Conexion {
                     "id_atencion_medica"=>$this->id_atencion_medica,
                     "id_usuario_registrado"=>$this->id_usuario_registrado,
                     "fecha_hora_registrado"=>$fecha_ahora,
-                    "xml_filename"=>F_RUC."-".$id_tipo_comprobante."-".$this->serie."-".str_pad($this->numero_correlativo,6,'0',STR_PAD_LEFT)
-
+                    "xml_filename"=>F_RUC."-".$id_tipo_comprobante."-".$this->serie."-".str_pad($this->numero_correlativo,6,'0',STR_PAD_LEFT),
+                    "es_convenio"=>$this->es_convenio == NULL ? "0": "1"
                 ];
 
                 $this->insert("documento_electronico", $campos_valores);
@@ -397,9 +401,12 @@ class DocumentoElectronico extends Conexion {
                     COALESCE(de.valor_firma,'') as valor_firma,
                     de.estado_anulado,
                     CONCAT(co.nombres,' ',co.apellido_paterno,' ',co.apellido_materno) as usuario_atendido,
-                    de.cdr_descripcion as respuesta_sunat
+                    de.cdr_descripcion as respuesta_sunat,
+                    COALESCE(de.descripcion_motivo_nota, mn.descripcion, '') as motivo_nota,
+                    COALESCE(CONCAT(de.serie_documento_modifica,'-',LPAD(de.numero_documento_modifica,$this->lpad_ceros_numero_correlativo,'0')),'') as documento_afectado
                     FROM documento_electronico de
                     LEFT JOIN atencion_medica am ON am.id_atencion_medica = de.id_atencion_medica
+                    LEFT JOIN motivo_nota mn ON mn.idtipo_nota = de.idtipo_comprobante AND mn.idtipo_motivo_nota = de.idtipo_comprobante_modifica
                     LEFT JOIN paciente p ON p.id_paciente = am.id_paciente
                     LEFT JOIN tipo_paciente tp ON tp.id_tipo_paciente = p.id_tipo_paciente
                     INNER JOIN usuario u ON u.id_usuario = de.id_usuario_registrado
@@ -465,12 +472,13 @@ class DocumentoElectronico extends Conexion {
                     de.descuento_global as DESCUENTO_GLOBAL,
                     de.idtipo_comprobante_modifica as TIPO_COMPROBANTE_MODIFICA,
                     de.idcod_tipo_motivo_nota as COD_TIPO_MOTIVO,
-                    de.descripcion_motivo_nota as DESCRIPCION_MOTIVO,
+                    COALESCE(de.descripcion_motivo_nota, mn.descripcion,'') as DESCRIPCION_MOTIVO,
                     CONCAT(de.serie_documento_modifica,'-',de.numero_documento_modifica) as NRO_DOCUMENTO_MODIFICA
                     FROM documento_electronico de
                     LEFT JOIN ubigeo_peru_districts upd ON upd.id = de.codigo_ubigeo_cliente
                     LEFT JOIN ubigeo_peru_provinces upp ON upp.id = upd.province_id
                     LEFT JOIN ubigeo_peru_departments updep ON updep.id = upp.department_id
+                    LEFT JOIN motivo_nota mn ON mn.idtipo_nota = de.idtipo_comprobante AND mn.idtipo_motivo_nota = de.idtipo_comprobante_modifica
                     WHERE de.iddocumento_electronico = :0 AND de.estado_mrcb";
 
             $datos = $this->consultarFila($sql, [$this->id_documento_electronico]);
@@ -507,7 +515,7 @@ class DocumentoElectronico extends Conexion {
                         total_igv as txtIGV,
                         total_isc as txtISC,
                         idtipo_afectacion as txtCOD_TIPO_OPERACION,
-                        codigo_interno as txtCODIGO_DET,
+                        COALESCE(codigo_interno,'') as txtCODIGO_DET,
                         descripcion_item as txtDESCRIPCION_DET,
                         idunidad_medida as txtUNIDAD_MEDIDA_DET,
                         idcodigo_precio as txtPRECIO_TIPO_CODIGO
@@ -948,7 +956,15 @@ class DocumentoElectronico extends Conexion {
                 "id_atencion_medica"=>$this->id_atencion_medica,
                 "id_usuario_registrado"=>$this->id_usuario_registrado,
                 "fecha_hora_registrado"=>$this->fecha_ahora,
-                "xml_filename"=>F_RUC."-".$this->id_tipo_comprobante."-".$this->serie."-".str_pad($this->numero_correlativo,6,'0',STR_PAD_LEFT)
+                "xml_filename"=>F_RUC."-".$this->id_tipo_comprobante."-".$this->serie."-".str_pad($this->numero_correlativo,6,'0',STR_PAD_LEFT),
+                "es_convenio"=>$this->es_convenio == NULL ? "0": "1",
+                "id_documento_electronico_previo"=>$this->id_documento_electronico_previo,
+                "idtipo_comprobante_modifica"=>$this->id_tipo_comprobante_previo,
+                "serie_documento_modifica"=>$this->serie_comprobante_previo,
+                "numero_documento_modifica"=>$this->numero_correlativo_comprobante_previo,
+                "idcod_tipo_motivo_nota"=>$this->cod_tipo_motivo_nota,
+                "descripcion_motivo_nota"=>$this->motivo_anulacion,
+                "id_atencion_medica_convenio"=>$this->id_atencion_medica_convenio
             ];
 
             $this->insert("documento_electronico", $campos_valores);
@@ -1003,7 +1019,7 @@ class DocumentoElectronico extends Conexion {
                     $this->id_documento_electronico,
                     $o->id_servicio,
                     ($i+1),
-                    $o->idunidad_medida,
+                    $o->idunidad_medida == NULL ? $this->idunidad_medida : "NIU",
                     $o->cantidad,
                     $o->nombre_servicio,
                     $o->precio_unitario,
@@ -1692,4 +1708,265 @@ class DocumentoElectronico extends Conexion {
         }
     }
 
+    public function listarComprobantesConvenio($fecha_inicio, $fecha_fin){
+        try {
+
+            $sql  = "SELECT  
+                        de.iddocumento_electronico,
+                        de.idtipo_comprobante,
+                        DATE_FORMAT(de.fecha_emision, '%d/%m/%Y') as fecha_emision,
+                        de.serie,
+                        LPAD(de.numero_correlativo,6,'0') as comprobante,
+                        de.idtipo_documento_cliente,
+                        de.numero_documento_cliente,
+                        de.descripcion_cliente as cliente,
+                        de.total_gravadas,
+                        de.total_igv,
+                        de.importe_total,
+                        de.estado_anulado,
+                        de.cdr_estado, de.cdr_descripcion
+                        FROM documento_electronico de 
+                        WHERE de.es_convenio AND de.estado_mrcb AND  (de.fecha_emision BETWEEN :0 AND :1)
+                        ORDER BY fecha_hora_registrado DESC";
+
+            $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
+
+            return $datos;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function obtenerTipoMotivosNota($id_tipo_nota){
+        try {
+
+            $sql  = "SELECT  
+                        idtipo_motivo_nota as id, descripcion 
+                        FROM motivo_nota WHERE  idtipo_nota = :0";
+
+            $datos = $this->consultarFilas($sql, [$id_tipo_nota]);
+
+            return $datos;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function guardarPorConvenio($numeroTicket = NULL){
+        try {
+            $this->beginTransaction();
+
+            require "Paciente.clase.php";
+            $objPaciente = new Paciente($this->getDB());
+            $objClienteCreado = $objPaciente->registrarClienteXRUC($this->Cliente["numero_documento"], $this->Cliente["nombres_completos"], $this->Cliente["direccion"]);
+            $this->Cliente["id_cliente"] = $objClienteCreado["cliente"]["id"];
+
+            if ($numeroTicket != NULL){
+                $sql = "SELECT id_atencion_medica FROM atencion_medica WHERE numero_acto_medico = :0 AND estado_mrcb";
+                $this->id_atencion_medica_convenio = $this->consultarValor($sql, [$numeroTicket]);
+            }
+            
+            if ($this->id_tipo_comprobante == "07" || $this->id_tipo_comprobante == "08"){
+                $sql = "SELECT iddocumento_electronico as id_documento_electronico, id_atencion_medica_convenio, idtipo_comprobante FROM documento_electronico WHERE serie = :0 AND numero_correlativo = :1 AND idtipo_comprobante = '01' AND estado_anulado = '0' AND estado_mrcb";
+                $objDocElectronico = $this->consultarFila($sql, [$this->serie_comprobante_previo, $this->numero_correlativo_comprobante_previo]);
+
+                if ($objDocElectronico != false){
+                    $this->id_atencion_medica_convenio = $objDocElectronico["id_atencion_medica_convenio"];
+                    $this->id_documento_electronico_previo = $objDocElectronico["id_documento_electronico"];
+                    $this->id_tipo_comprobante_previo = $objDocElectronico["idtipo_comprobante"];
+
+                    if ($this->id_tipo_comprobante == "07" && ($this->cod_tipo_motivo_nota == "01" || $this->cod_tipo_motivo_nota == "02")){
+                        $campos_valores = ["estado_anulado"=>"1", "motivo_anulacion"=>$this->motivo_anulacion, "fecha_hora_anulacion"=>date("Y-m-d H:i:s"), "id_usuario_registro_anulacion"=>$this->id_usuario_registrado];
+                        $campos_valores_where = ["iddocumento_electronico"=>$this->id_documento_electronico_previo];
+
+                        $this->update("documento_electronico", $campos_valores, $campos_valores_where);
+                    }
+                }
+            }
+
+            $obj = $this->generarComprobante($this->id_tipo_comprobante);
+
+
+            $this->commit();
+
+            return [
+                        "msj"=>$obj["msj"], 
+                        "r"=>$obj["r"], 
+                        "id"=>$this->id_documento_electronico
+                    ];  
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
+        }
+    }
+
+    private function _enviarComprobantesFactura($comprobantes){
+        try{
+            $data_json = json_encode(["comprobantes"=>$comprobantes, 
+                                        "id_tipo_comprobante"=> ($this->id_tipo_comprobante == "01" ? "FA" : ($this->id_tipo_comprobante == "07" ?  "NC" : "ND")), 
+                                        "tipo_proceso"=>F_MODO_PROCESO]);
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $this->RUTA_SISTEMA_FACTURACION_ENVIAR);
+            curl_setopt(
+                $ch, CURLOPT_HTTPHEADER, array(
+                    'Content-Type: application/json',
+                )
+            );
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $respuestasEnvioJSON  = curl_exec($ch);
+            curl_close($ch);
+
+            $respuestasEnvio = json_decode($respuestasEnvioJSON);
+
+            $jsonEsValido = json_last_error() === JSON_ERROR_NONE;
+
+            if( $jsonEsValido ){
+                $this->beginTransaction();
+
+                foreach ($respuestasEnvio as $key => $respuesta) {
+                    $cdr_estado = NULL;
+                    $cdr_descripcion = "";
+                    $cdr_observaciones = NULL;
+                    $cdr_hash = "";
+                    $enviar_a_sunat = 0;
+                    $estado_anulado = 0;
+                    $motivo_anulacion = NULL;
+                    $anulado_por_nota = "1";
+
+                    if (isset($respuesta->respuesta)){
+                        $cdr_estado  = $respuesta->cod_sunat;
+                        $cdr_descripcion  = $respuesta->mensaje;
+                        $cdr_hash  = $respuesta->hash_cdr;
+
+                        if ($cdr_estado < 0){
+                            $enviar_a_sunat = 0;
+                            $cdr_observaciones = "ERROR POR NO CONEXION A SUNAT. REENVIAR XML NUEVAMENTE.";
+                        } else {  
+                            if ($cdr_estado >= 2000){
+                                $enviar_a_sunat = 1;          
+                                $estado_anulado = "1";
+                                $anulado_por_nota = "0";
+                                $motivo_anulacion = "RECHAZADO SUNAT: ".$respuesta->mensaje;
+                            } else if ($cdr_estado > 0 && $cdr_estado < 2000) {
+                                $enviar_a_sunat = 0; 
+                                $cdr_observaciones = "ERROR POR EXCEPCION. GENERAR O REENVIAR XML NUEVAMENTE.";
+                            }
+                        }
+
+                        $sql  = "UPDATE documento_electronico SET 
+                                numero_veces_enviado = numero_veces_enviado + 1,
+                                fecha_hora_envio = CURRENT_TIMESTAMP,
+                                enviar_a_sunat = ".$enviar_a_sunat.",
+                                cdr_descripcion = '".str_replace("'",' ', $cdr_descripcion)."',
+                                cdr_observaciones = ".($cdr_observaciones == NULL ? "NULL" : "'".$cdr_observaciones."'") .",
+                                cdr_hash = '".$cdr_hash."',
+                                cdr_estado = '".$cdr_estado."',
+                                estado_anulado = '".$estado_anulado."',
+                                motivo_anulacion = ".($motivo_anulacion == NULL ? "NULL" : "'".$motivo_anulacion."'")."
+                                WHERE  estado_mrcb AND iddocumento_electronico = '".$respuesta->id."'";
+
+                        $this->consultaRaw($sql);
+                    }
+
+                }
+        
+                $this->commit();
+            }
+
+            return ["respuestas"=> (!$jsonEsValido ? $respuestasEnvioJSON : $respuestasEnvio)];
+        } catch (Exception $exc) {
+            throw new Exception($cdr_descripcion." ".$exc->getMessage(), 1);
+        }
+    }
+    
+    public function enviarSUNATPorId($forzado = false){
+        try {   
+            /*Sí es $forzado = true, enviará el documento aun ya haya sido enviado y tenga un ticket asociado.*/
+            if ($forzado){
+                $sql  = "SELECT iddocumento_electronico as id, idtipo_comprobante as id_tipo_comprobante, xml_filename as nombre_archivo, fecha_emision 
+                            FROM documento_electronico
+                            WHERE estado_mrcb AND cdr_estado IS NULL
+                            AND iddocumento_electronico IN (:0)";
+            } else {
+                $sql  = "SELECT iddocumento_electronico as id, idtipo_comprobante as id_tipo_comprobante, xml_filename as nombre_archivo, fecha_emision 
+                            FROM documento_electronico
+                            WHERE estado_mrcb AND cdr_estado IS NULL AND enviar_a_sunat = 0
+                            AND iddocumento_electronico IN (:0)";
+            }
+
+            $comprobante = $this->consultarFila($sql, [$this->id_documento_electronico]);
+            if($comprobante == false){
+                throw new Exception("El ID del comprobante no es válido, no encontrado.", 1);
+            }
+
+            $this->id_tipo_comprobante = $comprobante["id_tipo_comprobante"];
+            $objRespuestas =  $this->_enviarComprobantesFactura([$comprobante]);
+
+            $respuesta = null;
+            if ($objRespuestas && $objRespuestas["respuestas"]){
+                $respuesta = $objRespuestas["respuestas"][0];
+
+                $sql  = "SELECT  
+                        de.iddocumento_electronico,
+                        de.idtipo_comprobante,
+                        DATE_FORMAT(de.fecha_emision, '%d/%m/%Y') as fecha_emision,
+                        de.serie,
+                        LPAD(de.numero_correlativo,6,'0') as comprobante,
+                        de.idtipo_documento_cliente,
+                        de.numero_documento_cliente,
+                        de.descripcion_cliente as cliente,
+                        de.total_gravadas,
+                        de.total_igv,
+                        de.importe_total,
+                        de.estado_anulado,
+                        de.cdr_estado, de.cdr_descripcion
+                        FROM documento_electronico de 
+                        WHERE de.es_convenio AND de.estado_mrcb AND iddocumento_electronico = :0
+                        ORDER BY fecha_emision DESC";
+
+                $respuesta->registro = $this->consultarFila($sql, [$this->id_documento_electronico]);
+            }
+
+            return $respuesta;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function obtenerDocumentoElectronicoPorId(){
+        try {
+
+            $sql  = "SELECT  
+                        de.iddocumento_electronico,
+                        de.serie,
+                        de.numero_correlativo,
+                        de.numero_documento_cliente
+                        FROM documento_electronico de 
+                        WHERE de.es_convenio AND de.iddocumento_electronico = :0 AND de.estado_mrcb";
+
+            $datos = $this->consultarFila($sql, [$this->id_documento_electronico]);
+            
+            if ($datos == false){
+                throw new Exception("Comprobante no encontrado.", 1);
+            }
+
+            $sql = "SELECT 
+                    cantidad_item as cantidad,
+                    descripcion_item as descripcion,
+                    precio_venta_unitario as precio,
+                    idproducto as id
+                    FROM documento_electronico_detalle
+                    WHERE iddocumento_electronico = :0
+                    ORDER BY item";
+
+            $datos["detalle"] = $this->consultarFilas($sql, [$datos["iddocumento_electronico"]]);
+            return $datos;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+    
 }

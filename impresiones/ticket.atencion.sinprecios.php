@@ -71,6 +71,7 @@ $total_vuelto = $datos["total_vuelto"];
 $descuento_global = $datos["descuento_global"];
 
 $usuario_atendido = utf8_decode($datos["usuario_atendido"]);
+$empresa_convenio = utf8_decode($datos["empresa_convenio"]);
 
 $pdf->Image('logo_dpi.jpg', 25 , 0 ,30,0);
 $pdf->SetY(30 + 5);
@@ -141,6 +142,14 @@ $pdf->Cell($ANCHO_COLS[1], $ALTO_LINEA + .5, ":", $BORDES,0);
 $pdf->CellFitScale($ANCHO_COLS[2], $ALTO_LINEA + .5,  utf8_decode($medico_ordenante) , $BORDES,1);
 
 $pdf->Ln($SALTO_LINEA);
+
+if ($empresa_convenio != ""){
+  $pdf->Cell($ANCHO_COLS[0], $ALTO_LINEA + .5, utf8_decode("CONVENIO"), $BORDES,0);
+  $pdf->Cell($ANCHO_COLS[1], $ALTO_LINEA + .5, ":", $BORDES,0);
+  $pdf->CellFitScale($ANCHO_COLS[2], $ALTO_LINEA + .5,  $empresa_convenio , $BORDES,1);
+
+  $pdf->Ln($SALTO_LINEA);
+}
 
 if (strlen($observaciones) > 0){
   $pdf->Cell($ANCHO_COLS[0], $ALTO_LINEA + .5, utf8_decode("Observaciones"), $BORDES,0);

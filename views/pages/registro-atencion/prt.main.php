@@ -54,7 +54,7 @@
             <br>
                 <!-- -----------------SELECT CATEGORY--------------------- -->
             <div class="row">
-                <div class="col-md-3 col-sm-12">
+                <div class="col-md-2 col-sm-12">
                     <div class="form-group">
                         <label for="">Seleccionar Categoría</label>
                         <select id="txt-categoria" class="select-style">

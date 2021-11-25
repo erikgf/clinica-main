@@ -8,8 +8,6 @@ var Util = {
           primerInputEnEstarErrado = null,
           camposSinCompletar = 0;
 
-        console.log($inputs);
-
       for (let index = 0; index < $inputs.length; index++) {
           const e = $inputs[index];
           const classList = e.classList;

@@ -7,16 +7,74 @@ var ExamenLaboratorio = function(){
         $txtIdTipoAfectacion,
         $txtPrecioVenta,
         $txtValorVenta,
+        $txtIdMuestra,
+        $txtIdSeccion,
+        $tblExamenes,
         $btnEliminar,
         $btnGuardar;
-    
-    var COMBO_CONSTRUIDO = false;
+
+    var COMBO_CONSTRUIDO = false,
+        tplServiciosExamenFormulario;
 
     this.setInit = function(){
-        this.setDOM();
-        this.setEventos();
-
+        this.getTemplates();
         return this;
+    };
+
+    this.getTemplates = function(){
+        var $reqServiciosExamen =  $.get("template.servicios.examen.formulario.php");
+        var self = this;
+
+        $.when($reqServiciosExamen)
+            .done(function(resServiciosExamen){
+                tplServiciosExamenFormulario = Handlebars.compile(resServiciosExamen);
+                    
+                self.setDOM();
+                self.setEventos();
+                self.getMuestras();
+                self.getSecciones();
+
+                new PrecioVentaComponente({$txtPrecioVenta: $txtPrecioVenta, $txtValorVenta: $txtValorVenta, $txtIdTipoAfectacion : $txtIdTipoAfectacion});                
+            })
+            .fail(function(error){
+                console.error(error);
+            });
+    };
+
+    this.getMuestras = function(){
+        $.ajax({ 
+            url : VARS.URL_CONTROLADOR+"lab.muestra.controlador.php?op=obtener_combo",
+            type: "POST",
+            dataType: 'json',
+            delay: 250,
+            success: function(result){
+                new SelectComponente({$select : $txtIdMuestra, opcion_vacia: true}).render(result);
+            },
+            error: function (request) {
+                toastr.error(request.responseText);
+                return;
+            },
+            cache: true
+            }
+        );
+    };
+
+    this.getSecciones = function(){
+        $.ajax({ 
+            url : VARS.URL_CONTROLADOR+"lab.seccion.controlador.php?op=obtener_combo",
+            type: "POST",
+            dataType: 'json',
+            delay: 250,
+            success: function(result){
+                new SelectComponente({$select : $txtIdSeccion, opcion_vacia: true}).render(result);
+            },
+            error: function (request) {
+                toastr.error(request.responseText);
+                return;
+            },
+            cache: true
+            }
+        );
     };
 
     this.setDOM = function(){
@@ -32,7 +90,7 @@ var ExamenLaboratorio = function(){
         $txtIdMuestra = $("#txt-examenlaboratorio-muestra");
         $txtIdSeccion = $("#txt-examenlaboratorio-seccion");
         
-        $txt = $("#txt-examenlaboratorio-valorventa");
+        $tblExamenes = $("#tbl-examenlaboratorio-examenes");
 
         $btnEliminar = $("#btn-examenlaboratorio-eliminar");
         $btnGuardar = $("#btn-examenlaboratorio-guardar");
@@ -45,21 +103,12 @@ var ExamenLaboratorio = function(){
             self.anular(this.dataset.id);
         });
 
-        $txtPrecioVenta.on("change", function(){
-            actualizarValorVenta();
-        });
-
-        $txtIdTipoAfectacion.on("change", function(){
-            actualizarValorVenta();
-         });
-
         $btnGuardar.on("click", function(e){
             self.guardar();
         });
 
         $mdl.on("shown.bs.modal", function(e){
             if (!COMBO_CONSTRUIDO){
-                new SelectComponente({$select : $txtIdCategoriaServicio}).render(ARREGLO_CATEGORIA_SERVICIO);
                 new SelectComponente({$select : $txtIdTipoAfectacion, opcion_vacia: false}).render(ARREGLO_TIPO_AFECTACION);
 
                 COMBO_CONSTRUIDO = true;
@@ -67,36 +116,221 @@ var ExamenLaboratorio = function(){
         });
 
         $mdl.on("hidden.bs.modal", function(e){
-            $btnEliminar.hide();
-            $mdl.find("form")[0].reset();
+            self.limpiarModal();
         });
-    };
 
-    var actualizarValorVenta = function(){
-        var valor = $txtPrecioVenta.val();
-        if (valor == "" || parseFloat(valor) <= 0.00){
-            valor = "0.00";
-            $txtPrecioVenta.val(valor);
-        }
+        $tblExamenes.on("click", ".btn-agregarfila", function(e){
+            e.preventDefault();
+            self.agregarNuevaFila();
+        });
 
-        $txtValorVenta.val(parseFloat(valor / ($txtIdTipoAfectacion.val() == "10" ? 1.18 : 1)).toFixed(4));    
+        $tblExamenes.on("click", ".btn-quitarfila", function(e){
+            e.preventDefault();
+            self.removerFila($(this).parents("tr"));
+        });
+
+        $tblExamenes.on("change", ".txt-nivel", function(e){
+            e.preventDefault();
+            ajustarSegunNivel($(this));
+        });
+
     };
 
     this.nuevoRegistro = function(){
-        $mdl.find("form")[0].reset();
         $mdl.modal("show");
-        $mdl.find(".modal-title").html("Nuevo Servicio");
+        $mdl.find(".modal-title").html("Nuevo Servicio Examen Lab.");
 
-        $txtCantidadExamenes.val("1");
-
-        $txtIdServicio.val("");
+        this.limpiarModal();
     };
+
+    this.limpiarModal = function(){
+        $mdl.find("form")[0].reset();
+        $btnEliminar.hide();
+        $txtComision.val("0.00");
+        $txtIdServicio.val("");
+
+        $tblExamenes.find("select.select2").select2("destroy");
+        $tblExamenes.find("tbody").empty();
+
+        this.agregarNuevaFila();        
+    };
+
+    this.agregarNuevaFila = function (datosFilas, render = false) {
+        if (datosFilas == null){
+            datosFilas = [{
+                nivel : 0,
+                descripcion: "",
+                abreviatura: "",
+                unidad: "",
+                valores_referenciales: "",
+                metodo : "",
+                eliminar: $tblExamenes.find("tbody tr").length > 0
+            }];
+        }
+
+        if (!datosFilas.length){
+            $tblExamenes.find("tbody").html(tplServiciosExamenFormulario(datosFilas));
+            return;
+        }
+
+        if(datosFilas.length <= 1 && !render){
+            var $fila = $(tplServiciosExamenFormulario(datosFilas));
+            $fila.find(".txt-abreviatura").select2({
+                ajax: { 
+                    url : VARS.URL_CONTROLADOR+"lab.abreviatura.controlador.php?op=buscar_combo",
+                    type: "post",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            p_cadenabuscar: params.term
+                        };
+                    },
+                    processResults: function (response) {
+                        return {results: response};
+                    }
+                },
+                minimumInputLength: 1,
+                multiple:false,
+                placeholder:"Seleccionar",
+                tags: true,
+                allowClear: true
+            });
+
+            $fila.find(".txt-unidad").select2({
+                ajax: { 
+                    url : VARS.URL_CONTROLADOR+"lab.unidad.controlador.php?op=buscar_combo",
+                    type: "post",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            p_cadenabuscar: params.term
+                        };
+                    },
+                    processResults: function (response) {
+                        return {results: response};
+                    }
+                },
+                minimumInputLength: 1,
+                multiple:false,
+                placeholder:"Seleccionar",
+                tags: true,
+                allowClear: true
+            });
+
+            $fila.find(".txt-metodo").select2({
+                ajax: { 
+                    url : VARS.URL_CONTROLADOR+"lab.metodo.controlador.php?op=buscar_combo",
+                    type: "post",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            p_cadenabuscar: params.term
+                        };
+                    },
+                    processResults: function (response) {
+                        return {results: response};
+                    }
+                },
+                minimumInputLength: 1,
+                multiple:false,
+                placeholder:"Seleccionar",
+                tags: true,
+                allowClear: true
+            });
+            $tblExamenes.find("tbody").append($fila);
+
+            return;
+        } else {
+            $tblExamenes.find("tbody").html(tplServiciosExamenFormulario(datosFilas));
+            $tblExamenes.find(".txt-abreviatura").select2({
+                ajax: { 
+                    url : VARS.URL_CONTROLADOR+"lab.abreviatura.controlador.php?op=buscar_combo",
+                    type: "post",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            p_cadenabuscar: params.term
+                        };
+                    },
+                    processResults: function (response) {
+                        return {results: response};
+                    }
+                },
+                minimumInputLength: 1,
+                multiple:false,
+                placeholder:"Seleccionar",
+                tags: true,
+                allowClear: true
+            });
+            
+            $tblExamenes.find(".txt-unidad").select2({
+                ajax: { 
+                    url : VARS.URL_CONTROLADOR+"lab.unidad.controlador.php?op=buscar_combo",
+                    type: "post",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            p_cadenabuscar: params.term
+                        };
+                    },
+                    processResults: function (response) {
+                        return {results: response};
+                    }
+                },
+                minimumInputLength: 1,
+                multiple:false,
+                placeholder:"Seleccionar",
+                tags: true,
+                allowClear: true
+            });
+
+            $tblExamenes.find(".txt-metodo").select2({
+                ajax: { 
+                    url : VARS.URL_CONTROLADOR+"lab.metodo.controlador.php?op=buscar_combo",
+                    type: "post",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            p_cadenabuscar: params.term
+                        };
+                    },
+                    processResults: function (response) {
+                        return {results: response};
+                    }
+                },
+                minimumInputLength: 1,
+                multiple:false,
+                placeholder:"Seleccionar",
+                tags: true,
+                allowClear: true
+            });
+
+            $tblExamenes.find("select.select2").each(function(i,o){
+                var valor = this.dataset.val;
+                if (!(valor == null || valor == "")){
+                    $(this).append(new Option(this.dataset.val, null, true, true)).trigger('change');    
+                }
+            });
+
+        }
+    };
+
+    this.removerFila = function($tr) {
+        $tr.find("select.select2").select2("destroy");
+        $tr.remove();
+    };  
 
     this.leer = function(id, $tr_fila){
         var self = this;
 
         $.ajax({ 
-            url : VARS.URL_CONTROLADOR+"servicio.controlador.php?op=leer_servicio_general",
+            url : VARS.URL_CONTROLADOR+"servicio.controlador.php?op=leer_servicio_examen",
             type: "POST",
             dataType: 'json',
             delay: 250,
@@ -117,19 +351,24 @@ var ExamenLaboratorio = function(){
     };
 
     this.render = function(data){
-        $mdl.find(".modal-title").html("Editando Servicio");
+        /*
+            Se deberia cargar la cabecera +
+            detalle
+                El reg
+        */
+        $mdl.find(".modal-title").html("Editando Servicio Examen Lab.");
 
         $txtIdServicio.val(data.id_servicio);
         $txtDescripcion.val(data.descripcion);
-        $txtDescripcionDetallada.val(data.descripcion_detallada);
-        $txtCantidadExamenes.val(data.cantidad_examenes);
-
-        $txtIdCategoriaServicio.val(data.id_categoria_servicio);
         $txtComision.val(data.comision);
         $txtIdTipoAfectacion.val(data.idtipo_afectacion);
         $txtValorVenta.val(data.valor_venta);
         $txtPrecioVenta.val(data.precio_venta);
-        
+        $txtIdMuestra.val(data.id_lab_muestra);
+        $txtIdSeccion.val(data.id_lab_seccion);
+
+        this.agregarNuevaFila(data.detalle, true);
+
         $btnEliminar.show();
     };
 
@@ -145,21 +384,35 @@ var ExamenLaboratorio = function(){
             return;
         }
 
+        var arregloDetalle = [];
+        $tblExamenes.find("tbody tr").each(function(i,o){
+            var $o = $(o);
+            arregloDetalle.push({
+                id_lab_examen : $o.data("id") ?? "",
+                nivel  : $o.find(".txt-nivel").val(),
+                descripcion: $o.find(".txt-descripcion").val(),
+                abreviatura :$o.find(".txt-abreviatura option:selected").html(),
+                unidad :$o.find(".txt-unidad option:selected").html(),
+                valores_referenciales: $o.find(".txt-valoresreferenciales").val(),
+                metodo :$o.find(".txt-metodo option:selected").html()
+            });
+        });
+
         $.ajax({ 
-            url : VARS.URL_CONTROLADOR+"servicio.controlador.php?op=registrar",
+            url : VARS.URL_CONTROLADOR+"servicio.controlador.php?op=registrar_examen",
             type: "POST",
             dataType: 'json',
             delay: 250,
             data: {
                 p_id_servicio : $txtIdServicio.val(),
                 p_descripcion : $txtDescripcion.val(),
-                p_descripcion_detallada : $txtDescripcionDetallada.val(),
-                p_cantidad_examenes : $txtCantidadExamenes.val(),
-                p_id_categoria_servicio : $txtIdCategoriaServicio.val(),
                 p_id_tipo_afectacion : $txtIdTipoAfectacion.val(),
+                p_id_seccion : $txtIdSeccion.val(),
+                p_id_muestra : $txtIdMuestra.val(),
                 p_valor_venta : $txtValorVenta.val(),
                 p_precio_venta : $txtPrecioVenta.val(),
-                p_comision :  $txtComision.val()
+                p_comision :  $txtComision.val(),
+                p_detalle : JSON.stringify(arregloDetalle)
             },
             success: function(result){
                 toastr.success(result.msj);
@@ -173,6 +426,18 @@ var ExamenLaboratorio = function(){
             cache: true
             }
         );
+    };
+
+    var ajustarSegunNivel = function($selectNivel){
+        var nivel = $selectNivel.val(),
+            esNivelDescripcion = nivel == "99";
+
+        var $tr = $selectNivel.parents("tr");
+
+        $tr.find(".txt-descripcion").prop("disabled", esNivelDescripcion);
+        $tr.find(".txt-unidad").prop("disabled", esNivelDescripcion);
+        $tr.find(".txt-abreviatura").prop("disabled", esNivelDescripcion);
+        $tr.find(".txt-metodo").prop("disabled", esNivelDescripcion);
     };
 
     return this.setInit();

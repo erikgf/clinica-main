@@ -21,7 +21,7 @@ $id_atenciones_servicios = isset($_GET["idams"]) ? $_GET["idams"] : "[]";
 $imprimir_todo_junto =  isset($_GET["tj"]) ? $_GET["tj"] : "0";
 
 $FONT = isset($_GET["f"]) ? $_GET["f"] : 1;
-$FONT = $FONT == 1 ? "Times" : "Courier";
+$FONT = $FONT == 1 ? "Arial" : "Courier";
 
 $fecha_impresion = date("d/m/Y");
 $hora_impresion = date("H:i:s");
@@ -49,7 +49,7 @@ $MARGENES_LATERALES = 5.00;
 $pdf->SetMargins($MARGENES_LATERALES, $MARGENES_LATERALES * 8, $MARGENES_LATERALES); 
 $pdf->AliasNbPages();
 //$pdf->show_footer = true;
-$aumento_font = 2.5;
+$aumento_font = 1.65;
 $BORDES = 0;
 
 $ALTO_LINEA = 3.75;
@@ -58,7 +58,7 @@ $SALTO_LINEA = 1.5;
 $ANCHO_TICKET_FULL = $pdf->GetPageWidth();
 $ANCHO_TICKET = $ANCHO_TICKET_FULL - ($MARGENES_LATERALES * 2);
 $ANCHO_TICKET_MITAD = $ANCHO_TICKET / 2;
-$ANCHO_TICKET_CUARTA = $ANCHO_TICKET / 4;
+$ANCHO_TICKET_CUARTA = $ANCHO_TICKET / 4.6;
 $ANCHO_TICKET_MITAD_MITAD = $ANCHO_TICKET_MITAD / 2;
 $ANCHO_TICKET_MITAD_MITAD_MITAD = $ANCHO_TICKET_MITAD_MITAD / 2;
 
@@ -82,15 +82,18 @@ foreach ($secciones as $_ => $seccion) {
           $ALTO_LINEA = 5;
           $pdf->SetFont($FONT,'B', 7 + $aumento_font); 
           $pdf->Ln($SALTO_LINEA * 1.5);
-
           $pdf->Cell($ANCHO_TICKET_CUARTA,$ALTO_LINEA + .75, utf8_decode("N° RECIBO: "),$BORDES,0);
+          
+          $pdf->SetFont($FONT,'', 7 + $aumento_font); 
           $pdf->Cell($ANCHO_TICKET_MITAD_MITAD_MITAD,$ALTO_LINEA + .75, $data["numero_recibo"],$BORDES, 0);
           
           $pdf->Cell($ESPACIO_HORIZONTAL * 2,$ALTO_LINEA + .75, "",$BORDES,0);
-          
+          $pdf->SetFont($FONT,'B', 7 + $aumento_font); 
           $pdf->Cell($ANCHO_TICKET_CUARTA,$ALTO_LINEA + .75, utf8_decode("FECHA DE ORDEN:"),$BORDES,0);
+          $pdf->SetFont($FONT,'', 7 + $aumento_font); 
           $pdf->Cell($ANCHO_TICKET_MITAD_MITAD_MITAD,$ALTO_LINEA + .75, $data["fecha_orden"],$BORDES, 1);
           
+          $pdf->SetFont($FONT,'B', 7 + $aumento_font); 
           $pdf->Cell($ANCHO_TICKET_CUARTA,$ALTO_LINEA + .75, "EDAD:",$BORDES,0);
           $edad = "";
           if ($data["edad_anios"] > 0){
@@ -98,32 +101,45 @@ foreach ($secciones as $_ => $seccion) {
           } else {
             $edad = $data["edad_meses"]." MESES";
           }
-          
+          $pdf->SetFont($FONT,'', 7 + $aumento_font);
           $pdf->Cell($ANCHO_TICKET_MITAD_MITAD_MITAD,$ALTO_LINEA + .75, utf8_decode($edad),$BORDES, 1);
 
+          $pdf->SetFont($FONT,'B', 7 + $aumento_font); 
           $pdf->Cell($ANCHO_TICKET_CUARTA,$ALTO_LINEA + .75, "PACIENTE:",$BORDES,0);
+          $pdf->SetFont($FONT,'', 7 + $aumento_font); 
           $pdf->Cell($ANCHO_TICKET_MITAD,$ALTO_LINEA + .75, utf8_decode($data["nombre_paciente"]),$BORDES, 1);
 
+          $pdf->SetFont($FONT,'B', 7 + $aumento_font); 
           $pdf->Cell($ANCHO_TICKET_CUARTA,$ALTO_LINEA + .75, "SEXO:",$BORDES,0);
+          $pdf->SetFont($FONT,'', 7 + $aumento_font);
           $pdf->Cell($ANCHO_TICKET_MITAD,$ALTO_LINEA + .75, $data["sexo"] == "F" ? "FEMENINO" : "MASCULINO",$BORDES, 1);
           
+          $pdf->SetFont($FONT,'B', 7 + $aumento_font); 
           $pdf->Cell($ANCHO_TICKET_CUARTA,$ALTO_LINEA + .75, utf8_decode("MÉDICO:"),$BORDES,0);
+          $pdf->SetFont($FONT,'', 7 + $aumento_font);
           $pdf->Cell($ANCHO_TICKET_MITAD,$ALTO_LINEA + .75, utf8_decode($data["nombre_medico"]),$BORDES, 1);
           
+          $pdf->SetFont($FONT,'B', 7 + $aumento_font);
           $pdf->Cell($ANCHO_TICKET_CUARTA,$ALTO_LINEA + .75, "PROCEDENCIA:",$BORDES,0);
+          $pdf->SetFont($FONT,'', 7 + $aumento_font);
           $pdf->Cell($ANCHO_TICKET_MITAD,$ALTO_LINEA + .75, utf8_decode($data["procedencia"]),$BORDES, 1);
           
+          $pdf->SetFont($FONT,'B', 7 + $aumento_font);
           $pdf->Cell($ANCHO_TICKET_CUARTA,$ALTO_LINEA + .75, "FECHA ENTREGA:",$BORDES,0);
+          $pdf->SetFont($FONT,'', 7 + $aumento_font);
           $pdf->Cell($ANCHO_TICKET_MITAD,$ALTO_LINEA + .75, $seccion["fecha_entrega"], $BORDES, 1);
           
-          $ALTO_LINEA = 3.75;
-          $pdf->Ln($SALTO_LINEA * 4);
+          $ALTO_LINEA = 3.25;
+          $pdf->Ln($SALTO_LINEA * 2.75);
+
+          $aumento_font = 1.25;
 
           $COLS_DETALLE = [
-              ["rotulo"=>"EXAMENES", "ancho"=>80.00, "alineacion"=>"L"],
-              ["rotulo"=>"RESULTADO", "ancho"=>37.50, "alineacion"=>"L"],
-              ["rotulo"=>"UNIDAD", "ancho"=>27.50, "alineacion"=>"L"],
-              ["rotulo"=>"VALORES REFERENCIALES", "ancho"=>20.00, "alineacion"=>"L"],
+              ["rotulo"=>"Prueba", "ancho"=>60.00, "alineacion"=>"L"],
+              ["rotulo"=>"Resultado", "ancho"=>43.00, "alineacion"=>"L"],
+              ["rotulo"=>"Unidades", "ancho"=>25.50, "alineacion"=>"L"],
+              ["rotulo"=>"Valores de Referencia", "ancho"=>40.00, "alineacion"=>"L"],
+              ["rotulo"=>"Método", "ancho"=>20.00, "alineacion"=>"L"],
           ];
           
           $NUMERO_COLS = count($COLS_DETALLE);
@@ -162,7 +178,7 @@ foreach ($secciones as $_ => $seccion) {
 
         $servicios = $muestra["servicios"];
 
-        $espacio_nivel_base = ["[ ]     ","     *  ","            "];
+        $espacio_nivel_base = ["[ ]    ","    *  ","          "];
         $tempLastY = null;
         $tempLastY2 = null;
         foreach ($servicios as $__ => $servicio) {
@@ -186,16 +202,22 @@ foreach ($secciones as $_ => $seccion) {
               $pdf->MultiCell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, utf8_decode($resultado["resultado"]), $BORDES,"L",0);
               $tempLastY = $pdf->GetY();
               $pdf->SetXY($tempX + $COLS_DETALLE[$i - 1]["ancho"], $tempInitY);
-              //$tempX = $pdf->GetX();
+          
+
               $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, $resultado["unidad"], $BORDES,0);
               $tempX = $pdf->GetX();
-              $pdf->MultiCell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, utf8_decode($resultado["valor_referencial"]), $BORDES, "L");
+              $pdf->MultiCell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, utf8_decode($resultado["valor_referencial"]), $BORDES, "L", 0);
               $tempLastY2 = $pdf->GetY();
-
               if ($tempLastY < $tempLastY2){
-                $tempLastY  =$tempLastY2;
+                $tempLastY = $tempLastY2;
               }
-             // $pdf->SetX($tempX);
+              $pdf->SetXY($tempX + $COLS_DETALLE[$i - 1]["ancho"], $tempInitY);
+              $tempX = $pdf->GetX();
+              $pdf->MultiCell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, utf8_decode($resultado["metodo"]), $BORDES, "L");
+              $tempLastY2 = $pdf->GetY();
+              if ($tempLastY < $tempLastY2){
+                $tempLastY = $tempLastY2;
+              }
             }
 
             $pdf->Ln($SALTO_LINEA * 2);

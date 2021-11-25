@@ -58,7 +58,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="txt-medico-correo">Correo</label>
-                                    <input type="email" class="form-control uppercase"  id="txt-medico-correo">
+                                    <input type="email" class="form-control"  id="txt-medico-correo" style="">
                                 </div>
                             </div>
                             <div class="col-md-6">

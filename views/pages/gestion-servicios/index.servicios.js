@@ -13,11 +13,12 @@ var Servicio = function() {
 
     this.getTemplates = function(){
         var $reqServicios =  $.get("template.servicios.php");
-        
+
         $.when($reqServicios)
             .done(function(resServicios){
                 tplServicios = Handlebars.compile(resServicios);
                 objServicioGeneral = new ServicioGeneral();
+                objExamenLab = new ExamenLaboratorio();
                 self.listar();
             })
             .fail(function(error){
@@ -32,7 +33,6 @@ var Servicio = function() {
         $tbbServicios  = $("#tbd-servicios");
         $overlayTabla = $("#overlay-tbl-servicios");
         $btnActualizar  =  $("#btn-actualizar-servicios");
-
     };
     
     this.setEventos = function(){
@@ -50,13 +50,13 @@ var Servicio = function() {
             e.preventDefault();
             objServicioGeneral.nuevoRegistro();
         });
-        /*
 
         $("#btn-nuevoexamenlab").on("click", function(e){
             e.preventDefault();
             objExamenLab.nuevoRegistro();
         });
-
+        
+        /*
         $("#btn-nuevoperfillab").on("click", function(e){
             e.preventDefault();
             objPerfilLab.nuevoRegistro();
@@ -81,6 +81,10 @@ var Servicio = function() {
             case "1":
                 TR_FILA = $tr_fila;
                 objServicioGeneral.leer(id);
+            break;
+            case "2":
+                TR_FILA = $tr_fila;
+                objExamenLab.leer(id);
             break;
         }
 

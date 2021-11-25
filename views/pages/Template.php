@@ -64,8 +64,9 @@ class Template{
                     ["rotulo"=>"Ver Atenciones", "url"=>"gestion-atenciones-admin", "padre"=>"0"],
                     ["rotulo"=>"Ver Atenciones Saldos", "url"=>"gestion-atenciones-saldo", "padre"=>"0"],
                     ["rotulo"=>"Ver Exámenes", "url"=>"ver-examenes", "padre"=>"0"],
-                    ["rotulo"=>"Gestión Servicios", "url"=>"gestion-servicios", "padre"=>"0"],
+                    ["rotulo"=>"Mantenimientos Servicios", "url"=>"mantenimientos-servicios", "padre"=>"0"],
                     ["rotulo"=>"Revisión Exámenes", "url"=>"gestion-servicios-revision", "padre"=>"0"],
+                    ["rotulo"=>"Gestión de Convenios", "url"=>"gestion-convenios", "padre"=>"0"],
                     ["rotulo"=>"Gestión Médicos - Promotoras", "url"=>"promotoras-medicos", "padre"=>"0"],
                     ["rotulo"=>"Reportes Promotoras - Médicos", "url"=>"reportes-promotoras-medicos", "padre"=>"0"],
                     ["rotulo"=>"Gestión Laboratorio", "url"=>"gestion-laboratorio", "padre"=>"0"],                    
@@ -134,8 +135,9 @@ class Template{
 
             case $this->ID_ROL_COORDINADOR_LABORATORIO;
                 $objMenu = [
-                    ["rotulo"=>"Gestión Laboratorio", "url"=>"gestion-laboratorio", "padre"=>"0"],
-                    ["rotulo"=>"Reportes Laboratorio", "url"=>"reportes-laboratorio", "padre"=>"0"]
+                    ["rotulo"=>"Mantenimientos", "url"=>"mantenimientos-laboratorio", "padre"=>"0"],
+                    ["rotulo"=>"Gestión Laboratorio", "url"=>"gestion-laboratorio", "padre"=>"0"]
+                    //["rotulo"=>"Reportes Laboratorio", "url"=>"reportes-laboratorio", "padre"=>"0"]
                 ];
             break;  
 
@@ -143,6 +145,7 @@ class Template{
                 $objMenu = [                
                     ["rotulo"=>"Revisión Exámenes", "url"=>"gestion-servicios-revision", "padre"=>"0"],
                     ["rotulo"=>"Gestión Médicos - Promotoras", "url"=>"promotoras-medicos", "padre"=>"0"],
+                    ["rotulo"=>"Ver Atenciones", "url"=>"gestion-atenciones-admin", "padre"=>"0"],
                 ];
             break; 
             

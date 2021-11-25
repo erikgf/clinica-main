@@ -13,15 +13,17 @@ var MedicosAsignarPromotora = function() {
     var $btnAsignar,
         $btnQuitar;
 
-    var tplMedicos;
+    var _tplMedicos;
 
     this.getTemplates = function(){
         var $reqMedicos =  $.get("template.medicos.lista.para.promotoras.php"); 
         
         $.when($reqMedicos)
             .done(function(resMedicos){
-                tplMedicos = Handlebars.compile(resMedicos);
+                _tplMedicos = Handlebars.compile(resMedicos);
+
                 cargarMedicos();
+                cargarPromotoras();
 
             })
             .fail(function(e1){
@@ -133,7 +135,7 @@ var MedicosAsignarPromotora = function() {
                     TABLA_MEDICOS_ASIGNAR.destroy();
                 }
 
-                $tbdMedicosParaAsignar.html(tplMedicos(result));
+                $tbdMedicosParaAsignar.html(_tplMedicos(result));
                 TABLA_MEDICOS_ASIGNAR = $tblMedicosParaAsignar.DataTable({
                     "ordering": true,
                     "order": [],
@@ -164,7 +166,7 @@ var MedicosAsignarPromotora = function() {
                     TABLA_MEDICOS_ASIGNADOS.destroy();
                 }
 
-                $tbdMedicosPromotoraAsignar.html(tplMedicos(result));
+                $tbdMedicosPromotoraAsignar.html(_tplMedicos(result));
                 if (result.length){
                     TABLA_MEDICOS_ASIGNADOS = $tblMedicosPromotoraAsignar.DataTable({
                         "ordering": true,
@@ -281,7 +283,6 @@ var MedicosAsignarPromotora = function() {
     Util.setFecha($txtFechaFin, hoy);
     hoy = null;
 
-    cargarPromotoras();
     
     return this;
 };

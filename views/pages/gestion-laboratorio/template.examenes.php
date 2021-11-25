@@ -27,7 +27,7 @@
             <input data-pos="3" {{#if_ ../fue_validado '==' '1'}}readonly{{/if_}} type="text" class="txt-valorreferencial form-control" value="{{valor_referencial}}"/>
         </td>
         <td class="text-center input-group-sm"  style="position:relative;">
-            <input data-pos="4" {{#if_ ../fue_validado '==' '1'}}readonly{{/if_}} type="text" class="text-center txt-valormetodo form-control" value="{{valor_metodo}}"/>
+            <input data-pos="4" {{#if_ ../fue_validado '==' '1'}}readonly{{/if_}} type="text" class="text-center txt-valormetodo form-control" value="{{metodo}}"/>
             <div class="blk-buscador">
                 <ul ></ul>
             </div>
