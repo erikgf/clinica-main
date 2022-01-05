@@ -9,7 +9,7 @@ var FacturacionConvenio = function(){
         $txtNumeroTicket,
         $chkNumeroTicket,
         $txtMontoCubierto,
-        $txtTipoComprobante,
+        $txtIdTipoComprobante,
         $txtSerieComprobante,
         $txtSerieComprobanteModificado,
         $txtNumeroComprobanteModificado,
@@ -24,16 +24,24 @@ var FacturacionConvenio = function(){
         $lblIGV,
         $lblTotal,
         $btnGuardar,
-        $tbdDetalle;
+        $tbdDetalle,
+        $txtFormaPago;
 
     var tplFacturacionConvenio,
+        tplFacturacionCuotasConvenio,
         $tblFacturacionConvenio,
-        $tbdFacturacionConvenio;
+        $tbdFacturacionConvenio,
+        $tblFacturacionConvenioCuotas;
+
+    var $blkFacturacionConvenioCuotas;
+
     var self = this;
     var TABLA_AJUSTADA = false;
     var HACE_CUANTOS_DIAS = 7;
     var TICKET_EXISTE = false;
     var IGV = 1.18;
+    var HOY;
+
     
     this.setInit = function(){
         this.setDOM();
@@ -46,11 +54,15 @@ var FacturacionConvenio = function(){
 
     this.getTemplates = function(){
         var $reqFacturacionConvenio =  $.get("template.facturacion.convenio.php");
+        var $reqFacturacionConvenioCuotas =  $.get("template.facturacion.cuotas.convenio.php");
 
-        $.when($reqFacturacionConvenio)
-            .done(function(resFacturacionConvenio){
-                tplFacturacionConvenio = Handlebars.compile(resFacturacionConvenio);
+        $.when($reqFacturacionConvenio, $reqFacturacionConvenioCuotas)
+            .done(function(resFacturacionConvenio, resFacturacionCuotasConvenio){
+                tplFacturacionConvenio = Handlebars.compile(resFacturacionConvenio[0]);
+                tplFacturacionCuotasConvenio = Handlebars.compile(resFacturacionCuotasConvenio[0]);
                 self.listar();
+
+                objTablaCuotasCredito = new TablaCuotasCredito({$el: $blkFacturacionConvenioCuotas, tpl: tplFacturacionCuotasConvenio})
             })
             .fail(function(error){
                 console.error(error);
@@ -80,9 +92,7 @@ var FacturacionConvenio = function(){
             cache: true
             }
         );
-
     };
-
 
     this.setDOM = function(){
         $mdl = $("#mdl-facturacionconvenio");
@@ -127,7 +137,10 @@ var FacturacionConvenio = function(){
 
         $tblFacturacionConvenio = $("#tbl-facturacionconvenio");
         $tbdFacturacionConvenio  = $("#tbd-facturacionconvenio");
+        $tblFacturacionConvenioCuotas = $("#tbl-facturacionconvenio-cuotascredito");
+        $blkFacturacionConvenioCuotas = $("#blk-facturacionconvenio-cuotascredito");
 
+        $txtFormaPago = $("#txt-facturacionconvenio-formapago");
         
         var hoy = new Date();
         var haceDias = new Date(hoy.getTime());
@@ -135,6 +148,15 @@ var FacturacionConvenio = function(){
         Util.setFecha($txtFechaInicio, haceDias);
         Util.setFecha($txtFechaFin, hoy);
 
+        HOY = hoy;
+    };
+
+    this.getLblTotal = function(){
+        return $lblTotal;
+    };
+
+    this.getTxtFechaVencimiento = function(){
+        return $txtFechaVencimiento;
     };
 
     this.setEventos = function () {
@@ -253,6 +275,16 @@ var FacturacionConvenio = function(){
             e.preventDefault();
             modificarPorNotaCredito($tr.data("id"), $tr.data("comprobante"), $button);
         });
+
+        $txtFormaPago.on("click", function(e){
+            e.preventDefault();
+            if ($txtFormaPago.val() == "0"){
+                objTablaCuotasCredito.toggle(false);
+            } else {
+                objTablaCuotasCredito.toggle(true);
+            }
+
+        });
     };
 
     this.nuevoRegistro = function(){
@@ -297,7 +329,7 @@ var FacturacionConvenio = function(){
             if (esError === false){
                 let item = {
                     id_servicio : o.dataset.id ?? null,
-                    idunidad_medida : "NIU",
+                    idunidad_medida : "ZZ",
                     nombre_servicio : o.children[1].innerHTML,
                     precio_unitario : parseFloat($precio.value),
                     cantidad : $cantidad.value,
@@ -319,6 +351,16 @@ var FacturacionConvenio = function(){
             return;
         }
 
+        var arregloCuotas = [];
+
+        if ($txtIdTipoComprobante.val() == "01"){
+            var objCuotas = objTablaCuotasCredito.obtenerDatos();
+            if (objCuotas.r == "0"){
+                return;
+            }
+
+            arregloCuotas = objCuotas.data;
+        }
 
         $.ajax({ 
             url : VARS.URL_CONTROLADOR+"documento.electronico.controlador.php?op=guardar_por_convenio",
@@ -341,6 +383,8 @@ var FacturacionConvenio = function(){
                 p_fecha_vencimiento: $txtFechaVencimiento.val(),
                 p_observaciones: $txtObservaciones.val(),
                 p_detalle : JSON.stringify(arregloDetalle),
+                p_forma_pago : $txtFormaPago.val(),
+                p_cuotas: JSON.stringify(arregloCuotas),
                 p_importe_total : $lblTotal.html()
             },
             success: function(result){
@@ -586,6 +630,7 @@ var FacturacionConvenio = function(){
         $txtDireccion.val("");
 
         $tbdDetalle.empty();
+        self.seleccionarNotaCredito(false);
         recalcularTotal();
     };
 
@@ -652,11 +697,114 @@ var FacturacionConvenio = function(){
         $txtNumeroTicket.val(numero_ticket).change();
     };
 
+
     return this.setInit();
 };
 
 /*
 modificarpornotacredito*/
+
+const TablaCuotasCredito  = function(data){
+    var self = this;
+    let $el;
+    let tpl;
+
+    this.init = function(){
+        if (!data){
+            return this;
+        }
+        $el = data.$el;
+        tpl = data.tpl;
+        setEventos();
+        return this;
+    };
+
+    this.toggle =  function(esconder = true){
+        limpiarCuotasCredito();
+        $el && $el[esconder ? "hide": "show"]();
+    };
+
+    var setEventos = function(){
+        if (!$el){
+            return;
+        }
+
+        $el.on("click", ".btn-eliminarcuota", function(e){
+            e.preventDefault();
+            self.quitarFila(this);
+        });
+
+        $el.on("click", ".btn-agregarcuota", function(e){
+            e.preventDefault();
+            self.agregarFila();
+        });
+
+        $el.on("change", ".txt-fechapago", function(e){
+            if (this.value != ""){
+                objFacturacionConvenio.getTxtFechaVencimiento().val(this.value);
+            }
+        });
+    };
+
+    this.obtenerDatos = function(){
+        var $trs = $el.find("#tbl-facturacionconvenio-cuotascredito tbody tr");
+        var total = parseFloat(objFacturacionConvenio.getLblTotal().html());
+        var arregloCuotas = [];
+        var monto_cuota_acumulado = 0;
+        var fecha_vencimiento;
+        $trs.each(function(i,o){
+            var monto_cuota = parseFloat(o.cells[2].children[0].value);
+            
+            fecha_vencimiento = o.cells[3].children[0].value;
+            monto_cuota_acumulado = monto_cuota_acumulado + monto_cuota;
+            arregloCuotas.push({
+                monto_cuota: monto_cuota,
+                fecha_vencimiento: fecha_vencimiento
+            });
+        });
+
+        if (monto_cuota_acumulado !== total){
+            toastr.error("Se está ingresando montos de cuota que no están acorde al monto de la factura.");
+            return {"r": 0};
+        }
+
+        if (fecha_vencimiento != objFacturacionConvenio.getTxtFechaVencimiento().val()){
+            toastr.error("Se está ingresando una  fecha de vencimiento de cuota que no están acorde a la fecha de vencimiento de la factura.");
+            return {"r": 0};
+        }
+
+        return {"r":1, "data":arregloCuotas};
+    };
+
+    this.agregarFila = function(){
+       var $tbody = $el.find("#tbl-facturacionconvenio-cuotascredito tbody");
+       var numero_cuota = $tbody.find("tr").length;
+       $tbody.append(tpl({
+        numero_cuota: numero_cuota + 1,
+        monto_cuota: "0.00"
+       }));
+    };
+
+    this.quitarFila = function(button){
+        var $tr = $(button).parents("tr");
+        $tr.remove();
+        resetearNumeroCuotas();
+    };
+
+    var resetearNumeroCuotas = function(){
+        var $trs = $el.find("#tbl-facturacionconvenio-cuotascredito tbody tr");
+        $trs.each(function(i,o){
+            o.cells[1].innerHTML = (i + 1);
+        });
+    };
+
+    var limpiarCuotasCredito = function(){
+        $el.find("#tbl-facturacionconvenio-cuotascredito tbody").empty();
+    };
+
+
+    return this.init();
+};
 
 const EnviadorSUNAT = function(data){
     var self = this;

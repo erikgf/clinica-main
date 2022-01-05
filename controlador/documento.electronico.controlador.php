@@ -216,7 +216,7 @@ try {
             $obj->serie =  isset($_POST["p_serie_comprobante"]) ? $_POST["p_serie_comprobante"] : "";
             $obj->descuento_global  = 0.00;
             $obj->fecha_emision =  isset($_POST["p_fecha_emision"]) ? $_POST["p_fecha_emision"] : "";
-            $obj->fecha_vencimiento =  $obj->fecha_emision;
+            $obj->fecha_vencimiento = isset($_POST["p_fecha_vencimiento"]) ? $_POST["p_fecha_vencimiento"] : "";
             $obj->importe_total =  isset($_POST["p_importe_total"]) ? $_POST["p_importe_total"] : 0.00;
             $obj->observaciones =  isset($_POST["p_observaciones"]) ? $_POST["p_observaciones"] : NULL;
 
@@ -226,12 +226,16 @@ try {
                 $numeroTicket = NULL;
             }
 
+            $obj->forma_pago =  isset($_POST["p_forma_pago"]) ? $_POST["p_forma_pago"] : "1"; 
+
             if ($obj->id_tipo_comprobante == "07"){
                 $obj->id_tipo_comprobante_previo =  isset($_POST["p_id_tipo_comprobante"]) ? $_POST["p_id_tipo_comprobante"] : "01";
                 $obj->serie_comprobante_previo =  isset($_POST["p_serie_comprobante_modificado"]) ? $_POST["p_serie_comprobante_modificado"] : "";
                 $obj->numero_correlativo_comprobante_previo =  isset($_POST["p_numero_comprobante_modificado"]) ? $_POST["p_numero_comprobante_modificado"] : "";
                 $obj->cod_tipo_motivo_nota =  isset($_POST["p_id_tipo_motivo"]) ? $_POST["p_id_tipo_motivo"] : "";
                 $obj->motivo_anulacion =  isset($_POST["p_descripcion_motivo"]) ? $_POST["p_descripcion_motivo"] : NULL;
+            } else {
+                $obj->cuotas = json_decode($_POST["p_cuotas"]);
             }
 
             $obj->detalle = json_decode($_POST["p_detalle"]);
@@ -259,6 +263,17 @@ try {
 
             $obj->id_documento_electronico = $id_documento_electronico;
             $data = $obj->obtenerDocumentoElectronicoPorId();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "validar_cdr_manual":
+            $id_documento_electronico = Funciones::sanitizar($_POST["p_id_documento_electronico"]);
+            if ($id_documento_electronico == ""){
+                throw new Exception("No se ha enviado ID Comprobante.", 1);
+            }
+
+            $obj->id_documento_electronico = $id_documento_electronico;
+            $data = $obj->validarCDRManual();
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 

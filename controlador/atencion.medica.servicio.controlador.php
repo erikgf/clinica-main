@@ -95,6 +95,12 @@ try {
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 
+        case "reestructurar":
+            $id_lab_examen = Funciones::sanitizar($_POST["p_id_lab_examen"]);
+            $data = $obj->reestructurarExamenes($id_lab_examen);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
         default:
             throw new Exception( "No existe la función consultada en el API.", 1);
         break;

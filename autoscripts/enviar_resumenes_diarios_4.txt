@@ -1,1 +1,1 @@
- {"respuestas":[{"respuesta":"ok","cod_ticket":"202108217014004","id":"234"}]}
+ {"respuestas":[{"respuesta":"error","cod_sunat":"soap-env:Client.0109","mensaje":"El sistema no puede responder su solicitud. (El servicio de autenticaci\u00f3n no est\u00e1 disponible) - Detalle: ","hash_cdr":"","id":"264"}]}

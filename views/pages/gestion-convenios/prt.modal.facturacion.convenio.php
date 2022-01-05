@@ -112,6 +112,15 @@
                             <input type="date" class="form-control " required id="txt-facturacionconvenio-fechavencimiento"/>
                         </div>
                     </div>
+                    <div class="col-md-2">
+                        <div  class="form-group input-group-sm">
+                            <label for="txt-facturacionconvenio-formapago">Condición de Pago (<span style="color:red">*</span>)</label>
+                            <select class="form-control" id="txt-facturacionconvenio-formapago">
+                                <option selected value="1">CONTADO</option>
+                                <option value="0">CRÉDITO</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <hr>
@@ -172,6 +181,30 @@
                         <h5>Subtotal : <b id="lbl-facturacionconvenio-subtotal">0.00</b></h5>
                         <h5>IGV : <b id="lbl-facturacionconvenio-igv">0.00</b></h5>
                         <h4>Total : <b id="lbl-facturacionconvenio-total">0.00</b></h4>
+                    </div>
+                </div>
+
+                <div class="row" id="blk-facturacionconvenio-cuotascredito" style="display:none">
+                    <div class="col-sm-6">
+                        <p class="font-weight-bold">Cuotas de Pago a Crédito</p>
+                        <table class="table" id="tbl-facturacionconvenio-cuotascredito">
+                            <thead>
+                                <tr>
+                                    <th style="width:60px" class="text-center"></th>
+                                    <th style="width:90px" class="text-center">Cuota</th>
+                                    <th style="width:120px">Importe Cuota</th>
+                                    <th style="width:120px">Fecha de Pago</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="10"><a href="#" class="btn-agregarcuota">Agregar Cuota...</a></td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
             </div>

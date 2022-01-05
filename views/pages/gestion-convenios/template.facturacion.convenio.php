@@ -12,12 +12,19 @@
                     {{/iddocumento_electronico}}
 
                     {{#if_ estado_anulado '==' '0'}}
-                        {{^cdr_estado}}
-                        <a class="dropdown-item btn-enviarsunat bg-green"  href="#" title="Enviar SUNAT"><i class="fa fa-file"></i> ENVIAR SUNAT</a>
-                        {{/cdr_estado}}
+                        
                         {{#if_ cdr_estado '==' '0'}}
                             {{#if_ idtipo_comprobante '==' '01'}}
                             <a  class="dropdown-item btn-modificarpornotacredito bg-red"  href="#" title="MODIFICAR NOTA CRÉDITO"><i class="fa fa-trash"></i> MODIFICAR (NOTA CRÉDITO)</a>
+                            {{/if_}}
+                        {{else}}
+
+                            {{#if_ cdr_estado '<' 2000}}
+                            <a class="dropdown-item btn-enviarsunat bg-green"  href="#" title="Enviar SUNAT"><i class="fa fa-file"></i> ENVIAR SUNAT</a>
+                            {{else}}
+                                {{^cdr_estado}}
+                                <a class="dropdown-item btn-enviarsunat bg-green"  href="#" title="Enviar SUNAT"><i class="fa fa-file"></i> ENVIAR SUNAT</a>
+                                {{/cdr_estado}}
                             {{/if_}}
                         {{/if_}}
                     {{/if_}}

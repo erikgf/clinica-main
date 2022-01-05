@@ -89,6 +89,7 @@ $total_gravadas = $datos["total_gravadas"];
 $importe_total = $datos["importe_total"];
 $descuento_global = $datos["descuento_global"];
 $monto_saldo = $datos["monto_saldo"];
+$condicion_pago = $datos["condicion_pago"];
 
 $valor_resumen = $datos["valor_resumen"]; //DigestValue
 $valor_firma = $datos["valor_firma"]; //SignatureValue
@@ -193,6 +194,12 @@ $pdf->Ln($SALTO_LINEA);
 $pdf->Cell($ANCHO_COLS[0], $ALTO_LINEA + .5, utf8_decode("TIPO PACIENTE"), $BORDES,0);
 $pdf->Cell($ANCHO_COLS[1], $ALTO_LINEA + .5, ":", $BORDES,0);
 $pdf->Cell($ANCHO_COLS[2], $ALTO_LINEA + .5, utf8_decode(mb_strtoupper($tipo_paciente, 'UTF-8')), $BORDES,1);
+
+$pdf->Ln($SALTO_LINEA);
+
+$pdf->Cell($ANCHO_COLS[0], $ALTO_LINEA + .5, utf8_decode("FORMA PAGO"), $BORDES,0);
+$pdf->Cell($ANCHO_COLS[1], $ALTO_LINEA + .5, ":", $BORDES,0);
+$pdf->Cell($ANCHO_COLS[2], $ALTO_LINEA + .5, utf8_decode(mb_strtoupper($condicion_pago == "1" ? "CONTADO" : "CRÉDITO", 'UTF-8')), $BORDES,1);
 
 $pdf->Ln($SALTO_LINEA);
 

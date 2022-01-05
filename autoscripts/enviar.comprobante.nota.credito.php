@@ -1,6 +1,6 @@
 <?php
 
-$URL = "http://localhost/sistema_dpi/controlador/resumen.diario.controlador.php?op=enviar_comprobante_nota_credito_factura";
+$URL = "http://localhost/sistema_dpi/controlador/documento.electronico.controlador.php?op=enviar_comprobante_nota_credito_factura";
 
 $hoy = date("Y-m-d");
 $numero_dia = date("N", time());

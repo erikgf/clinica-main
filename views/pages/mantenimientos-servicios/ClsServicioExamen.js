@@ -123,7 +123,7 @@ var ServicioExamen = function(){
 
         $tblExamenes.on("click", ".btn-agregarfila", function(e){
             e.preventDefault();
-            self.agregarNuevaFila();
+            self.agregarNuevaFila(null, false, $(this).parents("tr"));
         });
 
         $tblExamenes.on("click", ".btn-quitarfila", function(e){
@@ -158,10 +158,10 @@ var ServicioExamen = function(){
         this.agregarNuevaFila();        
     };
 
-    this.agregarNuevaFila = function (datosFilas, render = false) {
+    this.agregarNuevaFila = function (datosFilas, render = false, $fila_madre = null) {
         if (datosFilas == null){
             datosFilas = [{
-                nivel : 0,
+                nivel : 1,
                 descripcion: "",
                 abreviatura: "",
                 unidad: "",
@@ -243,7 +243,12 @@ var ServicioExamen = function(){
                 tags: true,
                 allowClear: true
             });
-            $tblExamenes.find("tbody").append($fila);
+
+            if ($fila_madre == null){
+                $tblExamenes.find("tbody").append($fila);
+            } else {
+                $fila_madre.after($fila);   
+            }
 
             return;
         } else {

@@ -2,7 +2,8 @@
 
 $URL = "http://localhost/sistema_dpi/controlador/resumen.diario.controlador.php?op=generar_firmar_resumenes_diarios";
 
-$hoy = date("Y-m-d");
+//$hoy = date("Y-m-d", strtotime("-1 days")); //ayer
+$hoy = date("Y-m-d"); 
 $numero_dia = date("N", time());
 
 $ch = curl_init();

@@ -176,6 +176,15 @@ class PDFComprobante extends PDF{
       $this->SetFont("Arial","");
       $this->Cell($ANCHO_COLUMNAS[3], $ALTO_FILA,  $obj["moneda"],$BORDES,1);    
 
+      $this->Cell($ANCHO_COLUMNAS[0], $ALTO_FILA, "",$BORDES,0);
+      $this->SetFont("Arial","");
+      $this->Cell($ANCHO_COLUMNAS[1], $ALTO_FILA, "",$BORDES,0);
+
+      $this->SetFont("Arial","B");
+      $this->Cell($ANCHO_COLUMNAS[2], $ALTO_FILA, utf8_decode("FORMA DE PAGO"),$BORDES,0);
+      $this->SetFont("Arial","");
+      $this->Cell($ANCHO_COLUMNAS[3], $ALTO_FILA, utf8_decode($obj["condicion_pago"] == "1" ? "CONTADO" : "CRÉDITO"),$BORDES,1);   
+
       $this->Ln($extraAlturaMultiCell + 2);
   }
 
@@ -198,15 +207,14 @@ class PDFComprobante extends PDF{
       $ALTO_FILA = 6;
 
       $INICIO_DETALLE_ALTURA = $this->GetY();
-      $ALTURA_DETALLE = $INICIO_DETALLE_ALTURA + $this->ALTURA_BASE_DETALLE;
 
       $ITEMS_COLUMNAS = [
         ["alineacion"=>"C", "valor"=>"N°"],
         ["alineacion"=>"C", "valor"=>"UNID."],
         ["alineacion"=>"", "valor"=>"DESCRIPCIÓN"],
         ["alineacion"=>"C", "valor"=>"CANT."],
-        ["alineacion"=>"R", "valor"=>"P.UNIT."],
-        ["alineacion"=>"R", "valor"=>"TOTAL"]
+        ["alineacion"=>"R", "valor"=>"V.V. UNIT."],
+        ["alineacion"=>"R", "valor"=>"V.V. TOTAL"]
       ];
       $ANCHO_COLUMNAS =  [10, 15, 110, 18, 18, 0];
       $ANCHO_COLUMNAS = $this->CalcularUltimaColumna($ANCHO_COLUMNAS);
@@ -229,24 +237,25 @@ class PDFComprobante extends PDF{
         $i = 0;
         $x = 0;
         $this->Cell($ANCHO_COLUMNAS[$i++], $ALTO_FILA, $item["item"], '', 0, $ITEMS_COLUMNAS[$x++]["alineacion"]); 
-        $this->Cell($ANCHO_COLUMNAS[$i++], $ALTO_FILA, "NIU", '', 0, $ITEMS_COLUMNAS[$x++]["alineacion"]); 
+        $this->Cell($ANCHO_COLUMNAS[$i++], $ALTO_FILA, $item["idunidad_medida"], '', 0, $ITEMS_COLUMNAS[$x++]["alineacion"]); 
         $this->CellFitScale($ANCHO_COLUMNAS[$i++], $ALTO_FILA, utf8_decode(mb_strtoupper($item["descripcion_item"],'UTF-8')), '', 0, $ITEMS_COLUMNAS[$x++]["alineacion"]); 
         $this->Cell($ANCHO_COLUMNAS[$i++], $ALTO_FILA, $item["cantidad_item"], '', 0, $ITEMS_COLUMNAS[$x++]["alineacion"]); 
-        $this->Cell($ANCHO_COLUMNAS[$i++], $ALTO_FILA, $item["precio_venta_unitario"], '', 0, $ITEMS_COLUMNAS[$x++]["alineacion"]); 
-        $this->Cell($ANCHO_COLUMNAS[$i++], $ALTO_FILA, $item["subtotal"], '', 1, $ITEMS_COLUMNAS[$x++]["alineacion"]); 
+        $this->Cell($ANCHO_COLUMNAS[$i++], $ALTO_FILA, $item["valor_venta_unitario"], '', 0, $ITEMS_COLUMNAS[$x++]["alineacion"]); 
+        $this->Cell($ANCHO_COLUMNAS[$i++], $ALTO_FILA, $item["valor_venta"], '', 1, $ITEMS_COLUMNAS[$x++]["alineacion"]); 
       }
+      $FIN_DETALLE_ALTURA = $this->GetY();
+      $ALTURA_DETALLE = $FIN_DETALLE_ALTURA - $INICIO_DETALLE_ALTURA;
+
       /*FIN - AGREGAR LAS LINEAS AL DETALLE*/
-
-
       $this->SetXY($this->GetX(), $INICIO_DETALLE_ALTURA);
 
       $i = 0;
-      $this->Cell($ANCHO_COLUMNAS[$i++],  $this->ALTURA_BASE_DETALLE, "", 1, 0, 1); 
-      $this->Cell($ANCHO_COLUMNAS[$i++],  $this->ALTURA_BASE_DETALLE, "", 1, 0, 1); 
-      $this->Cell($ANCHO_COLUMNAS[$i++],  $this->ALTURA_BASE_DETALLE, "", 1, 0, 1); 
-      $this->Cell($ANCHO_COLUMNAS[$i++],  $this->ALTURA_BASE_DETALLE, "", 1, 0, 1); 
-      $this->Cell($ANCHO_COLUMNAS[$i++],  $this->ALTURA_BASE_DETALLE, "", 1, 0, 1); 
-      $this->Cell($ANCHO_COLUMNAS[$i++],  $this->ALTURA_BASE_DETALLE, "", 1, 1, 1); 
+      $this->Cell($ANCHO_COLUMNAS[$i++],  $ALTURA_DETALLE, "", 1, 0, 1); 
+      $this->Cell($ANCHO_COLUMNAS[$i++],  $ALTURA_DETALLE, "", 1, 0, 1); 
+      $this->Cell($ANCHO_COLUMNAS[$i++],  $ALTURA_DETALLE, "", 1, 0, 1); 
+      $this->Cell($ANCHO_COLUMNAS[$i++],  $ALTURA_DETALLE, "", 1, 0, 1); 
+      $this->Cell($ANCHO_COLUMNAS[$i++],  $ALTURA_DETALLE, "", 1, 0, 1); 
+      $this->Cell($ANCHO_COLUMNAS[$i++],  $ALTURA_DETALLE, "", 1, 1, 1); 
 
       $this->SetFont('Arial','');
       $this->CellFitScale($this->ANCHO_TOTAL, $ALTO_FILA, "SON: ".utf8_decode($total_letras),1,1,"L");      
@@ -254,6 +263,59 @@ class PDFComprobante extends PDF{
       /*Dibujando cuadrado final*/
       //$this->SetY($Y_LINEAS_TOTALES);xx
       //$this->Cell($this->ANCHO_TOTAL, $tmpY - $Y_LINEAS_TOTALES, "",1,1,"");
+  }
+
+  function imprimirCuotas($cuotas, $fecha_emision){
+      $BORDES = 0;
+      $ALTO_FILA = 4;
+
+      $this->SetFont("Arial","B");
+      $this->Cell(50, $ALTO_FILA, utf8_decode("DETALLE DE PAGO AL CRÉDITO"),$BORDES,1);
+
+      $INICIO_DETALLE_ALTURA = $this->GetY();
+
+      $ITEMS_COLUMNAS = [
+        ["alineacion"=>"C", "valor"=>"CUOTA"],
+        ["alineacion"=>"C", "valor"=>"IMPORTE DE CUOTA"],
+        ["alineacion"=>"C", "valor"=>"FECHA PAGO"]
+      ];
+      $ANCHO_COLUMNAS =  [27.5, 35, 35];
+      $cantidadCeldas = count($ITEMS_COLUMNAS) - 1;
+
+      $this->SetFont("Arial","B");
+
+      $this->SetFillColor(100,100,100);
+      $this->SetTextColor(255,255,255);
+      foreach ($ITEMS_COLUMNAS as $key => $columna) {
+        $saltoCelda = ($key >= $cantidadCeldas) ? 1 : 0;
+        $this->Cell($ANCHO_COLUMNAS[$key], $ALTO_FILA, utf8_decode($columna["valor"]), $BORDES,$saltoCelda,$columna["alineacion"],1);
+      }
+      $this->SetFillColor(60,60,60);
+      $this->SetTextColor(0,0,0);
+
+      $this->SetFont('Arial','');
+      
+      foreach ($cuotas as $j => $item) {
+        $i = 0;
+        $x = 0;
+        $this->Cell($ANCHO_COLUMNAS[$i++], $ALTO_FILA, $item["numero_cuota"], '', 0, $ITEMS_COLUMNAS[$x++]["alineacion"]); 
+        $this->Cell($ANCHO_COLUMNAS[$i++], $ALTO_FILA, $item["monto_cuota"], '', 0, $ITEMS_COLUMNAS[$x++]["alineacion"]); 
+        $this->Cell($ANCHO_COLUMNAS[$i++], $ALTO_FILA, $item["fecha_vencimiento"], '', 1, $ITEMS_COLUMNAS[$x++]["alineacion"]); 
+      }
+      $FIN_DETALLE_ALTURA = $this->GetY();
+      $ALTURA_DETALLE = $FIN_DETALLE_ALTURA - $INICIO_DETALLE_ALTURA;
+      $this->SetXY($this->GetX(), $INICIO_DETALLE_ALTURA);
+
+      $i = 0;
+      $this->Cell($ANCHO_COLUMNAS[$i++],  $ALTURA_DETALLE, "", 1, 0, 1); 
+      $this->Cell($ANCHO_COLUMNAS[$i++],  $ALTURA_DETALLE, "", 1, 0, 1); 
+      $this->Cell($ANCHO_COLUMNAS[$i++],  $ALTURA_DETALLE, "", 1, 1, 1); 
+
+      $date1 = date_create_from_format('d/m/Y', $item["fecha_vencimiento"]);
+      $date2 = date_create_from_format('d/m/Y', $fecha_emision);
+      $cantidad_dias_credito =  date_diff($date1, $date2)->d;
+      $this->Cell(50, $ALTO_FILA, utf8_decode("Condiciones de pago: ".$cantidad_dias_credito." días de CRÉDITO"),$BORDES,1);
+
   }
 
   function imprimirFinalComprobante($obj){
@@ -276,7 +338,7 @@ class PDFComprobante extends PDF{
 
       if ($descuento_global > 0.00){          
         $this->SetFont('Arial',''); 
-        $this->Cell(30, $ALTO_FILA, "DESCUENTO",0,0,"R");      
+        $this->Cell(30, $ALTO_FILA, "DESCUENTOS",0,0,"R");      
         $this->Cell(15, $ALTO_FILA, "S/",0,0,"R");
         $this->Cell(25, $ALTO_FILA, number_format($descuento_global * -1, $NUMERO_DECIMALES,".",","), $BORDES,1,"R");
 
@@ -284,9 +346,25 @@ class PDFComprobante extends PDF{
       }
 
       $this->SetFont('Arial',''); 
-      $this->Cell(30, $ALTO_FILA, "GRAVADAS",$BORDES,0,"R");      
+      $this->Cell(30, $ALTO_FILA, "OP. GRAVADA",$BORDES,0,"R");      
       $this->Cell(15, $ALTO_FILA, "S/",$BORDES,0,"R");
       $this->Cell(25, $ALTO_FILA, number_format($totales["total_gravadas"], $NUMERO_DECIMALES,".",","),$BORDES,1,"R");
+
+      $this->Cell($ANCHO_ZONA_DERECHA, $ALTO_FILA, '',0,0,"L");
+      $this->Cell(30, $ALTO_FILA, "OP. INAFECTA",$BORDES,0,"R");      
+      $this->Cell(15, $ALTO_FILA, "S/",$BORDES,0,"R");
+      $this->Cell(25, $ALTO_FILA, number_format($totales["total_inafectas"], $NUMERO_DECIMALES,".",","),$BORDES,1,"R");
+
+      $this->Cell($ANCHO_ZONA_DERECHA, $ALTO_FILA, '',0,0,"L");
+      $this->Cell(30, $ALTO_FILA, "OP. EXONERADA",$BORDES,0,"R");      
+      $this->Cell(15, $ALTO_FILA, "S/",$BORDES,0,"R");
+      $this->Cell(25, $ALTO_FILA, number_format($totales["total_exoneradas"], $NUMERO_DECIMALES,".",","),$BORDES,1,"R");
+
+      $this->Cell($ANCHO_ZONA_DERECHA, $ALTO_FILA, '',0,0,"L");
+      $this->Cell(30, $ALTO_FILA, "OP. GRATUITAS",$BORDES,0,"R");      
+      $this->Cell(15, $ALTO_FILA, "S/",$BORDES,0,"R");
+      $this->Cell(25, $ALTO_FILA, number_format("0.00", $NUMERO_DECIMALES,".",","),$BORDES,1,"R");
+
 
       $es_nota = $obj["idtipo_comprobante"] == "07" || $obj["idtipo_comprobante"] == "08";
 
@@ -313,7 +391,7 @@ class PDFComprobante extends PDF{
       }          
    
       $this->SetFont("Arial", "B");
-      $this->Cell(30, $ALTO_FILA, "TOTAL",0,0,"R");     
+      $this->Cell(30, $ALTO_FILA, "IMPORTE TOTAL",0,0,"R");     
       $this->Cell(15, $ALTO_FILA, "S/",0,0,"R");
       $this->Cell(25, $ALTO_FILA, number_format($totales["total_importe"], $NUMERO_DECIMALES,".",","), $BORDES, 1,"R");
 
@@ -323,7 +401,7 @@ class PDFComprobante extends PDF{
       $this->Cell(30, $ALTO_FILA, "OBSERVACIONES",$BORDES,0,'');
       $this->SetFont("Arial","");
 
-      $observaciones = utf8_decode(mb_strtoupper($obj["observaciones"],'UTF-8'));
+      $observaciones = utf8_decode(mb_strtoupper($obj["observaciones"] == "" ? "-" : $obj["observaciones"],'UTF-8'));
       $extraAlturaMultiCell = $this->GetStringWidth( $observaciones ) > $ANCHO_COLUMNAS[1] ? 1.5: 0;
       $this->MultiCell($ANCHO_COLUMNAS[1], $ALTO_FILA - $extraAlturaMultiCell, $observaciones ,$BORDES,'');
     
@@ -336,8 +414,8 @@ class PDFComprobante extends PDF{
         $this->Cell($ANCHO_COLUMNAS[1], $ALTO_FILA,  $obj["respuesta_sunat"],$BORDES,1,'');
       }
       
-      $this->Ln(3.75);
-      $this->SetFont("Arial","",7.5);
+      $this->Ln(2.75);
+      $this->SetFont("Arial","",5.5);
       $this->CellFitScale($ANCHO_COLUMNAS[1], $ALTO_FILA * .85, utf8_decode("Representación Impresa de la ".mb_strtoupper($rotuloTipoComprobante,'UTF-8')), $BORDES,1,"L");
       $this->CellFitScale($ANCHO_COLUMNAS[1], $ALTO_FILA * .85, utf8_decode("AUTORIZADO MEDIANTE LA RESOLUCIÓN DE INTENDENCIA ".F_RESOLUCION), $BORDES,1,"L");
       $this->SetFont("Arial","B",7.5);
@@ -385,6 +463,8 @@ $numero_correlativo = utf8_decode($datos["numero_correlativo"]);
 $fecha_emision = $datos["fecha_emision"];
 $fecha_emision_raw = $datos["fecha_emision_raw"];
 $hora_emision = $datos["hora_emision"];
+$fecha_vencimiento = $datos["fecha_vencimiento"];
+$fecha_vencimiento_raw = $datos["fecha_vencimiento_raw"];
 
 $id_tipo_documento_cliente = $datos["id_tipo_documento_cliente"];
 $numero_documento_cliente = $datos["numero_documento_cliente"];
@@ -401,6 +481,8 @@ $total_gravadas = $datos["total_gravadas"];
 $importe_total = $datos["importe_total"];
 $descuento_global = $datos["descuento_global"];
 $monto_saldo = $datos["monto_saldo"];
+$condicion_pago = $datos["condicion_pago"];
+$tipo_moneda = $datos["idtipo_moneda"];
 
 $valor_resumen = $datos["valor_resumen"]; //DigestValue
 $valor_firma = $datos["valor_firma"]; //SignatureValue
@@ -412,6 +494,7 @@ $motivo_nota  = $datos["motivo_nota"];
 $usuario_atendido = utf8_decode($datos["usuario_atendido"]);
 
 $detalle = $datos["detalle"];
+$cuotas = $datos["cuotas"];
 
 switch ($idtipo_comprobante) {
   case '01' :  $rotuloTipoComprobante='FACTURA ELECTRÓNICA'; break;
@@ -458,8 +541,9 @@ $objMainComprobante = [
   "razon_social_cliente"=>$razon_social_cliente,
   "direccion_cliente"=>$direccion_cliente,
   "fecha_emision"=>$fecha_emision,
-  "fecha_vencimiento"=>$fecha_emision,
-  "moneda"=>"PEN"
+  "fecha_vencimiento"=>$fecha_vencimiento,
+  "condicion_pago"=>$condicion_pago,
+  "moneda"=>$tipo_moneda
 ];
 
 $pdf->imprimirMainComprobante($objMainComprobante);
@@ -469,6 +553,12 @@ $pdf->Ln(2);
 $pdf->imprimirTablaDetalle($detalle, $total_letras);
 
 $pdf->Ln(3.5);
+
+if (count($cuotas) > 0){
+  $pdf->imprimirCuotas($cuotas, $fecha_emision);
+  $pdf->Ln(2.5);
+}
+
 
 $objFinalComprobante = [
     "totales"=>$totales,
@@ -486,7 +576,6 @@ $objFinalComprobante = [
 
 $pdf->imprimirFinalComprobante($objFinalComprobante);
 
-
 $cadena_pdf417 = F_RUC."|".$idtipo_comprobante."|".$serie."|".$numero_correlativo."|".$total_igv."|".$importe_total."|".$fecha_emision_raw."|".$id_tipo_documento_cliente."|".$numero_documento_cliente."|".$valor_resumen."|".$valor_firma;
 $altura_pdf417 = 15;
 
@@ -501,7 +590,6 @@ $image = $renderer->render($pdf417->encode($cadena_pdf417));
 $image->save($ruta_pdf417);
 
 $pdf->Image($ruta_pdf417, $pdf->GetX() + 118, $pdf->GetY() - 7.5, 75, $altura_pdf417);
-
 
 $pdf->output("I", $serie."-".$numero_correlativo.".pdf");
 ob_end_flush();

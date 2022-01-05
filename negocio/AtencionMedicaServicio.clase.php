@@ -626,9 +626,9 @@ class AtencionMedicaServicio extends Conexion {
                 COALESCE(le.metodo, '') as metodo,
                 le.valor_referencial
                 FROM atencion_medica_servicio ams
-                LEFT JOIN lab_examen le ON le.id_servicio = ams.id_servicio
-                WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0
-                ORDER BY le.nivel";
+                LEFT JOIN lab_examen le ON le.id_servicio = ams.id_servicio 
+                WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0 AND le.estado_mrcb
+                ORDER BY le.orden_niveluno, le.nivel";
 
             $examen_principales = $this->consultarFilas($sql[0], [$this->id_atencion_medica_servicio]);
         } else {
@@ -649,7 +649,7 @@ class AtencionMedicaServicio extends Conexion {
                 le.valor_referencial,
                 COALESCE(le.metodo,'') as metodo
                 FROM lab_examen le 
-                WHERE le.id_lab_examen IN ($cadena_arreglo_perfil)
+                WHERE le.id_lab_examen IN ($cadena_arreglo_perfil) AND le.estado_mrcb
                 ORDER BY le.id_lab_examen, le.nivel";
 
             $examen_principales = $this->consultarFilas($sql[0]);
@@ -751,5 +751,207 @@ class AtencionMedicaServicio extends Conexion {
         return $examenes_registros;
     }
 
+    public function reestructurarExamenes($id_lab_examen){
+        $sql = []; $examenes_registros = [];
+
+        $sql[0]  = "SELECT
+            le.id_lab_examen,
+            le.nivel,
+            le.descripcion,
+            '' as id_lab_examen_niveluno,
+            '' as id_lab_examen_niveldos,
+            '' as orden_niveluno,
+            '' as orden_niveldos,
+            '' as resultado,
+            le.valor_maximo,
+            le.valor_minimo,
+            COALESCE(le.unidad, '') as unidad,
+            COALESCE(le.metodo, '') as metodo,
+            COALESCE(le.abreviatura, '') as abreviatura,
+            COALESCE(le.id_lab_seccion, '') as id_lab_seccion,
+            COALESCE(le.id_lab_muestra, '') as id_lab_muestra,
+            le.id_servicio,
+            le.valor_referencial
+            FROM lab_examen le
+            WHERE le.estado_mrcb AND  le.id_servicio IS NOT NULL AND arreglo_perfil IS NULL AND id_lab_examen <> 309
+            ORDER BY le.nivel";
+
+        $examen_principales = $this->consultarFilas($sql[0]);
+
+
+        if (count($examen_principales)<= 0){
+            throw new Exception("No se ha encontrado el examen en la base de datos.", 1);
+        }
+
+        $examenes_por_principal = [];
+        foreach ($examen_principales as $key => $examen_principal) {    
+            $temp_por_principal = [];        
+            array_push($examenes_registros, $examen_principal);
+            array_push($temp_por_principal, $examen_principal);
+            $sql[1]  = "SELECT
+                    COALESCE(le.id_lab_examen,'') as id_lab_examen,
+                    le.nivel,
+                    le.descripcion,
+                    le.id_lab_examen_niveluno,
+                    le.id_lab_examen_niveldos,
+                    le.orden_niveluno,
+                    le.orden_niveldos,
+                    '' as resultado,
+                    le.valor_maximo,
+                    le.valor_minimo,
+                    COALESCE(le.unidad, '') as unidad,
+                    le.valor_referencial,
+                    COALESCE(le.metodo, '') as metodo,
+                    COALESCE(le.abreviatura, '') as abreviatura,
+                    COALESCE(le.id_lab_seccion, '') as id_lab_seccion,
+                    COALESCE(le.id_lab_muestra, '') as id_lab_muestra,
+                    '' as id_servicio
+                    FROM lab_examen le 
+                    WHERE le.estado_mrcb AND le.id_lab_examen_niveluno = :0
+                    ORDER BY le.orden_niveluno, le.orden_niveldos";
+
+            $sql[2]  = "SELECT
+                        id_lab_examen,
+                        le.nivel,
+                        le.descripcion,
+                        le.id_lab_examen_niveluno,
+                        le.id_lab_examen_niveldos,
+                        le.orden_niveluno,
+                        le.orden_niveldos,
+                        '' as resultado,
+                        le.valor_maximo,
+                        le.valor_minimo,
+                        COALESCE(le.unidad, '') as unidad,
+                        le.valor_referencial,
+                        COALESCE(le.metodo, '') as metodo,
+                        COALESCE(le.abreviatura, '') as abreviatura,
+                        COALESCE(le.id_lab_seccion, '') as id_lab_seccion,
+                        COALESCE(le.id_lab_muestra, '') as id_lab_muestra,
+                        '' as id_servicio
+                        FROM lab_examen le 
+                        LEFT JOIN lab_unidad lu ON lu.id_lab_unidad = le.id_lab_unidad
+                        WHERE le.estado_mrcb AND le.id_lab_examen_niveldos = :0
+                        ORDER BY le.orden_niveluno, le.orden_niveldos";
+
+            $sql[3] = "SELECT
+                        '' as id_lab_examen,
+                        '99' as nivel,
+                        '' as descripcion,
+                        '' as id_lab_examen_niveluno,
+                        '' as id_lab_examen_niveldos,
+                        '' as orden_niveluno,
+                        '' as orden_niveldos,
+                        '' as resultado,
+                        '' as valor_maximo,
+                        '' as valor_minimo,
+                        '' as unidad,
+                        '' as metodo,
+                        le.descripcion as valor_referencial,
+                        '' as id_lab_seccion,
+                        '' as id_lab_muestra,
+                        '' as id_servicio,
+                        '' as abreviatura
+                        FROM lab_examendescripcion le 
+                        WHERE le.estado_mrcb AND le.id_lab_examen = :0
+                        ORDER BY le.numero_orden"; 
+
+            $examen_descripciones = $this->consultarFilas($sql[3], $examen_principal["id_lab_examen"]);
+            if (count($examen_descripciones) > 0){
+                $examenes_registros = array_merge($examenes_registros, $examen_descripciones);
+                $temp_por_principal = array_merge($temp_por_principal, $examen_descripciones);
+            }
+
+            $examenes_secundarios = $this->consultarFilas($sql[1], $examen_principal["id_lab_examen"]);
+
+            if (count($examenes_secundarios) > 0 ){
+                foreach ($examenes_secundarios as $k0 => $examen_secundario) {                
+                    $examenes_terciarios = $this->consultarFilas($sql[2], $examen_secundario["id_lab_examen"]);
+                    array_push($examenes_registros, $examen_secundario);
+                    array_push($temp_por_principal, $examen_secundario);
+
+                    $examen_descripciones = $this->consultarFilas($sql[3], $examen_secundario["id_lab_examen"]);
+                    if (count($examen_descripciones) > 0){
+                        $examenes_registros = array_merge($examenes_registros, $examen_descripciones);
+                        $temp_por_principal = array_merge($temp_por_principal, $examen_descripciones);
+                    }
+
+                    if (count($examenes_terciarios) > 0){
+                        foreach ($examenes_terciarios as $k1 => $examen_terciaria) {
+                            array_push($examenes_registros, $examen_terciaria);
+                            array_push($temp_por_principal, $examen_terciaria);
+                            
+                            $examen_descripciones = $this->consultarFilas($sql[3], $examen_terciaria["id_lab_examen"]);
+                            if (count($examen_descripciones) > 0){
+                                $examenes_registros = array_merge($examenes_registros, $examen_descripciones);
+                                $temp_por_principal = array_merge($temp_por_principal, $examen_descripciones);
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            array_push($examenes_por_principal, $temp_por_principal);
+        }
+
+
+        $this->beginTransaction();
+        
+        foreach($examenes_por_principal as $key => $examenes){
+            $id_lab_examen_last = NULL;
+            $id_servicio_last = NULL;
+            $id_lab_seccion = "";
+            $id_lab_muestra = "";
+            $numero_orden = 1;
+            $numero_orden_total = 1;
+
+            foreach($examenes as $key => $examen){
+                    $nivel = $examen["nivel"];
+                    if ($nivel != "0"){
+                        if ($nivel == "99"){
+                            $campos_valores_desc = [
+                                "id_lab_examen"=>$id_lab_examen_last,
+                                "numero_orden"=>$numero_orden,
+                                "descripcion"=>$examen["valor_referencial"]
+                            ];
+            
+                            $this->insert("lab_examendescripcion", $campos_valores_desc);
+                            $numero_orden++;    
+                        } else {
+                            $campos_valores = [
+                                "descripcion"=>$examen["descripcion"],
+                                "abreviatura"=>$examen["abreviatura"] == "" ? NULL : $examen["abreviatura"],
+                                "unidad"=>$examen["unidad"] == "" ? NULL : $examen["unidad"],
+                                "id_lab_seccion"=>$id_lab_seccion,
+                                "id_servicio"=>$id_servicio_last == "" ? NULL : $id_servicio_last,
+                                "id_lab_muestra"=>$id_lab_muestra,
+                                "valor_referencial"=>$examen["valor_referencial"],
+                                "metodo"=>$examen["metodo"] == "" ? NULL : $examen["metodo"],
+                                "nivel"=>$examen["nivel"] == "" ? NULL : $examen["nivel"],
+                                "orden_niveluno"=>$numero_orden_total++
+                            ];
+            
+                            $this->insert("lab_examen", $campos_valores);
+                            $id_lab_examen_last = $this->getLastID();
+                            $numero_orden = 1;
+                        }
+                        
+                    } else {
+                        $id_servicio_last = $examen["id_servicio"];
+                        $id_lab_seccion = $examen["id_lab_seccion"];
+                        $id_lab_muestra = $examen["id_lab_muestra"];
+
+                        $numero_orden_total = 1;
+                    }
+            }
+        }
+        
+        $sql = "update lab_examen SET estado_mrcb = 0 WHERE id_servicio IS NULL";
+        $this->ejecutarSimple($sql);
+
+        $this->commit();
+
+        return ["res"=>$examenes_por_principal,"c"=>count($examenes_por_principal)];
+    }
     
 }

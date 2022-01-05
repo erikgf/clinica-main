@@ -660,6 +660,7 @@ class AtencionMedica extends Conexion {
                     $objComprobante->id_usuario_registrado = $this->id_usuario_registrado;
                     $objComprobante->fecha_emision = $this->fecha_atencion;
                     $objComprobante->id_atencion_medica = $this->id_atencion_medica;
+                    $objComprobante->forma_pago = "1";
                     $objComprobante->es_convenio = false;
                     $objComprobante->registrar_en_bbdd = true;
                     $objComprobante->generar_xml = true;
