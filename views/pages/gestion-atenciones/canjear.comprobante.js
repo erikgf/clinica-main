@@ -131,8 +131,6 @@ var CanjearComprobante = function() {
     };
 
     var canjearComprobante = function(){
-
-            console.log("k");
         if (ID_ATENCION_MEDICA == null){
             toastr.error("No se ha encontrado el ID atención médica, consultar ADMINISTRADOR");
             return;

@@ -477,13 +477,43 @@ class ResumenDiario extends Conexion {
                     $msj_sunat = $respuesta->mensaje;
                 }
 
+                $msj_sunat = (isset($msj_sunat) ? "'".str_replace("'","\'",$msj_sunat)."'" : 'NULL');
+
                 $sql  = "UPDATE documento_electronico_resumen_diario SET 
                         cdr_estado = ".(isset($cod_sunat) ? "'".$cod_sunat."'" : 'NULL').",
-                        cdr_descripcion = ".(isset($msj_sunat) ? "'".str_replace("'","\'",$msj_sunat)."'" : 'NULL').",
+                        cdr_descripcion = ".$msj_sunat.",
                         hash_cdr = ".($hash_cdr ? "'".$hash_cdr."'" : 'NULL')."
                         WHERE 
                         estado_mrcb AND id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."'";
                 $this->consultaRaw($sql);
+
+                if (isset($cod_sunat)){
+                    if ($cod_sunat === "0"){
+                        $sql = "UPDATE
+                                    documento_electronico
+                                    SET cdr_estado = '0',
+                                    cdr_descripcion = CONCAT('El comprobante numero ',serie,'-',numero_correlativo,' ha sido aceptado')
+                                    WHERE estado_mrcb AND CONCAT(serie,numero_correlativo,idtipo_comprobante) IN (SELECT CONCAT(dersd.serie_comprobante, dersd.numero_correlativo_comprobante,dersd.idtipo_comprobante)
+                                    FROM `documento_electronico_resumen_diario` ders
+                                    INNER JOIN documento_electronico_resumen_diario_detalle dersd
+                                    ON dersd.id_documento_electronico_resumen_diario = ders.id_documento_electronico_resumen_diario
+                                    WHERE ders.id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."')";
+                        $this->consultaRaw($sql);
+                    }
+
+                    if ($cod_sunat === "-1"){
+                        $sql = "UPDATE
+                                    documento_electronico
+                                    SET cdr_estado = '-1'
+                                    WHERE estado_mrcb AND CONCAT(serie,numero_correlativo,idtipo_comprobante) IN (SELECT CONCAT(dersd.serie_comprobante, dersd.numero_correlativo_comprobante,dersd.idtipo_comprobante)
+                                    FROM `documento_electronico_resumen_diario` ders
+                                    INNER JOIN documento_electronico_resumen_diario_detalle dersd
+                                    ON dersd.id_documento_electronico_resumen_diario = ders.id_documento_electronico_resumen_diario
+                                    WHERE ders.id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."')";
+                        $this->consultaRaw($sql);
+                    }
+                }
+
             }
        
             $this->commit();

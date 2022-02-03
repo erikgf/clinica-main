@@ -46,7 +46,7 @@ class Servicio extends Conexion {
                 throw new Exception("El nombre del servicio ya existe en el sistema.", 1);
             }
 
-            $this->descripcion = mb_strtoupper($this->descripcion,'UTF-8');
+            //$this->descripcion = mb_strtoupper($this->descripcion,'UTF-8');
             $this->descripcion_detallada = mb_strtoupper($this->descripcion_detallada,'UTF-8');
 
             $campos_valores = [
@@ -413,8 +413,6 @@ class Servicio extends Conexion {
             if ($numero_repetido > 0){
                 throw new Exception("El nombre del servicio ya existe en el sistema.", 1);
             }
-
-            $this->descripcion = mb_strtoupper($this->descripcion,'UTF-8');
 
             $campos_valores = [
                 "id_servicio"=>$this->id_servicio,

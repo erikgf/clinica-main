@@ -35,7 +35,7 @@
                             <div class="col-md-10">
                                 <div class="form-group">
                                     <label for="txt-examenlaboratorio-descripcion">Descripción / Nombre Servicio (<span style="color:red">*</span>)</label>
-                                    <input type="text" required class="form-control uppercase" id="txt-examenlaboratorio-descripcion"/>
+                                    <input type="text" required class="form-control " id="txt-examenlaboratorio-descripcion"/>
                                 </div>
                             </div>
                         </div>

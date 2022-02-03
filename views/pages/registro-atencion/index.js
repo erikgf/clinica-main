@@ -626,14 +626,21 @@ var RegistroAtencion = function() {
         $txtSeleccionadorCaja.hide();
     };
 
+    var initReloj = function(){
+        setInterval(function(){
+            Util.setHora($txtHoraAtencion, new Date());
+        }, 1000);
+    };
 
     getTemplates();
     setDOM();
     setFuncionesInicio();
     setEventos();
+    initReloj();
 
     return this;
 };
+
 
 $(document).ready(function(){
     objRegistroAtencion = new RegistroAtencion(); 

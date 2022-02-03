@@ -1,0 +1,14 @@
+{
+    "background_color": "blue",
+    "description": "Sistema de gestión general de DMI.",
+    "display": "fullscreen",
+    "icons": [
+      {
+        "src": "icon/icon_dmi.png",
+        "sizes": "100x100",
+        "type": "image/png"
+      }
+    ],
+    "name": "Software DMI",
+    "short_name": "DMI"
+  }

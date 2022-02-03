@@ -9,6 +9,7 @@ class EmpresaConvenio extends Conexion {
     public $fecha_alta;
     public $fecha_baja;
     public $estado;
+    public $mensaje_ticket;
     
     public function listar(){
         try {
@@ -38,7 +39,8 @@ class EmpresaConvenio extends Conexion {
 
             $campos_valores = [
                 "razon_social"=>$this->razon_social,
-                "numero_documento"=>($this->numero_documento === "" ? NULL : $this->numero_documento)
+                "numero_documento"=>($this->numero_documento === "" ? NULL : $this->numero_documento),
+                "mensaje_ticket"=>strtoupper($this->mensaje_ticket)
             ];
 
             if ($this->id_empresa_convenio == NULL){
@@ -61,7 +63,9 @@ class EmpresaConvenio extends Conexion {
                     COALESCE(numero_documento, 'No registrado') as numero_documento,
                     razon_social,
                     fecha_alta,
-                    COALESCE(fecha_baja,'-') as fecha_baja
+                    COALESCE(fecha_baja,'-') as fecha_baja,
+                    estado,
+                    IF(estado = 'A','ACTIVO','INACTIVO') as estado_rotulo
                     FROM empresa_convenio
                     WHERE estado_mrcb AND id_empresa_convenio = :0";
             $registro = $this->consultarFila($sql, [$this->id_empresa_convenio]);
@@ -132,6 +136,7 @@ class EmpresaConvenio extends Conexion {
                         id_empresa_convenio,
                         numero_documento,
                         razon_social,
+                        mensaje_ticket,
                         estado
                     FROM empresa_convenio
                     WHERE estado_mrcb AND id_empresa_convenio = :0";

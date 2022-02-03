@@ -75,6 +75,7 @@ $monto_deposito = $datos["total_deposito"];
 
 $usuario_atendido = utf8_decode($datos["usuario_atendido"]);
 $empresa_convenio = utf8_decode($datos["empresa_convenio"]);
+$empresa_convenio_mensaje_ticket = utf8_decode($datos["empresa_convenio_mensaje_ticket"]);
 
 $pdf->Image('logo_dpi.jpg', 25 , 0 ,30,0);
 $pdf->SetY(30 + 5);
@@ -177,8 +178,18 @@ if ($monto_deposito > 0.00){
   $numeroPagos++;
 }
 
+if ($empresa_convenio != ""){
+  $cadenaTipoPagoSolo = "CONVENIO";
+  $cadenaTipoPago .= $cadenaTipoPagoSolo."(".$descuento_global.") ";
+  $numeroPagos++;
+}
+
 if ($numeroPagos <= 1){
   $cadenaTipoPago = $cadenaTipoPagoSolo;
+}
+
+if ($cadenaTipoPago == ""){
+  $cadenaTipoPago = "NINGUNO";
 }
 
 $pdf->MultiCell($ANCHO_COLS[2], $ALTO_LINEA + .5,  utf8_decode($cadenaTipoPago), $BORDES,1);
@@ -261,8 +272,20 @@ if ($total_vuelto > 0){
   $pdf->Cell($ANCHO_COLS_DETALLE[3], $ALTO_LINEA + .5, number_format($total_vuelto, 2) , $BORDES,1, "R");
 }
 
-$pdf->Ln($SALTO_LINEA * 10); 
 $pdf->SetFont($FONT,'', 6 + $aumento_font); 
+
+if ($empresa_convenio_mensaje_ticket != NULL && $empresa_convenio_mensaje_ticket != ""){
+  $pdf->Ln($SALTO_LINEA * 2); 
+  $pdf->Cell($ANCHO_TICKET - ($MARGENES_LATERALES * 2), .15, "***********************************************" , $BORDES,1);
+  $pdf->Ln($SALTO_LINEA); 
+  $pdf->MultiCell($ANCHO_TICKET - ($MARGENES_LATERALES * 2),$ALTO_LINEA - .35, "INDICACIONES CONVENIO: ".$empresa_convenio_mensaje_ticket,$BORDES,"L");
+  $pdf->Ln($SALTO_LINEA * 3); 
+  $pdf->Cell($ANCHO_TICKET - ($MARGENES_LATERALES * 2), .15, "***********************************************" , $BORDES,1);
+  $pdf->Ln($SALTO_LINEA * 2);
+}
+
+$pdf->SetFont($FONT,'', 6 + $aumento_font); 
+$pdf->Ln($SALTO_LINEA * 10); 
 
 $pdf->Cell($ANCHO_COLS_DETALLE[1], $ALTO_LINEA, "ATENDIDO POR: ".$usuario_atendido, $BORDES,1);
 $pdf->Cell($ANCHO_COLS_DETALLE[1], $ALTO_LINEA, "IMPRESO POR: ".$login, $BORDES,1);

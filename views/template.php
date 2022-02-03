@@ -3,7 +3,7 @@
 This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
 -->
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -21,6 +21,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
   <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css">
   <link rel="stylesheet" type="text/css" href="<?php echo RUTA_BASE; ?>/views/css/datatables.css">
+  <link rel="manifest" href="<?php echo RUTA_BASE; ?>/manifest.webmanifest">
 
   <link rel="stylesheet" href="<?php echo RUTA_BASE; ?>/plugins/tempusdominus-bootstrap-4.css" crossorigin="anonymous" />
   <link href="<?php echo RUTA_BASE; ?>/plugins/select2.min.css" rel="stylesheet" />

@@ -18,6 +18,11 @@ var InicioSesion = function(){
             iniciarSesion();
         });
 
+        
+        setTimeout(function(){
+            $txtUsuario.focus();    
+        }, 1000);
+
     };
 
     var iniciandoSesion = false;

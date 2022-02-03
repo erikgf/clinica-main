@@ -105,7 +105,7 @@ var Servicio = function() {
            
     };
 
-    this.anular = function(id_servicio, $mdl_operando = null){
+    this.anular = function(id_servicio, TR_FILA, $mdl_operando = null){
         if (!confirm("¿Está seguro de dar de baja este servicio?")){
             return;
         }

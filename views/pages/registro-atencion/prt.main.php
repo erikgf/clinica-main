@@ -21,14 +21,14 @@
                 <div class="col-md-2 col-sm-6">
                     <div class="form-group">
                         <label for="">Hora</label>
-                        <input type="time"  id="txt-horaatencion" class="form-control"/>
+                        <input type="time"  id="txt-horaatencion" class="form-control" readonly/>
                     </div>
                 </div>
 
                 <div class="col-md-2 col-sm-6">
                     <div class="form-group">
                         <label for="">Fecha</label>
-                        <input type="date" id="txt-fechaatencion" class="form-control"/>
+                        <input type="date" id="txt-fechaatencion" readonly class="form-control"/>
                     </div>
                 </div>
             </div>

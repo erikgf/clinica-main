@@ -407,7 +407,8 @@ class AtencionMedica extends Conexion {
                     pago_efectivo as total_efectivo,
                     pago_tarjeta as total_tarjeta,
                     CONCAT(co.nombres,' ',co.apellido_paterno,' ',co.apellido_materno) as usuario_atendido,
-                    COALESCE(eco.razon_social,'') as empresa_convenio
+                    COALESCE(eco.razon_social,'') as empresa_convenio,
+                    COALESCE(eco.mensaje_ticket, '') as empresa_convenio_mensaje_ticket
                     FROM atencion_medica am
                     INNER JOIN medico mo ON mo.id_medico = am.id_medico_ordenante
                     INNER JOIN paciente pa ON pa.id_paciente = am.id_paciente

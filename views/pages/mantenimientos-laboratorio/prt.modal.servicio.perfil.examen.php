@@ -13,7 +13,7 @@
                             <div class="col-md-9">
                                 <div class="form-group">
                                     <label for="txt-perfilexamen-descripcion">Descripción / Nombre Perfil (<span style="color:red">*</span>)</label>
-                                    <input type="text" required class="form-control uppercase" id="txt-perfilexamen-descripcion"/>
+                                    <input type="text" required class="form-control" id="txt-perfilexamen-descripcion"/>
                                 </div>
                             </div>
                             <div class="col-md-3">

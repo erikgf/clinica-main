@@ -13,6 +13,8 @@ var EmpresaConvenio = function(){
     var self = this;
     var TR_FILA = null;
     var TABLA_AJUSTADA = false;
+
+    var $txtMensajeTicket;
     
     this.setInit = function(){
         this.setDOM();
@@ -51,6 +53,8 @@ var EmpresaConvenio = function(){
 
         $tblEmpresasConvenios = $("#tbl-empresaconvenio");
         $tbdEmpresasConvenios  = $("#tbd-empresaconvenio");
+
+        $txtMensajeTicket = $("#txt-empresaconvenio-mensajeticket");
     };
 
     this.setEventos = function () {
@@ -145,6 +149,7 @@ var EmpresaConvenio = function(){
         $txtIdEmpresaConvenio.val(dataEmpresaConvenio.id_empresa_convenio);
         $txtNumeroDocumento.val(dataEmpresaConvenio.numero_documento);
         $txtRazonSocial.val(dataEmpresaConvenio.razon_social);
+        $txtMensajeTicket.val(dataEmpresaConvenio.mensaje_ticket);
 
         if( dataEmpresaConvenio.estado == 'A'){
             $btnDarBaja.show();
@@ -206,7 +211,8 @@ var EmpresaConvenio = function(){
             data: {
                 p_id_empresa_convenio : $txtIdEmpresaConvenio.val(),
                 p_numero_documento : $txtNumeroDocumento.val(),
-                p_razon_social : $txtRazonSocial.val()
+                p_razon_social : $txtRazonSocial.val(),
+                p_mensaje_ticket: $txtMensajeTicket.val()
             },
             success: function(result){
                 toastr.success(result.msj);

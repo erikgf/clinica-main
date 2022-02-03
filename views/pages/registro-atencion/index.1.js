@@ -4,6 +4,10 @@
 var OBJETO_ATENCION = null,
     OBJETO_DESCUENTO = null;
 
+    
+var ID_CAJA_SELECCIONADA = null,
+    STR_CACHE_CAJA = "cache_caja_nuevo";
+
 var RegistroAtencion = function() {
     var getTemplates = function(){
         $.get("template.servicioagregado.php", function(result, state){
@@ -44,6 +48,13 @@ var RegistroAtencion = function() {
 
         $btnContinuar =$("#btn-continuar");
 
+        $lblNombreCaja = $("#lbl-nombrecaja");
+        $txtSeleccionadorCaja = $("#txt-seleccionadorcaja");
+
+
+        var idCajaCached = localStorage.getItem(STR_CACHE_CAJA);
+        seleccionarCajaTrabajo(idCajaCached);
+
     };
     
     var setEventos = function(){
@@ -52,6 +63,10 @@ var RegistroAtencion = function() {
             let element = $this.parentElement.parentElement.parentElement;
             element.parentNode.removeChild(element);
 
+            getSubtotalOfEach();
+        });
+
+        $blkServicios.on("change", ".precio-unitario", function(e){
             getSubtotalOfEach();
         });
 
@@ -99,6 +114,29 @@ var RegistroAtencion = function() {
             if($txtServicio.find(":selected").val()==""){
                 $txtServicio.prop('disabled', true).empty()
             }
+        });
+
+        $lblNombreCaja.on("dblclick", function(e){
+            $lblNombreCaja.hide();
+            $txtSeleccionadorCaja.show();
+            return;
+        });
+
+        $txtSeleccionadorCaja.on("change", function(e){
+            var idcaja = this.value;
+
+            if (idcaja == "0"){
+                $txtSeleccionadorCaja.hide();
+                $lblNombreCaja.show();
+                return;
+            }
+            if (idcaja == ""){
+                $txtSeleccionadorCaja.hide();
+                $lblNombreCaja.show();
+                $lblNombreCaja.html("SELECCIONAR CAJA");
+            }
+
+            seleccionarCajaTrabajo(idcaja);
         });
 
         var variableParaEvitarSeguirSegundoChangeAlVaciar = false;
@@ -389,11 +427,6 @@ var RegistroAtencion = function() {
 
     };
 
-    getTemplates();
-    setDOM();
-    setFuncionesInicio();
-    setEventos();
-
     var agregarServicio = function(data_servicios){
         $blkServicios.append(tplServicioAgregado(data_servicios));
     };
@@ -418,7 +451,7 @@ var RegistroAtencion = function() {
 
             cards.forEach((card)=>{
                 let currentQuantity = 1;//card.querySelector('.btn-quantity').innerHTML;
-                let precioUnitario = card.querySelector('.precio-unitario').innerHTML;
+                let precioUnitario = card.querySelector('.precio-unitario').value;
                 let subtotalPlaceHolder = card.querySelector('.lbl-subtotalitem');
                 precioUnitario = parseFloat(precioUnitario);
                 currentQuantity = parseInt(currentQuantity);
@@ -567,13 +600,47 @@ var RegistroAtencion = function() {
         OBJETO_ATENCION = null;
 
         $txtObservaciones.val("");
+        eliminarDescuento();
+        
         canContinue();
-
         $txtPaciente.select2("open");
     };
 
+    
+    var seleccionarCajaTrabajo = function(idcaja){
+        if (idcaja == ""){
+            idcaja = null;
+        }
+
+        ID_CAJA_SELECCIONADA = idcaja;
+
+        localStorage.setItem(STR_CACHE_CAJA, idcaja);
+        $lblNombreCaja.data("idcaja",idcaja);
+
+        if (idcaja == null){
+            $lblNombreCaja.html("SELECCIONAR CAJA");
+        } else {
+            $lblNombreCaja.html("CAJA DE TRABAJO: "+idcaja);
+        }
+        $lblNombreCaja.show();
+        $txtSeleccionadorCaja.hide();
+    };
+
+    var initReloj = function(){
+        setInterval(function(){
+            Util.setHora($txtHoraAtencion, new Date());
+        }, 1000);
+    };
+
+    getTemplates();
+    setDOM();
+    setFuncionesInicio();
+    setEventos();
+    initReloj();
+
     return this;
 };
+
 
 $(document).ready(function(){
     objRegistroAtencion = new RegistroAtencion(); 

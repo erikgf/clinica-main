@@ -46,7 +46,7 @@ var ServicioGeneral = function(){
         var self = this;
 
         $btnEliminar.on("click", function () {
-            self.anular(this.dataset.id);
+            self.anular($txtIdServicio.val());
         });
 
         $btnGuardar.on("click", function(e){

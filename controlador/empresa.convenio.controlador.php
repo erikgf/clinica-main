@@ -20,6 +20,7 @@ try {
                 throw new Exception("No se ha enviado el nombre/descripción del registro.", 1);
             }
 
+            $obj->mensaje_ticket = isset($_POST["p_mensaje_ticket"]) ? $_POST["p_mensaje_ticket"] : "";
             $obj->id_empresa_convenio = isset($_POST["p_id_empresa_convenio"]) ? $_POST["p_id_empresa_convenio"] : NULL;
             $data = $obj->guardar();
             Funciones::imprimeJSON("200", "OK", $data);

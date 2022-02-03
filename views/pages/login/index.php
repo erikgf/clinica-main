@@ -9,13 +9,13 @@ $ruta_base = "../../../";
 
 <!DOCTYPE html>
 <html>
-<head>
+<head lang="es">
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title><?php echo NOMBRE_SISTEMA." - Iniciar Sesión"; ?></title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <link rel="manifest" href="<?php echo RUTA_BASE; ?>/manifest.webmanifest">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="<?php echo $ruta_base; ?>template/plugins/fontawesome-free/css/all.min.css">
   <link href="<?php echo $ruta_base; ?>/views/css/toastr.css" rel="stylesheet"/>
@@ -28,10 +28,27 @@ $ruta_base = "../../../";
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
 </head>
+
+<style>
+  .login-card-body, .login-page{
+    background-color:white;
+  }
+
+  .login-page{
+    background-image: url(../../img/bg_dmi.png);
+    background-position: center;
+    background-repeat: no-repeat;
+    margin-top: -10vh;
+  }
+
+</style>
+
 <body class="hold-transition login-page">
 <div class="login-box">
   <div class="login-logo">
-    <a href="#"><b>Software</b>DMI</a>
+    <div>
+      <img src="<?php echo $ruta_base; ?>/views/img/logo_dmi.png" alt="Logo">
+    </div>
   </div>
   <!-- /.login-logo -->
   <div class="card">
@@ -40,7 +57,7 @@ $ruta_base = "../../../";
 
       <form id="frm-sesion">
         <div class="input-group mb-3">
-          <input type="text" class="form-control" required placeholder="Usuario" id="txt-usuario">
+          <input type="text" class="form-control" required placeholder="Usuario" id="txt-usuario" autofocus>
           <div class="input-group-append">
             <div class="input-group-text">
               <span class="fa fa-user"></span>

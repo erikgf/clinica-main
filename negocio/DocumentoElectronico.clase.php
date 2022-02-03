@@ -1416,7 +1416,11 @@ class DocumentoElectronico extends Conexion {
                     IF (de.idtipo_comprobante IN ('07','08') AND de.estado_anulado = '1', '0.00', IF (de.idtipo_comprobante <> '07', am.pago_efectivo , -1 * am_nota.pago_efectivo)) as pago_efectivo,
                     IF (de.idtipo_comprobante IN ('07','08') AND de.estado_anulado = '1', '0.00', IF (de.idtipo_comprobante <> '07', am.pago_tarjeta , -1 * am_nota.pago_tarjeta)) as pago_tarjeta,
                     IF (de.idtipo_comprobante IN ('07','08') AND de.estado_anulado = '1', '0.00', IF (de.idtipo_comprobante <> '07', am.pago_deposito , -1 * am_nota.pago_deposito)) as pago_deposito,
-                    IF (de.idtipo_comprobante IN ('07','08') AND de.estado_anulado = '1', '0.00', IF (de.idtipo_comprobante <> '07', am.pago_credito , -1 * am_nota.pago_credito)) as pago_credito                    
+                    IF (de.idtipo_comprobante IN ('07','08') AND de.estado_anulado = '1', '0.00', IF (de.idtipo_comprobante <> '07', am.pago_credito , -1 * am_nota.pago_credito)) as pago_credito,
+                    de.cdr_estado,
+                    IF (de.cdr_estado IS NULL, 'NO ENVIADO', (CASE de.cdr_estado WHEN '0' THEN 'ACEPTADO' WHEN '-1' THEN 'REVISAR' WHEN '' THEN 'REENVIAR' ELSE 'RECHAZADO' END)) as cdr_estado_descripcion,
+                    IF (de.cdr_estado IS NULL, 'gray', (CASE de.cdr_estado WHEN '0' THEN 'green' WHEN '-1' THEN 'orange' WHEN '' THEN 'blue' ELSE 'red' END)) as cdr_estado_color,
+                    de.cdr_descripcion              
                     FROM documento_electronico de
                     LEFT JOIN atencion_medica am ON de.id_atencion_medica = am.id_atencion_medica
                     LEFT JOIN banco b ON b.id_banco = am.id_banco
@@ -1465,6 +1469,7 @@ class DocumentoElectronico extends Conexion {
                 "total_deposito"=>$total_deposito
             ];
 
+            
             return ["series"=>$series, "todos_comprobantes"=>$todos_comprobantes, "totales"=>$totales, "otros_totales"=>$otros_totales];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);

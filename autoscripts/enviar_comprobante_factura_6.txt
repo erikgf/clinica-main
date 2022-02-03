@@ -1,1 +1,1 @@
- {"respuestas":[]}
+ {"respuestas":[{"respuesta":"ok","cod_sunat":"0","observaciones":"","mensaje":"La Factura numero FA04-000208, ha sido aceptada","hash_cdr":"NOkk40IxT5eO6Fs4eBWe7Um\/+mc=","signature_value":"cSOt29cETlmwP7NOZadgal7i1rgYZWtWstQAlV1HlXHgC+5g8Fe2Gte88JkyueAehkGCWs9w1UDfFUdsoUEOYZjYwPHHvaKGE+njW6xMfMvnHtlaBdUeRSuhpddh0l985vbDZLP8SVVzMxBfHmryIgBiZXvlD9x3Xv+a0s5ISo+tnSaycBm4SYLanAvwoaWV9kEdfoz4+qLMVoTOwoIFwkZxvQWl0n6U7GaMePoITTHR6J12DZ8EZ3GCNVJEhpRprmCfQu\/9KNtD\/K37ABlkxir65\/gS9FQWpJU4LMW+nuNBWV85Cgk7aIW1roKhqPF4Ssoigezt3muXiU5qYr7r4A==","id":"22323"}]}

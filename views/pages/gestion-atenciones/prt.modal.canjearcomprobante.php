@@ -27,7 +27,7 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Fecha Emisión</label>
-                            <input type="date" name="txt-canjearfechaemision" class="form-control uppercase" id="txt-canjearfechaemision" required/>
+                            <input type="date" name="txt-canjearfechaemision" class="form-control uppercase" id="txt-canjearfechaemision" readonly required/>
                         </div>
                     </div>
                 </div>
