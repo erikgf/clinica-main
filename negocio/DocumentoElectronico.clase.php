@@ -2081,7 +2081,7 @@ class DocumentoElectronico extends Conexion {
                 throw new Exception("Tipo de comprobante no válido", 1);
             }
             $tempExplodeXmlFilname = explode("-", $comprobante_validar["xml_filename"]);
-            $descripcion_comprobante_enviado_generico = "La ".$nombre_comprobante." numero ".$tempExplodeXmlFilname[2].'-'.$tempExplodeXmlFilname[3]." ha sido aceptada";
+            $descripcion_comprobante_enviado_generico = "La ".$nombre_comprobante." número ".$tempExplodeXmlFilname[2].'-'.$tempExplodeXmlFilname[3]." ha sido aceptada";
 
             $campos_valores = [
                 "cdr_estado"=>"0",

@@ -17,6 +17,7 @@ class Template{
     public $ID_ROL_RECEPCION_SUPERVISOR = "10";
     public $ID_ROL_COORDINADOR_LABORATORIO = "11";
     public $ID_ROL_ASISTENTE_ADMINISTRADOR = "12";
+    public $ID_ROL_RECEPCION_DESCUENTOS = "13";
 
     public function loadContent($ruta){
         $this->content = file_get_contents($ruta, true);
@@ -72,10 +73,12 @@ class Template{
                     ["rotulo"=>"Gestión Laboratorio", "url"=>"gestion-laboratorio", "padre"=>"0"],                    
                     ["rotulo"=>"Reportes Laboratorio", "url"=>"reportes-laboratorio", "padre"=>"0"],
                     ["rotulo"=>"Resultados de Laboratorio", "url"=>"ver-resultados-laboratorio", "padre"=>"0"],
+                    ["rotulo"=>"Mantenimiento Usuarios", "url"=>"mantenimientos-usuarios", "padre"=>"0"],
                 ];
             break;
 
             case $this->ID_ROL_RECEPCION:
+            case $this->ID_ROL_RECEPCION_DESCUENTOS:
                 $objMenu = [
                     ["rotulo"=>"Gestión Caja", "url"=>"gestion-caja", "padre"=>"0"],
                     ["rotulo"=>"Registro de Atenciones", "url"=>"registro-atencion", "padre"=>"0"],
@@ -83,6 +86,7 @@ class Template{
                     ["rotulo"=>"Resultados de Laboratorio", "url"=>"ver-resultados-laboratorio", "padre"=>"0"]
                 ];
             break;
+
             case $this->ID_ROL_RECEPCION_SUPERVISOR:
                 $objMenu = [
                     ["rotulo"=>"Gestión Caja", "url"=>"gestion-caja", "padre"=>"0"],

@@ -42,6 +42,9 @@
                 </div>
             </div>
         </td>
+        <td class="text-center" style="max-width: 200px;">  
+            <span class="badge bg-{{cdr_estado_color}}">{{cdr_estado_descripcion}}</span>
+        </td>
         <td class="text-center">{{fecha_registro}}</td>
         <td class="text-center">{{numero_acto_medico}}</td>
         <td>{{comprobante}} {{#comprobante_nota}}<br><small style="color:black !important">NC:{{this}}</small>{{/comprobante_nota}}</td>

@@ -880,7 +880,9 @@ class AtencionMedica extends Conexion {
                     COALESCE(de.estado_anulado, NOT am.estado_mrcb) as estado_anulado,
                     de_nota.iddocumento_electronico as iddocumento_electronico_nota,
                     CONCAT(de_nota.serie,'-',LPAD(de_nota.numero_correlativo,7,'0')) as  comprobante_nota,
-                    COALESCE(de_nota.descripcion_motivo_nota, am.motivo_anulado) as motivo_nota
+                    COALESCE(de_nota.descripcion_motivo_nota, am.motivo_anulado) as motivo_nota,
+                    IF (de.cdr_estado IS NULL, 'NO ENVIADO', (CASE de.cdr_estado WHEN '0' THEN 'ACEPTADO' WHEN '-1' THEN 'REVISAR' WHEN '' THEN 'REENVIAR' ELSE 'RECHAZADO' END)) as cdr_estado_descripcion,
+                    IF (de.cdr_estado IS NULL, 'gray', (CASE de.cdr_estado WHEN '0' THEN 'green' WHEN '-1' THEN 'orange' WHEN '' THEN 'blue' ELSE 'red' END)) as cdr_estado_color
                     FROM atencion_medica am
                     LEFT JOIN documento_electronico de ON de.id_atencion_medica = am.id_atencion_medica AND de.estado_mrcb
                     LEFT JOIN paciente p ON p.id_paciente = am.id_paciente

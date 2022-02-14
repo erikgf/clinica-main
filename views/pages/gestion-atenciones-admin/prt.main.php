@@ -53,6 +53,7 @@
                     <thead>
                         <tr>
                             <th>ID</th>
+                            <th>SUNAT</th>
                             <th>Fecha</th>
                             <th>Nro Recibo</th>
                             <th>Comprobante</th>

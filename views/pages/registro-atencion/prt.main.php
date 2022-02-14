@@ -11,6 +11,7 @@
                     <option value="2">CAJA 2</option>
                     <option value="3">CAJA 3</option>
                     <option value="4">CAJA 4</option>
+                    <option value="5">CAJA 5 - LAMBAYEQUE</option>
                     <option value="0">Cancelar</option>
                 </select>
             </h3>

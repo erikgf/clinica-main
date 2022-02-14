@@ -54,8 +54,9 @@ class Usuario extends Conexion{
                     u.id_usuario as id,
                     TRIM(CONCAT(c.nombres,' ',c.apellido_paterno,' ',c.apellido_materno)) as text
                     FROM usuario u 
-                    INNER JOIN colaborador c ON c.id_colaborador = u.id_colaborador
-                    WHERE u.estado_mrcb AND u.estado_acceso = 'A' AND c.id_rol IN ('1','4','5','10')  AND
+                    INNER JOIN colaborador c ON c.id_colaborador = u.id_colaborador 
+                    INNER JOIN rol r ON r.id_rol = c.id_rol
+                    WHERE u.estado_mrcb AND u.estado_acceso = 'A' AND r.es_gestion_descuentos = 1 AND
                         COALESCE(CONCAT(c.nombres,' ',c.apellido_paterno,' ',c.apellido_materno),'') LIKE '%".$cadenaBuscar."%' 
                     LIMIT 5";
                     
@@ -73,7 +74,8 @@ class Usuario extends Conexion{
                     clave
                     FROM usuario u 
                     INNER JOIN colaborador c ON c.id_colaborador = u.id_colaborador
-                    WHERE u.estado_mrcb AND u.estado_acceso = 'A' AND c.id_rol IN ('1','4','5','10')  AND id_usuario = :0";
+                    INNER JOIN rol r ON r.id_rol = c.id_rol
+                    WHERE u.estado_mrcb AND u.estado_acceso = 'A' AND r.es_gestion_descuentos = 1  AND id_usuario = :0";
             
             $data =  $this->consultarFila($sql, [$this->id_usuario]);
 

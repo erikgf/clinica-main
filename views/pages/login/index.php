@@ -11,11 +11,11 @@ $ruta_base = "../../../";
 <html>
 <head lang="es">
   <meta charset="utf-8">
+  <link rel="manifest" href="<?php echo RUTA_BASE; ?>/manifest.webmanifest">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title><?php echo NOMBRE_SISTEMA." - Iniciar Sesión"; ?></title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="<?php echo RUTA_BASE; ?>/manifest.webmanifest">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="<?php echo $ruta_base; ?>template/plugins/fontawesome-free/css/all.min.css">
   <link href="<?php echo $ruta_base; ?>/views/css/toastr.css" rel="stylesheet"/>
@@ -39,6 +39,12 @@ $ruta_base = "../../../";
     background-position: center;
     background-repeat: no-repeat;
     margin-top: -10vh;
+  }
+
+  .add-button {
+    position: absolute;
+    top: 1px;
+    left: 1px;
   }
 
 </style>
@@ -110,6 +116,18 @@ $ruta_base = "../../../";
 
 
 <script src="index.js"></script>
+<script>
+  let installPromptEvent;
+  window.addEventListener('beforeinstallprompt', (event) => {
+    // Prevent Chrome <= 67 from automatically showing the prompt
+    event.preventDefault();
+    // Stash the event so it can be triggered later.
+    installPromptEvent = event;
+    // Update the install UI to notify the user app can be installed
+    document.querySelector('#install-button').disabled = false;
+  });
+
+</script>
 
 </body>
 </html>

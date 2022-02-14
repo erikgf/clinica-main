@@ -4,11 +4,12 @@
     "display": "fullscreen",
     "icons": [
       {
-        "src": "icon/icon_dmi.png",
+        "src": "icon/icon_dmi_white.png",
         "sizes": "100x100",
         "type": "image/png"
       }
     ],
     "name": "Software DMI",
-    "short_name": "DMI"
+    "short_name": "DMI",
+    "start_url": "/views/pages/login/"
   }

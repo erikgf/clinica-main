@@ -2,10 +2,11 @@
     <tr>
         <td>
             <div class="input-group-prepend">
-                <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <button title="ID: {{id}}" type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                 Opc.
                 </button>
                 <div class="dropdown-menu" style="">
+                    <a  class="dropdown-item" href="#">ID: {{id}}</a>
                     {{#id_atencion_medica}}
                     <a class="dropdown-item" target="_blank" href="../../../impresiones/ticket.atencion.php?id={{this}}" title="Ver Ticket"><i class="fa fa-eye"></i> TICKET</a>
                     <a class="dropdown-item" target="_blank" href="../../../impresiones/ticket.atencion.sinprecios.php?id={{this}}" title="Ver Ticket Consulta"><i class="fa fa-eye"></i> TICKET (CONSULTA)</a>
@@ -19,6 +20,7 @@
                     <a class="dropdown-item" rel="noopener noreferrer" target="_blank" href="../../../impresiones/ticket.comprobante.php?id={{this}}" title="Ver Comprobante"><i class="fa fa-eye"></i> COMPROBANTE (SALDO PAGADO)</a>
                     {{/iddocumento_electronico_relacionado}}
                 </div>
+                
             </div>
         </td>
         <td class="text-center">

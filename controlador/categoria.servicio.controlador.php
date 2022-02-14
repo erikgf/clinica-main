@@ -9,6 +9,7 @@ require_once '../negocio/Sesion.clase.php';
 $objUsuario = Sesion::obtenerSesion();
 if ($objUsuario == null){
     Funciones::imprimeJSON("401", "ERROR", utf8_decode("No hay credenciales válidas."));
+    exit;
 }
 
 $obj->id_usuario_registrado = Sesion::obtenerSesionId();
@@ -36,13 +37,13 @@ try {
             $obj->descripcion = isset($_POST["p_descripcion"]) ? $_POST["p_descripcion"] : NULL;
 
             if ($obj->descripcion == NULL || $obj->descripcion == ""){
-                throw new Exception("No se ha enviado el nombre/descripción de promotora", 1);
+                throw new Exception("No se ha enviado el nombre/descripción de Categoría", 1);
             }
 
             $obj->porcentaje_comision = isset($_POST["p_comision"]) ? $_POST["p_comision"] / 100.00 : NULL;
 
             if ($obj->porcentaje_comision == NULL || $obj->porcentaje_comision == ""){
-                throw new Exception("No se ha enviado el nombre/descripción de área.", 1);
+                throw new Exception("No se ha enviado el nombre/descripción de Categoría.", 1);
             }
 
             $id_categoria_servicio = isset($_POST["p_id_categoria_servicio"]) ? $_POST["p_id_categoria_servicio"] : NULL;
@@ -54,7 +55,7 @@ try {
         case "leer":
             $id_categoria_servicio = isset($_POST["p_id_categoria_servicio"]) ? $_POST["p_id_categoria_servicio"] : "";
             if ($id_categoria_servicio == ""){
-                throw new Exception("Promotora consultada no válida.", 1);
+                throw new Exception("Categoría consultada no válida.", 1);
             }
             $obj->id_categoria_servicio = $id_categoria_servicio;
 
@@ -63,9 +64,9 @@ try {
         break;
 
         case "anular":
-           $id_categoria_servicio = isset($_POST["p_id_categoria_servicio"]) ? $_POST["p_id_categoria_servicio"] : "";
+            $id_categoria_servicio = isset($_POST["p_id_categoria_servicio"]) ? $_POST["p_id_categoria_servicio"] : "";
             if ($id_categoria_servicio == ""){
-                throw new Exception("Promotora consultada no válida.", 1);
+                throw new Exception("Categoría consultada no válida.", 1);
             }
             $obj->id_categoria_servicio = $id_categoria_servicio;
 

@@ -15,6 +15,7 @@ class Rol extends Conexion {
             $sql = "SELECT 
                         r.id_rol as id,
                         r.descripcion,
+                        interfaz_inicio_sesion as nombre_interfaz,
                         IF(r.es_gestion_descuentos = '1', 'SÍ', 'NO') as es_gestion_descuentos,
                         IF(r.es_gestion_cajas = '1', 'SÍ', 'NO') as es_gestion_cajas
                     FROM rol r
@@ -96,4 +97,20 @@ class Rol extends Conexion {
             throw new Exception($exc->getMessage(), 1);
         }
     }
+
+    public function obtenerCombo(){
+        try {
+            $sql = "SELECT 
+                        r.id_rol as id,
+                        r.descripcion
+                    FROM rol r
+                    WHERE r.estado_mrcb
+                    ORDER BY descripcion";
+                    
+            $data =  $this->consultarFilas($sql);
+            return $data;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }   
 }
