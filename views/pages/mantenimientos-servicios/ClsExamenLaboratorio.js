@@ -3,6 +3,7 @@ var ExamenLaboratorio = function(){
         $frm,
         $txtIdServicio,
         $txtDescripcion,
+        $txtDescripcionDetallada,
         $txtComision,
         $txtIdTipoAfectacion,
         $txtPrecioVenta,
@@ -83,6 +84,7 @@ var ExamenLaboratorio = function(){
       
         $txtIdServicio = $("#txt-examenlaboratorio-seleccionado");
         $txtDescripcion = $("#txt-examenlaboratorio-descripcion");
+        $txtDescripcionDetallada = $("#txt-examenlaboratorio-descripciondetallada");
         $txtComision = $("#txt-examenlaboratorio-comision");
         $txtIdTipoAfectacion = $("#txt-examenlaboratorio-tipoafectacion");
         $txtPrecioVenta = $("#txt-examenlaboratorio-precioventa");
@@ -159,7 +161,7 @@ var ExamenLaboratorio = function(){
             dataType: 'json',
             delay: 250,
             data: {
-                p_id_servicio : id
+                p_id_servicio : id116
             },
             success: function(result){
                 $mdl.modal("show");

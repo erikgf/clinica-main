@@ -292,6 +292,7 @@ class Servicio extends Conexion {
             $sql = "SELECT  
                     se.id_servicio, 
                     se.descripcion, 
+                    se.descripcion_detallada,
                     precio_unitario as precio_venta,
                     precio_venta_sin_igv as valor_venta,
                     idtipo_afectacion,
@@ -417,7 +418,7 @@ class Servicio extends Conexion {
             $campos_valores = [
                 "id_servicio"=>$this->id_servicio,
                 "descripcion"=>$this->descripcion == "" ? NULL : $this->descripcion,
-                "descripcion_detallada"=>NULL,
+                "descripcion_detallada"=>$this->descripcion_detallada == "" ? NULL : $this->descripcion_detallada,
                 "precio_unitario"=>$this->precio_unitario,
                 "precio_venta_sin_igv"=>$this->precio_unitario_sin_igv,
                 "id_categoria_servicio"=>$this->ID_CATEGORIA_LABORATORIO,

@@ -142,9 +142,24 @@ class AtencionMedica extends Conexion {
 
             require "Caja.clase.php";
             $objCaja = new Caja();
-            
-            if (!$objCaja->esValidaInstanciaCaja($this->id_caja_instancia, $this->fecha_atencion)){
+            /*
+            $objInstancia = $objCaja->obtenerInstanciaValidaFecha($this->fecha_atencion);
+
+            if ($objInstancia["datos"] == false){
+                throw new Exception("Está tratando de ingresar una antención en una CAJA no abierta o no VALIDA.");
+            }
+
+            $this->id_caja_instancia = $objInstancia["datos"]["id_caja_instancia"];
+            */
+            $cajaValidada = $objCaja->esValidaInstanciaCaja($this->id_caja_instancia, $this->fecha_atencion);
+            if (!$cajaValidada){
                 throw new Exception("Caja no válida.", 1);
+            }
+
+            $cajaValidada = $cajaValidada["datos"];
+
+            if ($this->pago_efectivo > 0.00 && $cajaValidada["bloquear_efectivo"] == "1"){
+                throw new Exception("Operación cancelada. La caja no admite EFECTIVO.");
             }
 
             $costo_total_atencion = 0.00;
@@ -350,9 +365,12 @@ class AtencionMedica extends Conexion {
             $objCajaMovimiento->id_usuario_registrado = $this->id_usuario_registrado;
             $objCajaMovimiento->fecha_hora_registrado = $fecha_ahora;            
             
-            $objCajaMovimiento->registrarCajaMovimiento();
+            $obj = $objCajaMovimiento->registrarCajaMovimiento();
+            if ($obj){
+                $id_caja_instancia_movimiento = $obj["id_caja_instancia_movimiento"];
+            }
 
-            $this->update("atencion_medica", ["numero_acto_medico"=>$this->id_atencion_medica], ["id_atencion_medica"=>$this->id_atencion_medica]);
+            $this->update("atencion_medica", ["numero_acto_medico"=>$this->id_atencion_medica,"id_caja_instancia_movimiento"=>$id_caja_instancia_movimiento], ["id_atencion_medica"=>$this->id_atencion_medica]);
 
             $this->commit();
 
@@ -1371,11 +1389,17 @@ class AtencionMedica extends Conexion {
                         am.numero_acto_medico  as numero_atencion,
                         am.monto_descuento as monto_cubierto,
                         am.importe_total,
-                        (SELECT COUNT(iddocumento_electronico) FROM documento_electronico WHERE id_atencion_medica_convenio IN (am.id_atencion_medica) AND estado_mrcb) as existen_comprobantes,
+                        COALESCE(de_f.iddocumento_electronico, de_nc.iddocumento_electronico, 0) as existen_comprobantes
+                        /*,
                         (SELECT iddocumento_electronico FROM documento_electronico WHERE idtipo_comprobante = '01' AND id_atencion_medica_convenio IN (am.id_atencion_medica) LIMIT 1) as id_documento_electronico_notacredito,
                         (SELECT iddocumento_electronico FROM documento_electronico WHERE idtipo_comprobante = '07' AND id_atencion_medica_convenio IN (am.id_atencion_medica) LIMIT 1) as id_documento_electronico_factura
+                        */
+                        , de_f.iddocumento_electronico as id_documento_electronico_factura
+                        , de_nc.iddocumento_electronico as id_documento_electronico_notacredito
                         FROM atencion_medica am
                         INNER JOIN empresa_convenio ec ON ec.id_empresa_convenio = am.id_empresa_convenio
+                        LEFT JOIN documento_electronico de_f ON de_f.idtipo_comprobante = '01' AND de_f.id_atencion_medica_convenio = am.id_atencion_medica AND de_f.estado_mrcb
+                        LEFT JOIN documento_electronico de_nc ON de_nc.idtipo_comprobante = '07' AND de_nc.id_atencion_medica_convenio = am.id_atencion_medica AND de_nc.estado_mrcb
                         WHERE am.id_empresa_convenio IS NOT NULL AND 
                                 am.estado_mrcb AND  (am.fecha_atencion BETWEEN :0 AND :1)";
 

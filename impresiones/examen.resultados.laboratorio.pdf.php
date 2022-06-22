@@ -46,6 +46,7 @@ try {
 $pdf = new PDF($orientation='P', $unit='mm', 'A4');
 
 $MARGENES_LATERALES = 5.00;
+$ALTURA_Y_SALTO_PAGINA = 222.5;
 $pdf->SetMargins($MARGENES_LATERALES, $MARGENES_LATERALES * 8, $MARGENES_LATERALES); 
 $pdf->AliasNbPages();
 //$pdf->show_footer = true;
@@ -214,16 +215,36 @@ foreach ($secciones as $_ => $seccion) {
               $pdf->SetXY($tempX + $COLS_DETALLE[$i - 1]["ancho"], $tempInitY);
               $tempX = $pdf->GetX();
               $pdf->MultiCell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, utf8_decode($resultado["metodo"]), $BORDES, "L");
+              
+              $salto_artificial = false;
+
+              if ($pdf->getY() >= $ALTURA_Y_SALTO_PAGINA){
+                $salto_artificial = true;
+                if ($mostrar_logo == "1"){                  
+                  $pdf->Image($firma_img, 140, 241, 55);
+                  $pdf->Image("laboratorio_logo_inferior.png", 0, 270, $ANCHO_TICKET_FULL);
+                }
+
+                $pdf->AddPage();
+
+                if ($mostrar_logo == "1"){                  
+                  $pdf->Image("laboratorio_logo_superior.png", 0, 0, $ANCHO_TICKET_FULL);
+                }
+
+                $tempLastY = 40;
+              }
               $tempLastY2 = $pdf->GetY();
-              if ($tempLastY < $tempLastY2){
+              if ($tempLastY < $tempLastY2 && !$salto_artificial){
                 $tempLastY = $tempLastY2;
               }
+            
             }
 
-            $pdf->Ln($SALTO_LINEA * 2);
+            $pdf->Ln($SALTO_LINEA * 2); 
+            
         }
 
-        $pdf->Image($firma_img, 140, 239, 55);
+        $pdf->Image($firma_img, 140, 241, 55);
 
         if ($mostrar_logo == "1"){
           $pdf->Image("laboratorio_logo_inferior.png", 0, 270, $ANCHO_TICKET_FULL);

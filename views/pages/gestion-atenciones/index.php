@@ -26,7 +26,7 @@ include_once "prt.modal.canjearcomprobante.php";
 ?>
 
 <script>
-    var _ES_ID_ROL_SUPERVISOR = <?php echo $objUsuario["id_rol"] == $objTemplate->ID_ROL_RECEPCION_SUPERVISOR ? "1" : "0"; ?>;
+    var _ES_ID_ROL_SUPERVISOR = <?php echo ($objUsuario["id_rol"] == $objTemplate->ID_ROL_RECEPCION_SUPERVISOR ||  $objUsuario["id_rol"] == $objTemplate->ID_ROL_RECEPCION_DESCUENTOS) ? "1" : "0"; ?>;
 </script>
 
 <script type="text/javascript" src="canjear.comprobante.js" defer></script>

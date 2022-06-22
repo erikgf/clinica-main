@@ -257,6 +257,7 @@ var CanjearComprobante = function() {
                             if (res.estado != "ACTIVO"){
                                 toastr.error("Cliente está usando un RUC NO ACTIVO.");
                             }
+                            console.log(res, $txtFacturaRazonSocial, $txtFacturaDireccion);
                             $txtFacturaRazonSocial.val(res.razon_social);
                             $txtFacturaDireccion.val(res.direccion.trim());
                         } else {

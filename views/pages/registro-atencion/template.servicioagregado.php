@@ -1,5 +1,5 @@
 {{#.}}
-<div class="blk-servicioagregado" tabindex="0" data-serviciojson= '{"id_servicio":"{{id_servicio}}","nombre_servicio":"{{nombre_servicio}}","idtipo_afectacion":"{{idtipo_afectacion}}","idunidad_medida":"{{idunidad_medida}}","descripcion":"{{descripcion}}"}'>
+<div class="blk-servicioagregado" style="width: calc(100% - 1em);" tabindex="0" data-serviciojson= '{"id_servicio":"{{id_servicio}}","nombre_servicio":"{{nombre_servicio}}","idtipo_afectacion":"{{idtipo_afectacion}}","idunidad_medida":"{{idunidad_medida}}","descripcion":"{{descripcion}}"}'>
         <div class="row callout callout-warning">
             <div class="col-sm-12 col-md-7">
                 <h5>{{nombre_servicio}}</h5>

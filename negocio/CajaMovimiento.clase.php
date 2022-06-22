@@ -109,9 +109,11 @@ class CajaMovimiento extends Conexion {
             ];
 
             $this->insert("caja_instancia_movimiento",  $campos_valores);
+            $id_caja_instancia_movimiento = $this->getLastID();
             $this->commit();
 
-            return ["msj"=>"Registro realizado"];
+
+            return ["msj"=>"Registro realizado", "id_caja_instancia_movimiento"=>$id_caja_instancia_movimiento];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage());
         }

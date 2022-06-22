@@ -58,23 +58,23 @@
                             </div>
                         </div>
 
-                        <div class="row" id="blk-factura" style="display:none">
+                        <div class="row" id="blk-facturaveratencion" style="display:none">
                             <div class="col-md-2 col-sm-12">
                                 <div class="form-group">
-                                    <label for="txt-facturaruc">RUC (<span style="color:red">*</span>)  <span id="blk-spinner-ruc" style="display:none;" class="fa fa-spin fa-spinner"></label>
-                                    <input type="text" class="form-control uppercase"  id="txt-facturaruc" maxlength = "11">
+                                    <label for="txt-facturaruc-veratencion">RUC (<span style="color:red">*</span>)  <span id="blk-spinner-ruc" style="display:none;" class="fa fa-spin fa-spinner"></label>
+                                    <input type="text" class="form-control uppercase"  id="txt-facturaruc-veratencion" maxlength = "11">
                                 </div>
                             </div>
                             <div class="col-md-5 col-sm-12">
                                 <div class="form-group">
-                                    <label for="txt-facturarazonsocial">Razón Social (<span style="color:red">*</span>)</label>
-                                    <input type="text" class="form-control uppercase"  id="txt-facturarazonsocial">
+                                    <label for="txt-facturarazonsocial-veratencion">Razón Social (<span style="color:red">*</span>)</label>
+                                    <input type="text" class="form-control uppercase"  id="txt-facturarazonsocial-veratencion">
                                 </div>
                             </div>
                             <div class="col-md-5 col-sm-12">
                                 <div class="form-group">
-                                    <label for="txt-facturadireccion">Dirección (<span style="color:red">*</span>)</label>
-                                    <textarea class="form-control uppercase"  id="txt-facturadireccion"> </textarea>
+                                    <label for="txt-facturadireccion-veratencion">Dirección (<span style="color:red">*</span>)</label>
+                                    <textarea class="form-control uppercase"  id="txt-facturadireccion-veratencion"> </textarea>
                                 </div>
                             </div>
                         </div>

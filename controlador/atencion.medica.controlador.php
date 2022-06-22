@@ -58,6 +58,27 @@ try {
             $obj->id_convenio_empresa = (isset($_POST["p_id_convenio_empresa"]) && $_POST["p_id_convenio_empresa"] != "") ? $_POST["p_id_convenio_empresa"] : NULL;
             $obj->convenio_porcentaje = Funciones::sanitizar(isset($_POST["p_convenio_porcentaje"]) ? $_POST["p_convenio_porcentaje"] : NULL);
 
+            /*
+            if ($obj->id_tipo_comprobante == "01"){
+                if (strlen($obj->factura_ruc) != 11){
+                    throw new Exception("Se ha seleccionado FACTURA. El RUC debe tener 11 dígitos.", 1);
+                }
+            }
+
+            if ($obj->id_tipo_comprobante == "03"){
+                if ($obj->boleta_tipo_documento == "1"){
+                    if (strlen($obj->boleta_numero_documento) != 8){
+                        throw new Exception("Se ha seleccionado BOLETA. El DNI debe tener 8 dígitos.", 1);
+                    }
+                }
+
+                if ($obj->boleta_tipo_documento == "6"){
+                    if (strlen($obj->boleta_numero_documento) != 11){
+                        throw new Exception("Se ha seleccionado BOLETA. El RUC debe tener 11 dígitos.", 1);
+                    }
+                }
+            }
+            */
             $data = $obj->registrar();
 
             Funciones::imprimeJSON("200", "OK", $data);
@@ -243,11 +264,21 @@ try {
 
             if ($obj->id_tipo_comprobante == "01"){
                 $obj->factura_ruc = Funciones::sanitizar($_POST["p_numero_documento"]);
+                if (strlen($obj->factura_ruc) != 11){
+                    throw new Exception("La factura debe tener 11 dígitos.", 1);
+                }
                 $obj->factura_razon_social = Funciones::sanitizar($_POST["p_factura_razon_social"]);
                 $obj->factura_direccion = Funciones::sanitizar($_POST["p_factura_direccion"]);    
             } else {
-                $obj->boleta_tipo_documento = Funciones::sanitizar(isset($_POST["p_id_tipo_documento"]) ? $_POST["p_id_tipo_documento"] : "");
+                $obj->boleta_tipo_documento = Funciones::sanitizar(isset($_POST["p_id_tipo_documento"]) ? $_POST["p_id_tipo_documento"] : "");                
                 $obj->boleta_numero_documento = Funciones::sanitizar(isset($_POST["p_numero_documento"]) ? $_POST["p_numero_documento"] : "");
+
+                if ($obj->id_tipo_comprobante == "03"){
+                    if (strlen($obj->boleta_numero_documento) != 8){
+                        throw new Exception("La boleta debe tener 8 dígitos.", 1);
+                    }
+                }
+
                 $obj->boleta_nombres = Funciones::sanitizar(isset($_POST["p_boleta_nombres"]) ? $_POST["p_boleta_nombres"] : "");
                 $obj->boleta_apellido_paterno = Funciones::sanitizar(isset($_POST["p_boleta_apellido_paterno"]) ? $_POST["p_boleta_apellido_paterno"] : "");
                 $obj->boleta_apellido_materno = Funciones::sanitizar(isset($_POST["p_boleta_apellido_materno"]) ? $_POST["p_boleta_apellido_materno"] : "");

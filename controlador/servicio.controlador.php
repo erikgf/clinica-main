@@ -104,6 +104,8 @@ try {
                 throw new Exception("No se puede regisrar un servicio sin nombre.", 1);
             }
 
+            $obj->descripcion_detallada = isset($_POST["p_descripcion_detallada"]) ? Funciones::sanitizar($_POST["p_descripcion_detallada"]): NULL;
+
             $obj->precio_unitario = isset($_POST["p_precio_venta"]) ? Funciones::sanitizar($_POST["p_precio_venta"]): "0.00";
 
             if ($obj->precio_unitario < 0.00){

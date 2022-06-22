@@ -1,1 +1,1 @@
- {"respuestas":[]}
+ {"respuestas":[{"respuesta":"ok","cod_sunat":"0","mensaje":"La Nota de credito numero FA02-000019, ha sido aceptada","observaciones":"","hash_cdr":"fx4qbi\/4eebYnxchAliyUU9xih0=","signature_value":"dBIj7xL1zSiAhmxWu3YvgjaBMvnDug8NyGXA5iVfQU7VxdbDOVzbtVuxPRILaAxMwvQ5I2rWirDjectQbGIePPCgzNJ8l5LmfeBkV2zrUl+xsGkY21iYUtiYomdjEd2iIxDq07b4NejZiFB7ySgIUZNLSHrxetXcUbxOJzFm5KwEbCIcjo4GXtmABXG4mRZSRcpdhZC\/dQ6KnT\/hT7apP0MR5MQ24GN9P3okOZ0H7zsfQ78CJZo3JLPAxOH8h+D2URiHPPWt42xJlNaG2kOAnGlNlJg0S1AUAsKYQ9OLzDgENdAzBtCTRMQob1P1eCDl+z4paLXvmwCxEgzl2H3RmA==","id":"35765"}]}

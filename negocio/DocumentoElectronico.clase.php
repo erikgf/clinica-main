@@ -584,10 +584,31 @@ class DocumentoElectronico extends Conexion {
         }
     }
 
+    private function dateDiffInDays($date1, $date2){
+        // Calculating the difference in timestamps
+        $diff = strtotime($date2) - strtotime($date1);
+        // 1 day = 24 hours
+        // 24 * 60 * 60 = 86400 seconds
+        return round($diff / 86400);
+    }
+    
     public function consultarDocumentoCliente($numero_documento){
+        $respuesta = [];
 		$token_cliente = F_TOKEN_PROVEEDOR; //KEY para que puedas consumir nuestra api
 		//$data['ruc_proveedor'] = F_RUC_PROVEEDOR; //Tu número de RUC, el cuál será responsable por los datos enviados en todos los json
 		$ruta = "";
+        $HOY = date("d-m-Y");
+
+        $dateDiff = $this->dateDiffInDays($HOY, F_FECHA_TOPE);
+        if ($dateDiff < 0){
+            $respuesta['respuesta'] = 'error';
+			$respuesta['titulo'] = 'Error';
+			$respuesta['data'] = '';
+			$respuesta['encontrado'] = false;
+			$respuesta['mensaje'] = 'El servicio de consulta RENIEC/SUNAT ha vencido. Fecha LIMITE: '.F_FECHA_TOPE;
+			$respuesta['errores_curl'] = "";
+            return $respuesta;
+        }
 
 		$cantidad_digitos = strlen($numero_documento);
 
@@ -603,7 +624,7 @@ class DocumentoElectronico extends Conexion {
 		}
 
 		if ($ruta == ""){
-			$respuesta = [];
+			
 
 			$respuesta['respuesta'] = 'error';
 			$respuesta['titulo'] = 'Error';
@@ -1000,6 +1021,22 @@ class DocumentoElectronico extends Conexion {
                 "descripcion_motivo_nota"=>$this->motivo_anulacion,
                 "id_atencion_medica_convenio"=>$this->id_atencion_medica_convenio
             ];
+
+            if ($this->id_tipo_comprobante == "01"){
+                if (strlen($this->Cliente["numero_documento"]) != 11){
+                    throw new Exception("Documento de cliente NO VALIDO para un FACTURA.", 1);
+                }
+            }
+
+            if ($this->id_tipo_comprobante == "03"){
+
+                if ($this->Cliente["id_tipo_documento"] == "1" && strlen($this->Cliente["numero_documento"]) != 8){
+                    throw new Exception("Documento de cliente NO VALIDO para un BOLETA.", 1);
+                }
+                if ($this->Cliente["id_tipo_documento"] == "6" && strlen($this->Cliente["numero_documento"]) != 11){
+                    throw new Exception("Documento de cliente NO VALIDO para un BOLETA.", 1);
+                }
+            }
 
             $this->insert("documento_electronico", $campos_valores);
             $this->id_documento_electronico = $this->getLastID();
@@ -1424,7 +1461,7 @@ class DocumentoElectronico extends Conexion {
                     FROM documento_electronico de
                     LEFT JOIN atencion_medica am ON de.id_atencion_medica = am.id_atencion_medica
                     LEFT JOIN banco b ON b.id_banco = am.id_banco
-                    LEFT JOIN documento_electronico de_nota ON de_nota.serie  = de.serie_documento_modifica AND de_nota.numero_correlativo = de.numero_documento_modifica
+                    LEFT JOIN documento_electronico de_nota ON de_nota.serie  = de.serie_documento_modifica AND de_nota.numero_correlativo = de.numero_documento_modifica AND de_nota.estado_mrcb
                     LEFT JOIN atencion_medica am_nota ON am_nota.id_atencion_medica = de_nota.id_atencion_medica
                     WHERE (de.fecha_emision BETWEEN :0 AND :1) AND de.estado_mrcb  AND de.serie = :2
                     ORDER BY de.fecha_emision, de.serie, de.numero_correlativo";
@@ -1482,7 +1519,7 @@ class DocumentoElectronico extends Conexion {
             if ($forzado){
                 $sql  = "SELECT iddocumento_electronico as id, xml_filename as nombre_archivo, fecha_emision 
                         FROM documento_electronico
-                        WHERE estado_mrcb AND  (fecha_emision BETWEEN :1 AND :2) AND (cdr_estado IS NULL OR cdr_estado < 0)
+                        WHERE estado_mrcb AND  (fecha_emision BETWEEN :1 AND :2) -- AND (cdr_estado IS NULL OR cdr_estado < 0)
                         AND idtipo_comprobante IN (:0) AND serie LIKE 'F%'";
             } else {
                 $sql  = "SELECT de.iddocumento_electronico as id, de.xml_filename as nombre_archivo, de.fecha_emision
@@ -1941,6 +1978,7 @@ class DocumentoElectronico extends Conexion {
                                 cdr_hash = '".$cdr_hash."',
                                 cdr_estado = '".$cdr_estado."',
                                 estado_anulado = '".$estado_anulado."',
+                                anulado_por_nota = '".$anulado_por_nota."',
                                 motivo_anulacion = ".($motivo_anulacion == NULL ? "NULL" : "'".$motivo_anulacion."'")."
                                 WHERE  estado_mrcb AND iddocumento_electronico = '".$respuesta->id."'";
 
@@ -2052,7 +2090,7 @@ class DocumentoElectronico extends Conexion {
                         de.idtipo_comprobante,
                         de.xml_filename
                         FROM documento_electronico de 
-                        WHERE cdr_estado = '-1' AND de.iddocumento_electronico = :0 AND de.estado_mrcb";
+                        WHERE  de.iddocumento_electronico = :0 AND de.estado_mrcb";
 
             $comprobante_validar = $this->consultarFila($sql, [$this->id_documento_electronico]);
             

@@ -113,7 +113,6 @@ var Servicio = function() {
 
             TR_FILA = null; 
         }
-           S
     };
 
     this.anular = function(id_servicio, TR_FILA,  $mdl_operando = null){

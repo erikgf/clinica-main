@@ -68,10 +68,27 @@ class Caja extends Conexion {
     public function esValidaInstanciaCaja($id_caja_instancia, $fecha_atencion){
         try {
             $sql = "SELECT 
+                    ci.id_caja_instancia,
+                    c.bloquear_efectivo
+                    FROM caja_instancia ci 
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
+                    WHERE ci.estado_caja = 'A' AND ci.estado_mrcb AND ci.id_caja_instancia = :0 AND ci.fecha_apertura = :1";
+            $data =  $this->consultarFila($sql, [$id_caja_instancia, $fecha_atencion]);
+
+            return  array("rpt"=>true,"datos"=>$data);
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+
+    public function obtenerInstanciaValidaFecha($fecha_atencion){
+        try {
+            $sql = "SELECT 
                     ci.id_caja_instancia
                     FROM caja_instancia ci 
-                    WHERE ci.estado_caja = 'A' AND ci.estado_mrcb AND ci.id_caja_instancia = :0 AND fecha_apertura = :1";
-            $data =  $this->consultarFila($sql, [$id_caja_instancia, $fecha_atencion]);
+                    WHERE ci.estado_caja = 'A' AND ci.estado_mrcb AND fecha_apertura = :0 AND";
+            $data =  $this->consultarFila($sql, [$fecha_atencion]);
 
             return  array("rpt"=>true,"datos"=>$data);
         } catch (Exception $exc) {

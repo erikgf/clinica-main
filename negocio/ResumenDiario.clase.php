@@ -504,9 +504,8 @@ class ResumenDiario extends Conexion {
                                     ON dersd.id_documento_electronico_resumen_diario = ders.id_documento_electronico_resumen_diario
                                     WHERE ders.id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."')";
                         $this->consultaRaw($sql);
-                    }
-
-                    if ($cod_sunat === "-1"){
+                    } else {
+                   // if ($cod_sunat === "-1"){
                         $sql = "UPDATE
                                     documento_electronico
                                     SET cdr_estado = '-1'

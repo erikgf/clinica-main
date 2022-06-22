@@ -39,7 +39,14 @@
                                 </div>
                             </div>
                         </div>
-
+                        <div class="row">
+                            <div class="col-md-9">
+                                <div class="form-group">
+                                    <label for="txt-examenlaboratorio-descripciondetallada">Descripción Detallada </label>
+                                    <textarea rows="3" class="form-control uppercase"  id="txt-examenlaboratorio-descripciondetallada"></textarea>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-2">
                                 <div class="form-group">

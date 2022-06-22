@@ -84,10 +84,10 @@ var VerAtencion = function() {
 
         $txtObservaciones  = $("#txt-observaciones");
 
-        $blkFactura = $("#blk-factura");
-        $txtFacturaRuc = $("#txt-facturaruc");
-        $txtFacturaRazonSocial  = $("#txt-facturarazonsocial");
-        $txtFacturaDireccion  = $("#txt-facturadireccion");
+        $blkFactura = $("#blk-factura-veratencion");
+        $txtFacturaRuc = $("#txt-facturaruc-veratencion");
+        $txtFacturaRazonSocial  = $("#txt-facturarazonsocial-veratencion");
+        $txtFacturaDireccion  = $("#txt-facturadireccion-veratencion");
 
         $btnCambiarMedico = $("#btn-cambiarmedico");
     };
@@ -304,8 +304,6 @@ var VerAtencion = function() {
             toastr.error("Datos de registro da atención no válidos.");
             return;
         }
-
-        console.log(objAtencion);
 
         $("#lbl-atencion").html("Nro. RECIBO: "+objAtencion.numero_acto_medico);
         $txtIdAtencion.val(objAtencion.id_atencion_medica);

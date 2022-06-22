@@ -36,6 +36,7 @@
  define("F_CORREO","erik.ur.gf.10@gmail.com");
  define("F_PASS_MAIL","");
  define("F_TOKEN_PROVEEDOR", "facturalaya_farley_nBQctdO0dXGSnNU");
+ define("F_FECHA_TOPE", "10-07-2022");
  
  define("F_MODO_PROCESO","1"); /*PRODUCCION: 1, BETA: 3*/
  define("F_RUTA","https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService"); 

@@ -3,6 +3,7 @@ var ServicioExamen = function(){
         $frm,
         $txtIdServicio,
         $txtDescripcion,
+        $txtDescripcionDetallada,
         $txtComision,
         $txtIdTipoAfectacion,
         $txtPrecioVenta,
@@ -85,6 +86,7 @@ var ServicioExamen = function(){
       
         $txtIdServicio = $("#txt-examenlaboratorio-seleccionado");
         $txtDescripcion = $("#txt-examenlaboratorio-descripcion");
+        $txtDescripcionDetallada  = $("#txt-examenlaboratorio-descripciondetallada");
         $txtComision = $("#txt-examenlaboratorio-comision");
         $txtIdTipoAfectacion = $("#txt-examenlaboratorio-tipoafectacion");
         $txtPrecioVenta = $("#txt-examenlaboratorio-precioventa");
@@ -385,6 +387,7 @@ var ServicioExamen = function(){
 
         $txtIdServicio.val(data.id_servicio);
         $txtDescripcion.val(data.descripcion);
+        $txtDescripcionDetallada.val(data.descripcion_detallada);
         $txtComision.val(data.comision);
         $txtIdTipoAfectacion.val(data.idtipo_afectacion);
         $txtValorVenta.val(data.valor_venta);
@@ -436,6 +439,7 @@ var ServicioExamen = function(){
             data: {
                 p_id_servicio : $txtIdServicio.val(),
                 p_descripcion : $txtDescripcion.val(),
+                p_descripcion_detallada : $txtDescripcionDetallada.val(),
                 p_id_tipo_afectacion : $txtIdTipoAfectacion.val(),
                 p_id_seccion : $txtIdSeccion.val(),
                 p_id_muestra : $txtIdMuestra.val(),

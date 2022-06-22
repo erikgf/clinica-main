@@ -12,6 +12,8 @@
                     <option value="3">CAJA 3</option>
                     <option value="4">CAJA 4</option>
                     <option value="5">CAJA 5 - LAMBAYEQUE</option>
+                    <option value="6">CAJA INGRESOS Y TRANSFER</option>
+                    <option value="7">CAJA ADMISIóN</option>
                     <option value="0">Cancelar</option>
                 </select>
             </h3>
@@ -77,7 +79,7 @@
                     <div class="form-group">
                         <label for="">Lista de Servicios</label>
                         <!-- ------------------------------CONTENEDOR DE ORDENES------------------------ -->
-                        <div id="blk-servicios" style="min-height:10vh;box-shadow: 2px 2px 5px 1px rgba(179,179,179,1)">
+                        <div id="blk-servicios" style="box-shadow: 2px 2px 5px 1px rgba(179,179,179,1)">
                         </div>
                     </div>
                 </div>
