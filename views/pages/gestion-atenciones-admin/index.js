@@ -71,6 +71,13 @@ var GestionAtenciones = function() {
             e.preventDefault();
             objCanjearComprobante.preCanjearComprobante(dataset.id, dataset.cliente);
         });
+
+        $tblMovimientos.on("click", ".btn-copiarcomprobante", function (e) {
+            var $btn = this,
+                dataset = $btn.dataset;
+            e.preventDefault();
+            copiarComprobante(dataset.id, dataset.comprobante);
+        });
     };
 
     var TABLA_MOVIMIENTOS;
@@ -199,6 +206,39 @@ var GestionAtenciones = function() {
     };
         
     this.listarMovimientos = listarMovimientos;
+
+    var copiarComprobante = function(id_documento_electronico, comprobante){
+        if (!confirm("¿Desea copiar el comprobante "+comprobante+"?")){
+            return;
+        }
+
+        var observaciones = prompt("Ingrese la nueva observación agregada a este comprobante. (Recomendado). Comprobante: "+comprobante);
+
+        if (observaciones == null){
+            return;
+        } 
+
+        $.ajax({ 
+            url: VARS.URL_CONTROLADOR+"documento.electronico.controlador.php?op=copiar_comprobante",
+            type: "post",
+            dataType: 'json',
+            data : {
+                p_id_documento_electronico : id_documento_electronico,
+                p_observaciones : observaciones.trim()
+            },
+            delay: 250,
+            success: function(datos){
+                toastr.success(datos.msj+"<br><strong>Comprobante copiado</strong>");
+                window.open("../../../impresiones/ticket.comprobante.php?id="+datos.id_documento_electronico,"_blank");
+                //listarMovimientos();
+            },
+            error: function (request) {
+                toastr.error(request.responseText);
+                return;
+            },
+            cache: true
+        });
+    };
 
     this.setDOM();
     this.setEventos();

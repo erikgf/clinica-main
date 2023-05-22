@@ -1,1 +1,1 @@
- {"respuestas":[{"respuesta":"ok","cod_ticket":"202209404466732","id":"412"}]}
+ {"respuestas":[{"respuesta":"ok","cod_ticket":"400000038914155","id":"827"},{"respuesta":"error","cod_sunat":"0000","mensaje":false,"hash_cdr":"","id":"828"}]}

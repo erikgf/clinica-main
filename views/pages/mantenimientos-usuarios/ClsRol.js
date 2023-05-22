@@ -2,8 +2,7 @@ var Rol = function(){
     var $mdl,   
         $txtIdRol,
         $txtDescripcion,
-        $txtNombreInterfaz,
-        $btnEliminar,
+        $blkInterfaces,
         $btnGuardar;
 
     var tplRoles,
@@ -41,12 +40,11 @@ var Rol = function(){
         $mdl = $("#mdl-rol");
         $txtIdRol = $("#txt-rol-seleccionado");
         $txtDescripcion = $("#txt-rol-descripcion");
-        $txtNombreInterfaz = $("#txt-rol-nombreinterfaz");
+        $blkInterfaces = $("#blk-interfaces");
 
         $tblRoles = $("#tbl-roles");
         $tbdRoles = $("#tbd-roles");
 
-        $btnEliminar = $("#btn-rol-eliminar");
         $btnGuardar = $("#btn-rol-guardar");
 
         $overlayTabla = $("#overlay-tbl-roles");
@@ -65,10 +63,6 @@ var Rol = function(){
             e.preventDefault();
             self.nuevoRegistro();
         });
-
-        $btnEliminar.on("click", function () {
-            self.anular($txtIdrol.val());
-        });
         
         $btnGuardar.on("click", function(e){
             self.guardar();
@@ -84,11 +78,6 @@ var Rol = function(){
             self.leer(this.dataset.id);
         });
 
-        $tbdRoles.on("click", ".btn-eliminar", function(e){
-            e.preventDefault();
-            self.anular(this.dataset.id);
-        });
-
     };
 
     this.nuevoRegistro = function(){
@@ -96,7 +85,7 @@ var Rol = function(){
         $mdl.modal("show");
         $mdl.find(".modal-title").html("Nuevo Rol");
 
-        $txtIdrol.val("");
+        $txtIdRol.val("");
     };
 
     this.leer = function(id){
@@ -125,69 +114,44 @@ var Rol = function(){
     this.render = function(data){
         $mdl.find(".modal-title").html("Editando Rol");
 
-        $txtIdrol.val(data.id_Rol);
-        $txtIdTipoDocumento.val(data.id_tipo_documento);
-        $txtNumeroDocumento.val(data.numero_documento);
-        $txtNombres.val(data.nombres);
-        $txtApellidoPaterno.val(data.apellido_paterno);
-        $txtApellidoMaterno.val(data.apellido_materno);
-        $txtCorreo.val(data.correo);
-        $txtTelefono.val(data.telefono);
-        $txtrol.val(data.id_rol);
+        $txtIdRol.val(data.id_rol);
+        $txtDescripcion.val(data.descripcion);
 
-        $chkAccesoSistema[0].checked = data.estado_acceso == 'A';
+        let $html =``;
         
-        $btnEliminar.show();
-    };
-
-    this.anular = function(id){
-        var self = this;
-
-        if (!confirm("¿Está seguro de dar de baja este Rol?")){
-            return;
+        let interfaces = data.interfaces;
+        for (let i = 0; i < interfaces.length; i++) {
+            const interfaz = interfaces[i];
+            console.log(interfaz);
+            $html += `  <div class="col-md-3 col-xs-12">
+                            <label>${interfaz.rotulo}</label>
+                            <input name="id_interfaz[]" class="txt-interfaz"  value="${interfaz.id_interfaz}" ${interfaz.active == "1" ? 'checked' : ''} type="checkbox">
+                        </div>`;
         }
 
-        $.ajax({ 
-            url : VARS.URL_CONTROLADOR+"rol.controlador.php?op=anular",
-            type: "POST",
-            dataType: 'json',
-            delay: 250,
-            data: {
-                p_id_rol : id
-            },
-            success: function(result){
-                toastr.success(result.msj);
-                self.listar();
-
-                $mdl.modal("hide");
-            },
-            error: function (request) {
-                toastr.error(request.responseText);
-                return;
-            },
-            cache: true
-            }
-        );
+        $blkInterfaces.html($html);
     };
+
 
     this.guardar = function(){
         var self = this;
+
+        let arregloInterfaces = [];
+        $(".txt-interfaz").each(function(i,o){
+            if (o.checked){
+                arregloInterfaces.push(o.value);
+            }
+        });
+
         $.ajax({ 
             url : VARS.URL_CONTROLADOR+"rol.controlador.php?op=guardar",
             type: "POST",
             dataType: 'json',
             delay: 250,
             data: {
-                p_id_rol : $txtIdrol.val(),
-                p_id_tipo_documento: $txtIdTipoDocumento.val(),
-                p_numero_documento: $txtNumeroDocumento.val(),
-                p_nombres: $txtNombres.val(),
-                p_apellido_paterno: $txtApellidoPaterno.val(),
-                p_apellido_materno: $txtApellidoMaterno.val(),
-                p_correo: $txtCorreo.val(),
-                p_telefono: $txtTelefono.val(),
-                p_id_rol: $txtrol.val(),
-                p_estado_acceso: $chkAccesoSistema[0].checked ? "A" : "I"
+                p_id_rol : $txtIdRol.val(),
+                p_descripcion : $txtDescripcion.val(),
+                p_id_interfaz : JSON.stringify(arregloInterfaces)
             },
             success: function(result){
                 toastr.success(result.msj);

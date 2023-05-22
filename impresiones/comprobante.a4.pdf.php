@@ -37,6 +37,7 @@ $fecha_qr = strftime( "%Y-%m-%d" );
 $razon_social = F_RAZON_SOCIAL;
 $ruc =  F_RUC;
 $direccion = F_DIRECCION;
+$direccion_2 = F_DIRECCION_2;
 $lugar = F_URBANIZACION;
 $ubigeo = F_DIRECCION_DISTRITO." - ".F_DIRECCION_PROVINCIA." - ".F_DIRECCION_DEPARTAMENTO;
 $telefono = "Telf.: ".F_TELEFONO;
@@ -78,6 +79,11 @@ class PDFComprobante extends PDF{
       $CELDA_ALTO = 6;
       $this->SetFont('Arial','',10);
       $this->Cell($CELDA_ANCHO,$CELDA_ALTO, utf8_decode($dataEmpresa["direccion"]),0,0,$alineacion);
+      $actualY  = $actualY + $CELDA_ALTO - 2;
+      $this->setXY($actualX, $actualY);
+
+      $this->SetFont('Arial','',10);
+      $this->Cell($CELDA_ANCHO,$CELDA_ALTO, utf8_decode($dataEmpresa["direccion_2"]),0,0,$alineacion);
       $actualY  = $actualY + $CELDA_ALTO - 2;
       $this->setXY($actualX, $actualY);
 
@@ -313,7 +319,10 @@ class PDFComprobante extends PDF{
 
       $date1 = date_create_from_format('d/m/Y', $item["fecha_vencimiento"]);
       $date2 = date_create_from_format('d/m/Y', $fecha_emision);
-      $cantidad_dias_credito =  date_diff($date1, $date2)->d;
+      $interval = date_diff($date1, $date2);
+
+      $cantidad_dias_credito =  $interval->format("%a");
+     // $cantidad_dias_credito =  date_diff($date1, $date2)->d;
       $this->Cell(50, $ALTO_FILA, utf8_decode("Condiciones de pago: ".$cantidad_dias_credito." días de CRÉDITO"),$BORDES,1);
 
   }
@@ -326,6 +335,7 @@ class PDFComprobante extends PDF{
       $ANCHO_ZONA_DERECHA = 120;
       $ALTO_FILA = 4.5;
 
+      $simbolo_moneda = $obj["moneda"] == "PEN" ? "S/" : "$";
       $totales = $obj["totales"];
       $rotuloTipoComprobante = $obj["rotuloTipoComprobante"];
 
@@ -339,7 +349,7 @@ class PDFComprobante extends PDF{
       if ($descuento_global > 0.00){          
         $this->SetFont('Arial',''); 
         $this->Cell(30, $ALTO_FILA, "DESCUENTOS",0,0,"R");      
-        $this->Cell(15, $ALTO_FILA, "S/",0,0,"R");
+        $this->Cell(15, $ALTO_FILA, $simbolo_moneda,0,0,"R");
         $this->Cell(25, $ALTO_FILA, number_format($descuento_global * -1, $NUMERO_DECIMALES,".",","), $BORDES,1,"R");
 
         $this->Cell($ANCHO_ZONA_DERECHA, $ALTO_FILA, '',0,0,"L");
@@ -347,22 +357,22 @@ class PDFComprobante extends PDF{
 
       $this->SetFont('Arial',''); 
       $this->Cell(30, $ALTO_FILA, "OP. GRAVADA",$BORDES,0,"R");      
-      $this->Cell(15, $ALTO_FILA, "S/",$BORDES,0,"R");
+      $this->Cell(15, $ALTO_FILA, $simbolo_moneda,$BORDES,0,"R");
       $this->Cell(25, $ALTO_FILA, number_format($totales["total_gravadas"], $NUMERO_DECIMALES,".",","),$BORDES,1,"R");
 
       $this->Cell($ANCHO_ZONA_DERECHA, $ALTO_FILA, '',0,0,"L");
       $this->Cell(30, $ALTO_FILA, "OP. INAFECTA",$BORDES,0,"R");      
-      $this->Cell(15, $ALTO_FILA, "S/",$BORDES,0,"R");
+      $this->Cell(15, $ALTO_FILA, $simbolo_moneda,$BORDES,0,"R");
       $this->Cell(25, $ALTO_FILA, number_format($totales["total_inafectas"], $NUMERO_DECIMALES,".",","),$BORDES,1,"R");
 
       $this->Cell($ANCHO_ZONA_DERECHA, $ALTO_FILA, '',0,0,"L");
       $this->Cell(30, $ALTO_FILA, "OP. EXONERADA",$BORDES,0,"R");      
-      $this->Cell(15, $ALTO_FILA, "S/",$BORDES,0,"R");
+      $this->Cell(15, $ALTO_FILA, $simbolo_moneda,$BORDES,0,"R");
       $this->Cell(25, $ALTO_FILA, number_format($totales["total_exoneradas"], $NUMERO_DECIMALES,".",","),$BORDES,1,"R");
 
       $this->Cell($ANCHO_ZONA_DERECHA, $ALTO_FILA, '',0,0,"L");
       $this->Cell(30, $ALTO_FILA, "OP. GRATUITAS",$BORDES,0,"R");      
-      $this->Cell(15, $ALTO_FILA, "S/",$BORDES,0,"R");
+      $this->Cell(15, $ALTO_FILA, $simbolo_moneda,$BORDES,0,"R");
       $this->Cell(25, $ALTO_FILA, number_format("0.00", $NUMERO_DECIMALES,".",","),$BORDES,1,"R");
 
 
@@ -378,7 +388,7 @@ class PDFComprobante extends PDF{
       } 
 
       $this->Cell(30, $ALTO_FILA, "I.G.V. 18%",0,0,"R");      
-      $this->Cell(15, $ALTO_FILA, "S/",0,0,"R");
+      $this->Cell(15, $ALTO_FILA, $simbolo_moneda,0,0,"R");
       $this->Cell(25, $ALTO_FILA, number_format($totales["total_igv"], $NUMERO_DECIMALES,".",","), $BORDES,1,"R");
   
       if ($es_nota){
@@ -392,7 +402,7 @@ class PDFComprobante extends PDF{
    
       $this->SetFont("Arial", "B");
       $this->Cell(30, $ALTO_FILA, "IMPORTE TOTAL",0,0,"R");     
-      $this->Cell(15, $ALTO_FILA, "S/",0,0,"R");
+      $this->Cell(15, $ALTO_FILA, $simbolo_moneda,0,0,"R");
       $this->Cell(25, $ALTO_FILA, number_format($totales["total_importe"], $NUMERO_DECIMALES,".",","), $BORDES, 1,"R");
 
       $this->Ln(2);
@@ -511,6 +521,7 @@ $pdf->imprimirCabeceraComprobante([
       "numero_documento"=>$ruc,
       "razon_social"=>$razon_social,
       "direccion"=>$direccion,
+      "direccion_2"=>$direccion_2,
       "ubigeo"=>$ubigeo,      
       "telefono"=>$telefono
     ],
@@ -561,6 +572,7 @@ if (count($cuotas) > 0){
 
 
 $objFinalComprobante = [
+    "moneda"=>$tipo_moneda,
     "totales"=>$totales,
     "idtipo_comprobante"=>$idtipo_comprobante,
     "rotuloTipoComprobante"=>$rotuloTipoComprobante,

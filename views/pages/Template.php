@@ -7,7 +7,7 @@ class Template{
 
     public $ID_ROL_ADMINISTRADOR = "1";
     public $ID_ROL_RECEPCION = "2";
-    public $ID_ROL_FACTURADOR = "3";
+    public $ID_ROL_FACTURACION = "3";
     public $ID_ROL_LOGISTICA = "4";
     
     public $ID_VISUALIZADOR = "6";
@@ -53,6 +53,44 @@ class Template{
     }
 
     public function renderMenu(){
+        $id_rol = Sesion::obtenerSesion()["id_rol"];
+        $interfaz_actual = basename($_SERVER['REQUEST_URI']);
+
+        $actualDir = getcwd();
+        chdir("../../");
+        require_once '../negocio/Usuario.clase.php';
+        $obj = new Usuario();
+        $objMenu = $obj->getInterfaces($id_rol);
+        chdir($actualDir);
+        array_push($objMenu,  ["rotulo"=>"Cambiar Clave", "url"=>"cambiar-clave", "padre"=>"0"]);
+
+        $html = '';
+        foreach ($objMenu as $key => $value) {
+            $activo = $interfaz_actual == $value["url"] ? "active" : ""; 
+            if ($value["padre"] == "0"){
+                $html .= '<li class="nav-item">
+                            <a href="../'.$value["url"].'" class="nav-link '.$activo.'">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>'.$value["rotulo"].'</p>
+                            </a>
+                        </li>';
+            }
+        }
+
+
+        $html .= '
+            <li class="nav-item">
+                <a href="'.RUTA_BASE.'/controlador/usuario.controlador.php?op=cerrar_sesion" class="nav-link bg-red color-white">
+                    <i class="fa fa-lock nav-icon"></i>
+                    <p>Cerrar Sesión</p>
+                </a>
+            </li>';
+
+        echo $html;
+
+    }
+
+    public function renderMenuOld(){
         $id_rol = Sesion::obtenerSesion()["id_rol"];
         $interfaz_actual = basename($_SERVER['REQUEST_URI']);
 
@@ -150,8 +188,14 @@ class Template{
                     ["rotulo"=>"Revisión Exámenes", "url"=>"gestion-servicios-revision", "padre"=>"0"],
                     ["rotulo"=>"Gestión Médicos - Promotoras", "url"=>"promotoras-medicos", "padre"=>"0"],
                     ["rotulo"=>"Ver Atenciones", "url"=>"gestion-atenciones-admin", "padre"=>"0"],
+                    ["rotulo"=>"Registro de Atenciones", "url"=>"registro-atencion", "padre"=>"0"],
+                    ["rotulo"=>"Ver Atenciones Saldos", "url"=>"gestion-atenciones-saldo", "padre"=>"0"],
                 ];
             break; 
+
+            case $this->ID_ROL_FACTURACION:
+
+            break;
             
             default:
             break;

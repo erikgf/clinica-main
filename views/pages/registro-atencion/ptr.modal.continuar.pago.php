@@ -140,6 +140,12 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div class="col-md-4 col-sm-12">
+                                    <div class="form-group">
+                                        <label for="txt-boletadireccion">Dirección (<span style="color:red">*</span>)</label>
+                                        <textarea class="form-control "  id="txt-boletadireccion"> </textarea>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

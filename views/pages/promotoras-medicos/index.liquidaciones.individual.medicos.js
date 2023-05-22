@@ -36,30 +36,31 @@ var LiquidacionesIndividualMedicos = function() {
     
     this.setEventos = function(){
         $txtMedicos.on("change", function(e){
+            /*
             if (this.value == ""){
                 renderAtenciones([]);
                 return;
             }
-
+            */
             cargarAtenciones();
         });
 
-        $txtFechaInicio.on("change", function(e){
+        $txtFechaInicio.on("focusout", function(e){
             if (this.value == ""){
                 Util.setFecha($txtFechaInicio, new Date());
             }
 
             cargarMedicos();
-            renderAtenciones([]);
+            cargarAtenciones();
         });
 
-        $txtFechaFin.on("change", function(e){
+        $txtFechaFin.on("focusout", function(e){
             if (this.value == ""){
                 Util.setFecha($txtFechaFin, new Date());
             }
 
             cargarMedicos();
-            renderAtenciones([]);
+            cargarAtenciones();
         }); 
 
 
@@ -69,7 +70,7 @@ var LiquidacionesIndividualMedicos = function() {
             }
 
             cargarMedicos();
-            renderAtenciones([]);
+            cargarAtenciones();
         }); 
 
         $btnImprimir.on("click", function(e){
@@ -159,12 +160,14 @@ var LiquidacionesIndividualMedicos = function() {
     this.setDOM();
     this.setEventos();
 
+
     var hoy = new Date();
     Util.setFecha($txtFechaInicio, hoy);
     Util.setFecha($txtFechaFin, hoy);
     hoy = null;
 
     cargarMedicos();
+    cargarAtenciones();
     
     return this;
 };

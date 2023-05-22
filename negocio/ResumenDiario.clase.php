@@ -21,7 +21,7 @@ class ResumenDiario extends Conexion {
 
     private $fecha_ahora;
 
-    public function generarResumenDiario($fecha_inicio, $fecha_fin, $status_envio = "1"){ //estatus_Envio = 1 registro, 3 = anulado
+    public function generarResumenDiario($fecha_inicio, $fecha_fin, $status_envio = "1", $notas = 0){ //estatus_Envio = 1 registro, 3 = anulado
         try {
 
             $this->beginTransaction();
@@ -36,7 +36,7 @@ class ResumenDiario extends Conexion {
                         FROM documento_electronico_resumen_diario rd 
                         WHERE rd.estado_mrcb and rd.fecha_generacion = '$fechaGeneracion') as secuencia
                         FROM documento_electronico de                     
-                        WHERE de.idtipo_comprobante IN ('03','07','08') AND de.serie LIKE 'B%' AND 
+                        WHERE de.idtipo_comprobante IN ".($notas == 0 ? "('03')" : "('07','08')")." AND de.serie LIKE 'B%' AND 
                             de.estado_mrcb AND (de.fecha_emision BETWEEN :0 AND :1)";
             } else {
                 $sql = "SELECT distinct(de.fecha_emision)  as fecha_emision,
@@ -44,7 +44,7 @@ class ResumenDiario extends Conexion {
                         FROM documento_electronico_resumen_diario rd 
                         WHERE rd.estado_mrcb and rd.fecha_generacion = '$fechaGeneracion') as secuencia
                         FROM documento_electronico de                     
-                        WHERE de.idtipo_comprobante IN ('03','07','08') AND de.serie LIKE 'B%' AND 
+                        WHERE de.idtipo_comprobante IN ".($notas == 0 ? "('03')" : "('07','08')")." AND de.serie LIKE 'B%' AND 
                             de.estado_mrcb AND (de.fecha_emision BETWEEN :0 AND :1) AND de.estado_anulado = 1 AND (DATE(de.fecha_hora_anulacion) = de.fecha_emision)";
             }
             
@@ -82,9 +82,10 @@ class ResumenDiario extends Conexion {
                                     '0.00' as GRATUITAS
                                     FROM documento_electronico de 
                                     WHERE de.fecha_emision = :0 AND de.estado_mrcb 
-                                        AND de.idtipo_comprobante IN ('03','07','08') AND de.serie LIKE 'B%'
-                                        AND cdr_estado IS NULL AND estado_sunat = 0
-                                        AND ".($status_envio == "1" ? " true " : "  estado_anulado = 1 AND (DATE(de.fecha_hora_anulacion) = de.fecha_emision) ");
+                                        AND de.idtipo_comprobante IN ".($notas == 0 ? "('03')" : "('07','08')")." AND de.serie LIKE 'B%'
+                                        AND (cdr_estado IS NULL OR cdr_estado = -1) AND estado_sunat = 0
+                                        AND ".($status_envio == "1" ? " true " : "  estado_anulado = 1 AND (DATE(de.fecha_hora_anulacion) = de.fecha_emision)
+                                    ORDER BY de.fecha_hora_registrado ");
                 
                 $comprobantes = $this->consultarFilas($sqlComprobantes, [$fechaEmision]);
 
@@ -431,103 +432,7 @@ class ResumenDiario extends Conexion {
         }
     }
 
-    public function consultarTickets($fecha_inicio, $fecha_fin){
-        try {
-
-            /*
-                Se ingresar un rango de fechas, tomará todos los resumenes que tengan ticket, y los consultará, actualizará el resultado acorde su ID.
-            */
-
-            $sql  = "SELECT id_documento_electronico_resumen_diario, nombre_resumen, fecha_emision, ticket 
-                        FROM documento_electronico_resumen_diario
-                        WHERE estado_mrcb AND  ticket IS NOT NULL AND (fecha_emision BETWEEN :0 AND :1)";
-            $tickets = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
-
-            $data_json = json_encode(["tickets"=>$tickets, "id_tipo_comprobante"=>"RC", "tipo_proceso"=>F_MODO_PROCESO]);
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $this->RUTA_SISTEMA_FACTURACION_CONSULTAR_TICKET_RD);
-            curl_setopt(
-                $ch, CURLOPT_HTTPHEADER, array(
-                    'Content-Type: application/json',
-                )
-            );
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $respuestas  = curl_exec($ch);
-            curl_close($ch);
-
-            $respuestas = json_decode($respuestas);
-
-            $this->beginTransaction();
-
-            foreach ($respuestas as $key => $respuesta) {
-                $cod_sunat = NULL;
-                $msj_sunat = NULL;
-                $hash_cdr = NULL;
-
-                if (isset($respuesta->respuesta) && $respuesta->respuesta == "ok"){
-                    $cod_sunat = $respuesta->cod_sunat;
-                    $msj_sunat = $respuesta->msj_sunat;
-                    $hash_cdr = $respuesta->hash_cdr;
-                } else {
-                    $cod_sunat = $respuesta->cod_sunat;
-                    $msj_sunat = $respuesta->mensaje;
-                }
-
-                $msj_sunat = (isset($msj_sunat) ? "'".str_replace("'","\'",$msj_sunat)."'" : 'NULL');
-
-                $sql  = "UPDATE documento_electronico_resumen_diario SET 
-                        cdr_estado = ".(isset($cod_sunat) ? "'".$cod_sunat."'" : 'NULL').",
-                        cdr_descripcion = ".$msj_sunat.",
-                        hash_cdr = ".($hash_cdr ? "'".$hash_cdr."'" : 'NULL')."
-                        WHERE 
-                        estado_mrcb AND id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."'";
-                $this->consultaRaw($sql);
-
-                if (isset($cod_sunat)){
-                    if ($cod_sunat === "0"){
-                        $sql = "UPDATE
-                                    documento_electronico
-                                    SET cdr_estado = '0',
-                                    cdr_descripcion = CONCAT('La ',
-                                    CASE 
-                                              WHEN idtipo_comprobante = '03' THEN CONCAT('Boleta de Venta número ', serie,'-',LPAD(numero_correlativo,6,'0')) 
-                                              WHEN idtipo_comprobante = '07' THEN CONCAT('Nota de Crédito número', serie,'-',LPAD(numero_correlativo,6,'0')) 
-                                              ELSE CONCAT('Nota de Débito número', serie,'-',LPAD(numero_correlativo,6,'0')) 
-                                              END, ', ha sido aceptada')
-                                    WHERE estado_mrcb AND CONCAT(serie,numero_correlativo,idtipo_comprobante) IN (SELECT CONCAT(dersd.serie_comprobante, dersd.numero_correlativo_comprobante,dersd.idtipo_comprobante)
-                                    FROM `documento_electronico_resumen_diario` ders
-                                    INNER JOIN documento_electronico_resumen_diario_detalle dersd
-                                    ON dersd.id_documento_electronico_resumen_diario = ders.id_documento_electronico_resumen_diario
-                                    WHERE ders.id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."')";
-                        $this->consultaRaw($sql);
-                    } else {
-                   // if ($cod_sunat === "-1"){
-                        $sql = "UPDATE
-                                    documento_electronico
-                                    SET cdr_estado = '-1'
-                                    WHERE estado_mrcb AND CONCAT(serie,numero_correlativo,idtipo_comprobante) IN (SELECT CONCAT(dersd.serie_comprobante, dersd.numero_correlativo_comprobante,dersd.idtipo_comprobante)
-                                    FROM `documento_electronico_resumen_diario` ders
-                                    INNER JOIN documento_electronico_resumen_diario_detalle dersd
-                                    ON dersd.id_documento_electronico_resumen_diario = ders.id_documento_electronico_resumen_diario
-                                    WHERE ders.id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."')";
-                        $this->consultaRaw($sql);
-                    }
-                }
-
-            }
-       
-            $this->commit();
-
-            return ["respuestas"=>$respuestas];
-        } catch (Exception $exc) {
-            throw new Exception($exc->getMessage(), 1);
-        }
-    }
-
+    
     public function generarResumenDiarioXID($id_por_comas, $status_envio = "1"){ //estatus_Envio = 1 registro, 3 = anulado
         try {
 
@@ -544,7 +449,7 @@ class ResumenDiario extends Conexion {
                 WHERE rd.estado_mrcb and rd.fecha_generacion = '$fechaGeneracion') as secuencia
                 FROM documento_electronico de                     
                 WHERE de.idtipo_comprobante IN ('03','07','08') AND de.serie LIKE 'B%' AND 
-                    de.estado_mrcb AND de.iddocumento_electronico IN ('".$id_por_comas."') AND de.estado_anulado = 1 AND (DATE(de.fecha_hora_anulacion) = de.fecha_emision)";
+                    de.estado_mrcb AND de.iddocumento_electronico IN (".$id_por_comas."' AND de.estado_anulado = 1 AND (DATE(de.fecha_hora_anulacion) = de.fecha_emision)";
                     
             } else {
              
@@ -554,7 +459,7 @@ class ResumenDiario extends Conexion {
                         WHERE rd.estado_mrcb and rd.fecha_generacion = '$fechaGeneracion') as secuencia
                         FROM documento_electronico de                     
                         WHERE de.idtipo_comprobante IN ('03','07','08') AND de.serie LIKE 'B%' AND 
-                            de.estado_mrcb AND de.iddocumento_electronico IN ('".$id_por_comas."')";
+                            de.estado_mrcb AND de.iddocumento_electronico IN (".$id_por_comas.")";
             }
             
             $rangoFechas = $this->consultarFilas($sql);
@@ -771,6 +676,103 @@ class ResumenDiario extends Conexion {
         }
     }
 
+    public function consultarTickets($fecha_inicio, $fecha_fin){
+        try {
+
+            /*
+                Se ingresar un rango de fechas, tomará todos los resumenes que tengan ticket, y los consultará, actualizará el resultado acorde su ID.
+            */
+
+            $sql  = "SELECT id_documento_electronico_resumen_diario, nombre_resumen, fecha_emision, ticket 
+                        FROM documento_electronico_resumen_diario
+                        WHERE estado_mrcb AND  ticket IS NOT NULL AND (fecha_emision BETWEEN :0 AND :1) AND cdr_estado IS NULL";
+            $tickets = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
+
+            $data_json = json_encode(["tickets"=>$tickets, "id_tipo_comprobante"=>"RC", "tipo_proceso"=>F_MODO_PROCESO]);
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $this->RUTA_SISTEMA_FACTURACION_CONSULTAR_TICKET_RD);
+            curl_setopt(
+                $ch, CURLOPT_HTTPHEADER, array(
+                    'Content-Type: application/json',
+                )
+            );
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $respuestas  = curl_exec($ch);
+            curl_close($ch);
+
+            $respuestas = json_decode($respuestas);
+
+            $this->beginTransaction();
+
+            foreach ($respuestas as $key => $respuesta) {
+                $cod_sunat = NULL;
+                $msj_sunat = NULL;
+                $hash_cdr = NULL;
+
+                if (isset($respuesta->respuesta) && $respuesta->respuesta == "ok"){
+                    $cod_sunat = $respuesta->cod_sunat;
+                    $msj_sunat = $respuesta->msj_sunat;
+                    $hash_cdr = $respuesta->hash_cdr;
+                } else {
+                    $cod_sunat = $respuesta->cod_sunat;
+                    $msj_sunat = $respuesta->mensaje;
+                }
+
+                $msj_sunat = (isset($msj_sunat) ? "'".str_replace("'","\'",$msj_sunat)."'" : 'NULL');
+
+                $sql  = "UPDATE documento_electronico_resumen_diario SET 
+                        cdr_estado = ".(isset($cod_sunat) ? "'".$cod_sunat."'" : 'NULL').",
+                        cdr_descripcion = ".$msj_sunat.",
+                        hash_cdr = ".($hash_cdr ? "'".$hash_cdr."'" : 'NULL')."
+                        WHERE 
+                        estado_mrcb AND id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."'";
+                $this->consultaRaw($sql);
+
+                if (isset($cod_sunat)){
+                    if ($cod_sunat === "0"){
+                        $sql = "UPDATE
+                                    documento_electronico
+                                    SET cdr_estado = '0',
+                                    cdr_descripcion = CONCAT('La ',
+                                    CASE 
+                                              WHEN idtipo_comprobante = '03' THEN CONCAT('Boleta de Venta número ', serie,'-',LPAD(numero_correlativo,6,'0')) 
+                                              WHEN idtipo_comprobante = '07' THEN CONCAT('Nota de Crédito número', serie,'-',LPAD(numero_correlativo,6,'0')) 
+                                              ELSE CONCAT('Nota de Débito número', serie,'-',LPAD(numero_correlativo,6,'0')) 
+                                              END, ', ha sido aceptada')
+                                    WHERE estado_mrcb AND CONCAT(serie,numero_correlativo,idtipo_comprobante) IN (SELECT CONCAT(dersd.serie_comprobante, dersd.numero_correlativo_comprobante,dersd.idtipo_comprobante)
+                                    FROM `documento_electronico_resumen_diario` ders
+                                    INNER JOIN documento_electronico_resumen_diario_detalle dersd
+                                    ON dersd.id_documento_electronico_resumen_diario = ders.id_documento_electronico_resumen_diario
+                                    WHERE ders.id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."')";
+                        $this->consultaRaw($sql);
+                    } else {
+                   // if ($cod_sunat === "-1"){
+                        $sql = "UPDATE
+                                    documento_electronico
+                                    SET cdr_estado = '-1'
+                                    WHERE estado_mrcb AND CONCAT(serie,numero_correlativo,idtipo_comprobante) IN (SELECT CONCAT(dersd.serie_comprobante, dersd.numero_correlativo_comprobante,dersd.idtipo_comprobante)
+                                    FROM `documento_electronico_resumen_diario` ders
+                                    INNER JOIN documento_electronico_resumen_diario_detalle dersd
+                                    ON dersd.id_documento_electronico_resumen_diario = ders.id_documento_electronico_resumen_diario
+                                    WHERE ders.id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."')";
+                        $this->consultaRaw($sql);
+                    }
+                }
+
+            }
+       
+            $this->commit();
+
+            return ["respuestas"=>$respuestas];
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
     public function consultarTicketsXID($id_por_comas){
         try {
 
@@ -824,6 +826,38 @@ class ResumenDiario extends Conexion {
                         WHERE 
                         estado_mrcb AND id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."'";
                 $this->consultaRaw($sql);
+
+
+                if (isset($cod_sunat)){
+                    if ($cod_sunat === "0"){
+                        $sql = "UPDATE
+                                    documento_electronico
+                                    SET cdr_estado = '0',
+                                    cdr_descripcion = CONCAT('La ',
+                                    CASE 
+                                              WHEN idtipo_comprobante = '03' THEN CONCAT('Boleta de Venta número ', serie,'-',LPAD(numero_correlativo,6,'0')) 
+                                              WHEN idtipo_comprobante = '07' THEN CONCAT('Nota de Crédito número', serie,'-',LPAD(numero_correlativo,6,'0')) 
+                                              ELSE CONCAT('Nota de Débito número', serie,'-',LPAD(numero_correlativo,6,'0')) 
+                                              END, ', ha sido aceptada')
+                                    WHERE estado_mrcb AND CONCAT(serie,numero_correlativo,idtipo_comprobante) IN (SELECT CONCAT(dersd.serie_comprobante, dersd.numero_correlativo_comprobante,dersd.idtipo_comprobante)
+                                    FROM `documento_electronico_resumen_diario` ders
+                                    INNER JOIN documento_electronico_resumen_diario_detalle dersd
+                                    ON dersd.id_documento_electronico_resumen_diario = ders.id_documento_electronico_resumen_diario
+                                    WHERE ders.id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."')";
+                        $this->consultaRaw($sql);
+                    } else {
+                   // if ($cod_sunat === "-1"){
+                        $sql = "UPDATE
+                                    documento_electronico
+                                    SET cdr_estado = '-1'
+                                    WHERE estado_mrcb AND CONCAT(serie,numero_correlativo,idtipo_comprobante) IN (SELECT CONCAT(dersd.serie_comprobante, dersd.numero_correlativo_comprobante,dersd.idtipo_comprobante)
+                                    FROM `documento_electronico_resumen_diario` ders
+                                    INNER JOIN documento_electronico_resumen_diario_detalle dersd
+                                    ON dersd.id_documento_electronico_resumen_diario = ders.id_documento_electronico_resumen_diario
+                                    WHERE ders.id_documento_electronico_resumen_diario = '".$respuesta->id_documento_electronico_resumen_diario."')";
+                        $this->consultaRaw($sql);
+                    }
+                }
             }
        
             $this->commit();
@@ -832,5 +866,232 @@ class ResumenDiario extends Conexion {
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }
+    }
+
+    public function copiarResumenDiarioXID($arreglo_ids){
+        try {
+            //Copiaar resuemn con fecha actual para poder ser enviado nuevamente en caso un envio anterior FALLO.
+            $this->beginTransaction();
+
+            $this->fecha_ahora = date("Y-m-d H:i:s");
+            $fechaGeneracion = date("Y-m-d");
+            $codigo = "RC";
+            
+
+            $sql =  "SELECT  COALESCE(MAX(rd.secuencia) + 1, 1) 
+                    FROM documento_electronico_resumen_diario rd 
+                    WHERE rd.estado_mrcb and rd.fecha_generacion = :0";
+
+            $secuencia_base = $this->consultarValor($sql, $fechaGeneracion);
+
+            $secuencia = 0;
+            $cantidad_generados = 0;
+            foreach ($arreglo_ids as $key => $objResumen) {
+                $sql = "SELECT fecha_emision
+                        FROM documento_electronico_resumen_diario
+                        WHERE id_documento_electronico_resumen_diario = :0 AND estado_mrcb";
+            
+                $resumen_diario = $this->consultarFila($sql, [$objResumen["id"]]);
+
+                $fechaEmision = $resumen_diario["fecha_emision"];
+                //$fechaGeneracion = date('Y-m-d', strtotime($fechaEmision . ' +5 day'));
+                $serie = str_replace("-","",$fechaGeneracion);
+                $secuencia = $secuencia == 0  ? $secuencia_base : ($secuencia + 1);
+
+                $campos_valores = [
+                    "codigo" => $codigo,
+                    "serie"=>$serie,
+                    "secuencia"=>$secuencia,
+                    "fecha_emision"=>$fechaEmision,
+                    "fecha_generacion"=>$fechaGeneracion,
+                    "nombre_resumen"=>F_RUC.'-'.$codigo."-".$serie."-".$secuencia,
+                    "fecha_hora_registro"=>$this->fecha_ahora
+                ];
+
+                $this->insert("documento_electronico_resumen_diario", $campos_valores);
+                $this->id_documento_electronico_rd = $this->getLastID();
+                
+                $sqlComprobantes = "INSERT INTO documento_electronico_resumen_diario_detalle 
+                                (id_documento_electronico_resumen_diario,
+                                    item,
+                                    idtipo_comprobante,
+                                    serie_comprobante,
+                                    numero_correlativo_comprobante,
+                                    idtipo_documento_cliente,
+                                    numero_documento_cliente,
+                                    serie_comprobante_modificado,
+                                    numero_correlativo_comprobante_modificado,
+                                    idtipo_comprobante_modificado,
+                                    status,
+                                    id_moneda,
+                                    importe_gravadas,
+                                    importe_exoneradas,
+                                    importe_inafectas,
+                                    importe_exportacion,
+                                    importe_gratuitas,
+                                    importe_otros,
+                                    importe_igv,
+                                    importe_isc,
+                                    importe_total)
+                                SELECT 
+                                    ".$this->id_documento_electronico_rd." as id_documento_electronico_resumen_diario,
+                                    item,
+                                    idtipo_comprobante,
+                                    serie_comprobante,
+                                    numero_correlativo_comprobante,
+                                    idtipo_documento_cliente,
+                                    numero_documento_cliente,
+                                    serie_comprobante_modificado,
+                                    numero_correlativo_comprobante_modificado,
+                                    idtipo_comprobante_modificado,
+                                    status,
+                                    id_moneda,
+                                    importe_gravadas,
+                                    importe_exoneradas,
+                                    importe_inafectas,
+                                    importe_exportacion,
+                                    importe_gratuitas,
+                                    importe_otros,
+                                    importe_igv,
+                                    importe_isc,
+                                    importe_total
+                                    FROM documento_electronico_resumen_diario_detalle 
+                                WHERE id_documento_electronico_resumen_diario = ".$objResumen["id"]." AND estado_mrcb";
+                
+                $this->consultaRaw($sqlComprobantes);
+
+                if ($this->generar_xml){
+                    $objXMLComprobante = $this->generarXML();
+                    $fue_generado = $objXMLComprobante["fue_generado"];
+                    $datosComprobante = $objXMLComprobante["datos_comprobante"];
+                    $respuesta = $objXMLComprobante["respuesta"];
+                }
+    
+                if ($this->firmar_comprobante){
+                    //DEBO FIRMAR EL BENDITO COMPROBANTE ?
+                    $objXMLFirmaComprobante =  $this->firmarXML($datosComprobante);
+                    $valor_firma = $objXMLFirmaComprobante["valor_firma"];
+                    $valor_resumen = $objXMLFirmaComprobante["valor_resumen"];
+                    $respuestafirma = $objXMLFirmaComprobante["respuestafirma"];
+                }
+                
+                $campos_valores = [];
+
+                if ($fue_generado == "1"){
+                    $campos_valores["fue_generado"] = $fue_generado;
+                }
+    
+                if ($valor_firma != NULL){
+                    $campos_valores["fue_firmado"] = "1";
+                    $campos_valores["valor_firma"] = $valor_firma;
+                    $campos_valores["valor_resumen"] = $valor_resumen;
+                }
+    
+                if (count($campos_valores)){
+                    $this->update("documento_electronico_resumen_diario", 
+                                $campos_valores,
+                                ["id_documento_electronico_resumen_diario"=>$this->id_documento_electronico_rd]);
+                }
+
+                $cantidad_generados++;
+            }
+
+            $this->commit();
+            return  ["msj"=>"Se ha generado ".$cantidad_generados." resumenes diarios."];
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function extra($status_envio = "1"){
+        $this->id_documento_electronico_rd = 478;
+
+        $sqlComprobantes = "SELECT 
+                CONCAT(de.serie,'-', LPAD(de.numero_correlativo,6,'0')) as NRO_COMPROBANTE,
+                de.serie as SERIE_COMPROBANTE,
+                de.numero_correlativo as CORRELATIVO_COMPROBANTE,
+                de.idtipo_comprobante as TIPO_COMPROBANTE,
+                de.idtipo_moneda as COD_MONEDA,
+                de.numero_documento_cliente as NRO_DOCUMENTO,
+                de.idtipo_documento_cliente as TIPO_DOCUMENTO,
+                de.idtipo_comprobante_modifica as TIPO_COMPROBANTE_REF,
+                COALESCE(CONCAT(de.serie_documento_modifica,'-',de.numero_documento_modifica),'') as NRO_COMPROBANTE_REF,
+                COALESCE(de.serie_documento_modifica,'') as SERIE_COMPROBANTE_REF,
+                COALESCE(de.numero_documento_modifica,'') as CORRELATIVO_COMPROBANTE_REF,
+                '$status_envio' as STATUS,
+                de.total_igv as IGV,
+                de.total_isc as ISC,
+                de.idtipo_moneda as COD_MONEDA,
+                de.total_otro_imp as OTROS,
+                de.importe_total as TOTAL,
+                de.total_gravadas as GRAVADA,
+                de.total_inafectas as INAFECTO,
+                de.total_exoneradas as EXONERADO,
+                '0.00' as EXPORTACION,
+                '0.00' as GRATUITAS
+                FROM documento_electronico de 
+                WHERE de.fecha_emision = :0 AND de.estado_mrcb 
+                    AND DATE(fecha_hora_registrado) <> fecha_emision
+                    AND de.idtipo_comprobante IN ('03','07','08') AND de.serie LIKE 'B%'
+                    AND cdr_estado IS NULL AND estado_sunat = 0
+                    AND ".($status_envio == "1" ? " true " : "  estado_anulado = 1 AND (DATE(de.fecha_hora_anulacion) = de.fecha_emision) ");
+
+        $comprobantes = $this->consultarFilas($sqlComprobantes, ["2022-07-22"]);
+
+        if (count($comprobantes) <= 0 ){
+            return ;
+        }
+
+        $campos = [
+            "id_documento_electronico_resumen_diario",
+            "item",
+            "idtipo_comprobante",
+            "serie_comprobante",
+            "numero_correlativo_comprobante",
+            "idtipo_documento_cliente",
+            "numero_documento_cliente",
+            "serie_comprobante_modificado",
+            "numero_correlativo_comprobante_modificado",
+            "idtipo_comprobante_modificado",
+            "status",
+            "id_moneda",
+            "importe_gravadas",
+            "importe_exoneradas",
+            "importe_inafectas",
+            "importe_exportacion",
+            "importe_gratuitas",
+            "importe_otros",
+            "importe_igv",
+            "importe_isc",
+            "importe_total"
+        ];
+        $valores = [];
+        foreach ($comprobantes as $key => $value) {
+            array_push($valores, [
+                $this->id_documento_electronico_rd,
+                ($key + 1),
+                $value["TIPO_COMPROBANTE"],
+                $value["SERIE_COMPROBANTE"],
+                $value["CORRELATIVO_COMPROBANTE"],
+                $value["TIPO_DOCUMENTO"],
+                $value["NRO_DOCUMENTO"],
+                $value["SERIE_COMPROBANTE_REF"],
+                $value["CORRELATIVO_COMPROBANTE_REF"],
+                $value["TIPO_COMPROBANTE_REF"],
+                $value["STATUS"],
+                $value["COD_MONEDA"],
+                $value["GRAVADA"],
+                $value["EXONERADO"],
+                $value["INAFECTO"],
+                $value["EXPORTACION"],
+                $value["GRATUITAS"],
+                $value["OTROS"],
+                $value["IGV"],
+                $value["ISC"],
+                $value["TOTAL"]
+            ]);
+        }
+
+        $this->insertMultiple("documento_electronico_resumen_diario_detalle", $campos, $valores);
     }
 }

@@ -21,8 +21,8 @@
                     <a class="dropdown-item dropdown-separator"></a>
                     
                     {{#if_ estado_anulado '==' 0}}
+                    <!--
                         <a class="dropdown-item btn-canjearcomprobante" data-cliente="{{cliente}}" data-id="{{id_atencion_medica}}" href="#" title="Canjear Comprobante"><i class="fa fa-refresh"></i> CANJEAR COMPROBANTE</a>
-                        <!--
                         <a class="dropdown-item btn-anularmovimiento" data-cliente="{{cliente}}" data-id="{{id_atencion_medica}}" href="#" title="Anular Atención"><i class="fa fa-trash"></i> ANULAR ATENCIÓN</a>
                         {{#iddocumento_electronico}}
                         <a class="dropdown-item btn-anularcomprobante" data-cliente="{{../cliente}}" data-id="{{../id_atencion_medica}}" href="#" title="Anular Comprobante"><i class="fa fa-trash"></i> ANULAR COMPROBANTE</a>

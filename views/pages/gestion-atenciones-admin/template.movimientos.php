@@ -13,6 +13,7 @@
                     {{#iddocumento_electronico}}
                     <a class="dropdown-item" rel="noopener noreferrer" target="_blank" href="../../../impresiones/ticket.comprobante.php?id={{this}}" title="Ver Comprobante"><i class="fa fa-eye"></i> COMPROBANTE</a>
                     <a class="dropdown-item" rel="noopener noreferrer" target="_blank" href="../../../impresiones/comprobante.a4.pdf.php?id={{this}}" title="Ver Comprobante"><i class="fa fa-eye"></i> COMPROBANTE (A4)</a>
+                    <a class="dropdown-item btn-copiarcomprobante" data-comprobante="{{../comprobante}}" data-id="{{this}}" href="#" title="Copiar Comprobante"><i class="fa fa-copy"></i> COPIAR COMPROBANTE</a>
                     {{/iddocumento_electronico}}
 
                     {{#iddocumento_electronico_relacionado}}
@@ -29,6 +30,7 @@
                         <a class="dropdown-item btn-canjearcomprobante" data-cliente="{{cliente}}" data-id="{{id_atencion_medica}}" href="#" title="Canjear Comprobante"><i class="fa fa-refresh"></i> CANJEAR COMPROBANTE</a>
                         <a class="dropdown-item btn-anularmovimiento" data-cliente="{{cliente}}" data-id="{{id_atencion_medica}}" href="#" title="Anular Atención"><i class="fa fa-trash"></i> ANULAR ATENCIÓN</a>
                         {{#iddocumento_electronico}}
+                        
                         <!-- <a class="dropdown-item btn-anularcomprobante" data-cliente="{{../cliente}}" data-id="{{../id_atencion_medica}}" href="#" title="Anular Comprobante"><i class="fa fa-trash"></i> ANULAR COMPROBANTE</a> -->
                         {{/iddocumento_electronico}}
                     {{/if_}}

@@ -26,6 +26,23 @@ try {
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 
+        case "leer":
+            $obj->id_rol = isset($_POST["p_id_rol"]) ? $_POST["p_id_rol"] : NULL;
+            $data = $obj->leer();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "guardar":
+            $obj->id_rol = isset($_POST["p_id_rol"]) ? $_POST["p_id_rol"] : NULL;
+            $obj->descripcion = isset($_POST["p_descripcion"]) ? $_POST["p_descripcion"] : NULL;
+
+            $interfaces = isset($_POST["p_id_interfaz"]) ? $_POST["p_id_interfaz"] : '';
+            $obj->interfaces = json_decode($interfaces);
+
+            $data = $obj->guardar();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
         default:
             Funciones::imprimeJSON("500","ERROR","No existe la función consultada en el API.");
         break;

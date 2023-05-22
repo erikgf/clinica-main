@@ -14,6 +14,15 @@
             min-height: 50px;
             max-height: 100px;
         }
+
+        @media (min-width: 576px){
+            .modal-dialog {
+                /* max-width: 500px; */
+                max-width: 98%;
+                margin: 1.75rem auto;
+            }
+        }
+        
     </style>
     <script type="text/javascript">
         function auto_grow(element) {

@@ -121,6 +121,15 @@
                             </select>
                         </div>
                     </div>
+                    <div class="col-md-2">
+                        <div  class="form-group input-group-sm">
+                            <label for="txt-facturacionconvenio-tipomoneda">Tipo de Moneda (<span style="color:red">*</span>)</label>
+                            <select class="form-control" id="txt-facturacionconvenio-tipomoneda">
+                                <option selected value="PEN">SOLES</option>
+                                <option value="USD">DOLARES</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 <hr>

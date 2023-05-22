@@ -62,9 +62,7 @@ class Medico extends Conexion {
 
             if ($this->id_medico == NULL){
                 $campos_valores["fecha_hora_registro"] = $fecha_ahora;
-
                 $this->insert("medico", $campos_valores);
-
                 $this->id_medico = $this->getLastID();
             } else {
                 $campos_valores["fecha_hora_edicion"] = $fecha_ahora;
@@ -73,6 +71,44 @@ class Medico extends Conexion {
                     "id_medico"=>$this->id_medico
                 ];
 
+                $sql  = "INSERT INTO bitacora_medico(
+                    id_medico, 
+                    numero_documento,
+                    nombres_apellidos,
+                    colegiatura,
+                    rne,
+                    telefono_uno,
+                    telefono_dos,
+                    correo,
+                    domicilio,
+                    id_especialidad_medico,
+                    id_promotora,
+                    observaciones,
+                    tipo_personal_medico,
+                    es_informante,
+                    es_realizante,
+                    id_usuario_registrado,
+                    fecha_hora_registrado)
+                    SELECT  id_medico, 
+                            numero_documento,
+                            nombres_apellidos,
+                            colegiatura,
+                            rne,
+                            telefono_uno,
+                            telefono_dos,
+                            correo,
+                            domicilio,
+                            id_especialidad_medico,
+                            id_promotora,
+                            observaciones,
+                            tipo_personal_medico,
+                            es_informante,
+                            es_realizante,
+                            :0,
+                            CURRENT_TIMESTAMP
+                            FROM medico WHERE id_medico = :1 AND estado_mrcb";
+
+                $this->ejecutarSimple($sql, [$this->id_usuario_registrado, $this->id_medico]);
                 $this->update("medico", $campos_valores, $campos_valores_where);
             }
 
@@ -486,4 +522,73 @@ class Medico extends Conexion {
         }
     }
     
+
+    public function getMedicosOrdenantesRandom($cantidad, $fecha_inicio, $fecha_fin){
+        try {
+
+
+            $sql = "SELECT 
+                        distinct am.id_medico_ordenante as id_medico
+                    FROM atencion_medica am 
+                    WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1)
+                    ORDER BY RAND()
+                    LIMIT ".$cantidad;
+                    
+            $data =  $this->consultarFilas($sql, [$fecha_inicio,$fecha_fin]);
+            return $data;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
+        }
+    }
+
+    public function listarLiquidacionesSeguimientoMedico($fecha_inicio, $fecha_fin, $totales_mayores_a){
+        try {
+
+            $params = [$fecha_inicio, $fecha_fin];
+
+            $sql = "SELECT MONTH('$fecha_inicio') as mes_inicio, YEAR('$fecha_inicio') as anio_inicio,  MONTH('$fecha_fin') as mes_fin, YEAR('$fecha_fin') as anio_fin";
+            $dataMesAnioFechas = $this->consultarFila($sql);
+
+            $fechas = [];
+
+            $mesIterado = $dataMesAnioFechas["mes_inicio"];
+            $anioIterado = $dataMesAnioFechas["anio_inicio"];
+
+            $seguirLoop = false;
+            do {
+                array_push($fechas, $mesIterado.'-'.$anioIterado);
+                $detenerLoop = $mesIterado == $dataMesAnioFechas["mes_fin"] && $anioIterado == $dataMesAnioFechas["anio_fin"];
+
+                //detenerLoop = false
+                if ($mesIterado >= 12){
+                    $mesIterado = 1;
+                    $anioIterado++;
+                } else{
+                    $mesIterado++;
+                }
+
+            } while (!$detenerLoop);
+            
+            $sql = "SELECT 
+                        m.nombres_apellidos as medico,
+                        COALESCE(pr.descripcion, 'NO TIENE') as promotora,
+                        CONCAT(MONTH(am.fecha_atencion),'-',YEAR(am.fecha_atencion)) as mes_anio_atencion,
+                        ROUND(SUM(ams.monto_comision_categoria_sin_igv),2) as comision_sin_igv
+                        FROM atencion_medica am 
+                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
+                        INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
+                        LEFT JOIN promotora pr ON pr.id_promotora = am.id_promotora_ordenante
+                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND  :1) AND id_medico_ordenante NOT IN (1,2)
+                        GROUP BY m.id_medico, m.nombres_apellidos, CONCAT(MONTH(am.fecha_atencion),'-',YEAR(am.fecha_atencion))
+                        HAVING  comision_sin_igv >  ".$totales_mayores_a."
+                        ORDER BY m.nombres_apellidos";
+                    
+            $data =  $this->consultarFilas($sql, $params);
+            return ["data"=>$data, "fechas"=>$fechas];
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+    
+
 }

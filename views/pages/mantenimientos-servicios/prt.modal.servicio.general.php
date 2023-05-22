@@ -1,5 +1,5 @@
 <div class="modal fade" id="mdl-serviciogeneral"  role="dialog" aria-labelledby="mdl-serviciogenerallabel">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-sm" role="document">
         <div class="modal-content" id="frm-serviciogeneral">
             <div class="modal-header">
                 <h4 class="modal-title" id="mdl-serviciogenerallabel">Gestionar Servicio</h4>
@@ -34,7 +34,7 @@
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="txt-serviciogeneral-categoriaservicio">Área/Categoría (<span style="color:red">*</span>)</label>
-                                    <select required class="form-control" id="txt-serviciogeneral-categoriaservicio"></select>
+                                    <select  class="form-control" id="txt-serviciogeneral-categoriaservicio"></select>
                                 </div>
                             </div>
                         </div>

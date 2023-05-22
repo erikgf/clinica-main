@@ -217,6 +217,7 @@ try {
             $obj->id_tipo_comprobante =  isset($_POST["p_id_tipo_comprobante"]) ? $_POST["p_id_tipo_comprobante"] : "";
             $obj->serie =  isset($_POST["p_serie_comprobante"]) ? $_POST["p_serie_comprobante"] : "";
             $obj->descuento_global  = 0.00;
+            $obj->tipo_moneda =  isset($_POST["p_tipo_moneda"]) ? $_POST["p_tipo_moneda"] : "PEN";
             $obj->fecha_emision =  isset($_POST["p_fecha_emision"]) ? $_POST["p_fecha_emision"] : "";
             $obj->fecha_vencimiento = isset($_POST["p_fecha_vencimiento"]) ? $_POST["p_fecha_vencimiento"] : "";
             $obj->importe_total =  isset($_POST["p_importe_total"]) ? $_POST["p_importe_total"] : 0.00;
@@ -276,6 +277,23 @@ try {
 
             $obj->id_documento_electronico = $id_documento_electronico;
             $data = $obj->validarCDRManual();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "copiar_comprobante":
+            $id_documento_electronico = Funciones::sanitizar($_POST["p_id_documento_electronico"]);
+            if ($id_documento_electronico == ""){
+                throw new Exception("No se ha enviado ID Comprobante.", 1);
+            }
+
+            $obj->generar_xml = true;
+            $obj->firmar_xml = true;
+
+            $obj->observaciones = Funciones::sanitizar($_POST["p_observaciones"]);
+            $obj->observaciones = $obj->observaciones == "" ? NULL : $obj->observaciones;
+           
+            $obj->id_documento_electronico_previo = $id_documento_electronico;
+            $data = $obj->copiarComprobante();
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 

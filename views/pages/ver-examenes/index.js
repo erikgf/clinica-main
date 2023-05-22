@@ -154,7 +154,7 @@ var GestionAtenciones = function() {
     }
 
     var abrirExcel = function(){
-        window.open("../../../impresiones/ver.examenes.xls.php?fi="+$txtFechaInicio.val()+"&ff="+$txtFechaFin.val()+"&ma="+($txtMedicosInformantes.val() || "")+"&mr="+($txtMedicosRealizantes.val() || "")+"&est="+ESTADO+"&a="+$txtArea.val(),"_blank")
+        window.open("../../../impresiones/ver.examenes.xls.php?fi="+$txtFechaInicio.val()+"&ff="+$txtFechaFin.val()+"&ma="+($txtMedicosInformantes.val() || "")+"&mr="+($txtMedicosRealizantes.val() || "")+"&est="+ESTADO+"&a="+($txtArea.val() || ""),"_blank")
     };
 
     var mostrarPagos = function(btn){

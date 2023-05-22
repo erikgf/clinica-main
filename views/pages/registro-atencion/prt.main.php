@@ -2,21 +2,29 @@
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Registro de Atenciones</h3>
-        <div class="card-tools">
-            <h3>
-                <span id="lbl-nombrecaja" class="badge bg-red">SELECCIONAR CAJA</span>
-                <select id="txt-seleccionadorcaja" class="form-control" style="display:none">
-                    <option value="" selected>Seleccionar Caja</option>
-                    <option value="1">CAJA 1</option>
-                    <option value="2">CAJA 2</option>
-                    <option value="3">CAJA 3</option>
-                    <option value="4">CAJA 4</option>
-                    <option value="5">CAJA 5 - LAMBAYEQUE</option>
-                    <option value="6">CAJA INGRESOS Y TRANSFER</option>
-                    <option value="7">CAJA ADMISIóN</option>
-                    <option value="0">Cancelar</option>
-                </select>
-            </h3>
+        <div class="card-tools" style="display:flex">
+            <div style="padding: 0px 16px;display:none">
+                <h3>
+                    <span id="lbl-nombrecampaña" class="badge bg-primary">ACTIVA: CAMPAÑA ACTIVA</span>
+                </h3>
+            </div>
+            <div>
+                <h3>
+                    <span id="lbl-nombrecaja" class="badge bg-red">SELECCIONAR CAJA</span>
+                    <select id="txt-seleccionadorcaja" class="form-control" style="display:none">
+                        <option value="" selected>Seleccionar Caja</option>
+                        <option value="1">CAJA 1</option>
+                        <option value="2">CAJA 2</option>
+                        <option value="3">CAJA 3</option>
+                        <option value="4">CAJA 4</option>
+                        <option value="5">CAJA 5 - LAMBAYEQUE</option>
+                        <option value="6">CAJA INGRESOS Y TRANSFER</option>
+                        <option value="7">CAJA ADMISIóN</option>
+                        <!-- <option value="100">CAJA TEMPORAL</option>-->
+                        <option value="0">Cancelar</option>
+                    </select>
+                </h3>
+            </div>
         </div>
     </div>
     <div class="card-body">
@@ -91,6 +99,7 @@
                         <button class="btn-warning btn-block btn btn-sm text-right" id="btn-descuento" data-toggle="modal" data-target="#mdl-descuento">
                             SIN DESCUENTO                            
                         </button>
+                        <!-- <span id="lbl-rotulocampañadescuento" style="display:none" class="btn-block btn-sm font-weight-bold text-right">CON DESCUENTO POR CAMPAÑA</span>-->
                         <div class="color-palette-set" id="blk-mostrardescuento" style="display:none;"  data-toggle="modal" data-target="#mdl-descuento">
                             <div class="bg-warning color-palette" style="padding: 10px;display:flex; justify-content: flex-end;padding-right: 30px;">
                                 <span style="margin-right:15px">Descuento</span>

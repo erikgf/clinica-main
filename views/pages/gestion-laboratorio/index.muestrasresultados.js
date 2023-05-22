@@ -638,11 +638,21 @@ var Atenciones = function() {
                 trChildren = tr.children,
                 id_lab_examen =  tr.dataset.id ?? "",
                 nivel = tr.dataset.nivel,
-                descripcion = id_lab_examen == "" ? trChildren[COLS_TABLA_RESULTADOS.descripcion].children[0].value : trChildren[COLS_TABLA_RESULTADOS.descripcion].innerText,
+                descripcion,
                 resultado = trChildren[COLS_TABLA_RESULTADOS.resultado].children[0].value,
                 unidad =  trChildren[COLS_TABLA_RESULTADOS.unidad].children[0].value,
                 valores_referencia =  trChildren[COLS_TABLA_RESULTADOS.valores_referencia].children[0].value,
                 metodo =  trChildren[COLS_TABLA_RESULTADOS.metodo].children[0].value;
+
+            if (id_lab_examen == ""){
+                if (trChildren[COLS_TABLA_RESULTADOS.descripcion].children.length){
+                    descripcion = trChildren[COLS_TABLA_RESULTADOS.descripcion].children[0].value;
+                } else {
+                    descripcion = trChildren[COLS_TABLA_RESULTADOS.descripcion].innerText;
+                }
+            } else {
+                descripcion = trChildren[COLS_TABLA_RESULTADOS.descripcion].innerText;
+            }
 
             arregloExamenesValores.push({
                 id_lab_examen : id_lab_examen,

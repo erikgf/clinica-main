@@ -369,14 +369,27 @@ class CajaMovimiento extends Conexion {
             }
 
             $sql = "SELECT 
-                    id_caja_instancia, id_registro_atencion as id_atencion_medica, id_tipo_movimiento
-                    FROM caja_instancia_movimiento 
+                    cim.id_caja_instancia, id_registro_atencion as id_atencion_medica, id_tipo_movimiento,
+                    (SELECT estado_caja = 'C' FROM caja_instancia WHERE id_caja_instancia = cim.id_caja_instancia) as es_caja_cerrada
+                    FROM caja_instancia_movimiento cim
                     WHERE id_caja_instancia_movimiento = :0 AND estado_mrcb";
             $objCajaInstanciaMovimiento = $this->consultarFila($sql, [$this->id_caja_instancia_movimiento]);
 
             if ($objCajaInstanciaMovimiento == false){
                 throw new Exception("Movimiento de caja no existe.", 1);
             }
+
+            $sql = "SELECT c.id_rol 
+                        FROM usuario u 
+                        INNER JOIN colaborador c ON c.id_colaborador = u.id_colaborador
+                        WHERE u.id_usuario = :0";
+
+            $id_rol = $this->consultarValor($sql, [$this->id_usuario_registrado]);
+
+            if ($id_rol != "1"){
+                throw new Exception("Solo un usuario ADMINISTRADOR puede anular movimientos.", 1);
+            }
+
 
             $objR = ["msj"=>""];
             switch($objCajaInstanciaMovimiento["id_tipo_movimiento"]){
@@ -386,6 +399,19 @@ class CajaMovimiento extends Conexion {
                     $objAtencion->id_usuario_registrado = $this->id_usuario_registrado;
                     $objAtencion->id_atencion_medica = $objCajaInstanciaMovimiento["id_atencion_medica"];
                     $objR = $objAtencion->anularAtencion($motivo_anulacion);
+                break;
+                default:
+                    $this->update("caja_instancia_movimiento", [
+                        "estado_mrcb"=>"0",
+                        "fecha_hora_anulado"=>date("Y-m-d H:i:s"),
+                        "fue_anulado_caja_cerrada"=> $objCajaInstanciaMovimiento["es_caja_cerrada"],
+                        "motivo_anulado"=>$motivo_anulacion,
+                        "id_usuario_anulado"=>$this->id_usuario_registrado
+                    ], [
+                        "id_caja_instancia_movimiento"=>$this->id_caja_instancia_movimiento
+                    ]);
+
+                    $objR["msj"] = "Movimiento Anulado correctamente.";
                 break;
             }
             

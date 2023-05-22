@@ -174,6 +174,10 @@ var Servicio = function() {
 
                 $tbbServicios.html(tplServicios(result));
                 TABLA_SERVICIOS = $tblServicios.DataTable({
+                    dom: 'Bfrtip',
+                    buttons: [
+                        'copy', 'csv', 'excel', 'pdf'
+                    ],
                     "ordering":true,
                     "pageLength": 25,
                     "columns": [

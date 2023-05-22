@@ -13,10 +13,11 @@
  
  define("F_CODIGO_UBIGEO","140101");
  define("F_DIRECCION","Calle Tinajones N° 125 Urb. Federico Villareal");
+ define("F_DIRECCION_2","Calle Andrés Avelino Cáceres N° 434");
  define("F_DIRECCION_DEPARTAMENTO","LAMBAYEQUE");
  define("F_DIRECCION_PROVINCIA","CHICLAYO");
  define("F_DIRECCION_DISTRITO","CHICLAYO");
- define("F_URBANIZACION"," Urb. Federico Villareal");
+ define("F_URBANIZACION"," Urb Federico Villareal");
  define("F_RESOLUCION","097-2012/SUNAT");
  define("F_CODIGO_PAIS","PE");
  define("F_TELEFONO","74273007 - 978102103");
@@ -35,8 +36,8 @@
  define("F_ENVIAR_CORREOS","0");//0: no, 1: si
  define("F_CORREO","erik.ur.gf.10@gmail.com");
  define("F_PASS_MAIL","");
- define("F_TOKEN_PROVEEDOR", "facturalaya_farley_nBQctdO0dXGSnNU");
- define("F_FECHA_TOPE", "10-07-2022");
+ define("F_TOKEN_PROVEEDOR", "FACTURALAYA_FN567YHDJC2NRHNZ0CXD");
+ define("F_FECHA_TOPE", "13-06-2023");
  
  define("F_MODO_PROCESO","1"); /*PRODUCCION: 1, BETA: 3*/
  define("F_RUTA","https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService"); 

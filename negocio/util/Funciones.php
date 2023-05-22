@@ -141,7 +141,7 @@ class Funciones {
 //------            uramos@gmail.com           ---------------
 //------    10 de junio de 2009. México, D.F.  ---------------
 //------    PHP Version 4.3.1 o mayores (aunque podría funcionar en versiones anteriores, tendrías que probar)
-       public static function numtoletras($xcifra)
+       public static function numtoletras($xcifra, $tipo_moneda = "PEN")
         {
             $xarray = array(0 => "Cero",
                 1 => "UN", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE",
@@ -150,6 +150,13 @@ class Funciones {
                 100 => "CIENTO", 200 => "DOSCIENTOS", 300 => "TRESCIENTOS", 400 => "CUATROCIENTOS", 500 => "QUINIENTOS", 600 => "SEISCIENTOS", 700 => "SETECIENTOS", 800 => "OCHOCIENTOS", 900 => "NOVECIENTOS"
             );
         //
+            $arreglo_monedas = [
+                "PEN"=>"SOLES",
+                "USD"=>"DOLARES"
+            ];
+
+            $cadena_moneda = $arreglo_monedas[$tipo_moneda];
+
             $xcifra = trim($xcifra);
             $xlength = strlen($xcifra);
             $xpos_punto = strpos($xcifra, ".");
@@ -263,13 +270,13 @@ class Funciones {
                             break;
                         case 2:
                             if ($xcifra < 1) {
-                                $xcadena = "CERO Y $xdecimales/100 SOLES";
+                                $xcadena = "CERO Y $xdecimales/100 ".$cadena_moneda." ";
                             }
                             if ($xcifra >= 1 && $xcifra < 2) {
-                                $xcadena = "UN Y $xdecimales/100 SOLES ";
+                                $xcadena = "UN Y $xdecimales/100 ".$cadena_moneda." ";
                             }
                             if ($xcifra >= 2) {
-                                $xcadena.= " Y $xdecimales/100 SOLES "; //
+                                $xcadena.= " Y $xdecimales/100 ".$cadena_moneda." "; //
                             }
                             break;
                     } // endswitch ($xz)
@@ -302,13 +309,17 @@ class Funciones {
     }
 
 
-    public static function imprimeJSON($estado, $mensaje, $datos){
+    public static function imprimeJSON($estado, $mensaje, $datos, $beautify = false){
         //header("HTTP/1.1 ".$estado." ".$mensaje);
         header("HTTP/1.1 ".$estado);
         header('Content-Type: application/json');
        // $response["estado"] = $estado;
         //$response["mensaje"]   = $mensaje;
        // $response["datos"]  = $datos;
+       if ($beautify){
+            print_r($datos);
+            return;
+       }
     
         echo json_encode($datos);
     }

@@ -13,7 +13,10 @@ class Usuario extends Conexion{
                         CONCAT(c.nombres,' ',apellido_paterno,' ',apellido_materno) as nombres_apellidos, 
                         c.id_rol,
                         r.descripcion as nombre_rol,
-                        r.interfaz_inicio_sesion
+                        COALESCE((SELECT url from rol_interfaz ri
+                            INNER JOIN interfaz i ON i.id_interfaz = ri.id_interfaz
+                            WHERE ri.id_rol = c.id_rol
+                            LIMIt 1),'') as interfaz_inicio_sesion
                     FROM usuario u 
                     INNER JOIN colaborador c ON c.id_colaborador = u.id_colaborador
                     INNER JOIN rol r ON r.id_rol = c.id_rol
@@ -121,6 +124,33 @@ class Usuario extends Conexion{
 
             $this->update("usuario", ["clave"=>md5($nueva_clave)], ["id_usuario"=>$this->id_usuario]);
             return ["msj"=>"Clave cambiada con éxito"];
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function getInterfaces($id_usuario_registro){
+        try {
+
+            if ($id_usuario_registro == null){
+                return [];
+            }
+
+            $sql  = "SELECT id_rol FROM colaborador WHERE id_colaborador IN (SELECT id_colaborador FROM usuario WHERE id_usuario = :0)";
+            $id_rol = $this->consultarValor($sql, [$id_usuario_registro]);
+
+            $sql = "SELECT 
+                        i.rotulo, 
+                        i.url,
+                        i.id_interfaz_padre as padre
+                        FROM rol_interfaz ri
+                        INNER JOIN interfaz i ON i.id_interfaz = ri.id_interfaz
+                        WHERE ri.id_rol IN (:0)
+                        ORDER BY i.id_interfaz";
+            
+            $interfaces =  $this->consultarFilas($sql, [$id_rol]);
+
+            return ["id_rol"=>$id_rol, "interfaces"=>$interfaces];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }

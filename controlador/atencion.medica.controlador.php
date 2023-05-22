@@ -54,7 +54,8 @@ try {
             $obj->boleta_apellido_materno = Funciones::sanitizar(isset($_POST["p_boleta_apellido_materno"]) ? $_POST["p_boleta_apellido_materno"] : "");
             $obj->boleta_sexo = Funciones::sanitizar(isset($_POST["p_boleta_sexo"]) ? $_POST["p_boleta_sexo"] : "");
             $obj->boleta_fecha_nacimiento = Funciones::sanitizar(isset($_POST["p_boleta_fecha_nacimiento"]) ? $_POST["p_boleta_fecha_nacimiento"] : "");
-
+            $obj->boleta_direccion = Funciones::sanitizar(isset($_POST["p_boleta_direccion"]) ? $_POST["p_boleta_direccion"] : "");
+            
             $obj->id_convenio_empresa = (isset($_POST["p_id_convenio_empresa"]) && $_POST["p_id_convenio_empresa"] != "") ? $_POST["p_id_convenio_empresa"] : NULL;
             $obj->convenio_porcentaje = Funciones::sanitizar(isset($_POST["p_convenio_porcentaje"]) ? $_POST["p_convenio_porcentaje"] : NULL);
 
@@ -284,6 +285,7 @@ try {
                 $obj->boleta_apellido_materno = Funciones::sanitizar(isset($_POST["p_boleta_apellido_materno"]) ? $_POST["p_boleta_apellido_materno"] : "");
                 $obj->boleta_sexo = Funciones::sanitizar(isset($_POST["p_boleta_sexo"]) ? $_POST["p_boleta_sexo"] : "");
                 $obj->boleta_fecha_nacimiento = Funciones::sanitizar(isset($_POST["p_boleta_fecha_nacimiento"]) ? $_POST["p_boleta_fecha_nacimiento"] : "");
+                $obj->boleta_direccion = Funciones::sanitizar(isset($_POST["p_boleta_direccion"]) ? $_POST["p_boleta_direccion"] : "");
             }
             
             $data = $obj->canjearComprobante();

@@ -238,7 +238,22 @@ var Medico = function(_template, _$tabla, _$tbody){
                 }
 
                 $tbbMedicos.html(tplMedicos(result));
+
+
+                //console.log(find("tr").eq(0).find("td").length;)
                 TABLA_MEDICOS = $tblMedicos.DataTable({
+                    dom: 'Bfrtip',
+                    buttons: [
+                        'copy',
+                        {
+                            extend: 'excelHtml5',
+                            exportOptions: {
+                                columns: Array.from({length: 8}, (_, i) => i + 1)
+                            },
+                            title: 'Médicos DMI'
+                        }
+                    ],
+                    
                     "ordering": false
                 });
                 

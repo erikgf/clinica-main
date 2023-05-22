@@ -219,6 +219,11 @@ class Paciente extends Conexion {
                 throw new Exception("El DOCUMENTO ingresado ya existe en el sistema.", 1);
             }
 
+            $this->nombres = str_replace('|', '', $this->nombres);
+            $this->apellidos_paterno = str_replace('|', '', $this->apellidos_paterno);
+            $this->apellidos_materno = str_replace('|', '', $this->apellidos_materno);
+            $this->domicilio = str_replace('|', '', $this->domicilio);
+
             $campos_valores = [
                 "id_tipo_documento"=>$this->id_tipo_documento,
                 "numero_documento"=>$this->numero_documento == "" ? NULL : $this->numero_documento,
@@ -369,7 +374,7 @@ class Paciente extends Conexion {
         }
     }
 
-    public function registrarClienteXOTRO($id_tipo_documento, $numero_documento, $nombres, $apellido_paterno, $apellido_materno, $sexo, $fecha_nacimiento){
+    public function registrarClienteXOTRO($id_tipo_documento, $numero_documento, $nombres, $apellido_paterno, $apellido_materno, $sexo, $fecha_nacimiento, $direccion = ""){
         try {
 
             $fecha_ahora = date("Y-m-d H:i:s");
@@ -379,15 +384,16 @@ class Paciente extends Conexion {
             $objPaciente = $this->consultarFila($sql, $params);
 
             if ($objPaciente != false){
+                $this->update("paciente", ["fecha_nacimiento"=>$fecha_nacimiento, "domicilio"=>$direccion], ["id_paciente"=>$objPaciente["id_paciente"]]);
                 return array("msj"=>"Registro realizado correctamente.", 
                             "cliente"=>[
                                 "id"=>$objPaciente["id_paciente"],
+                                "direccion"=>$direccion,
                                 "documento_nombres_completos"=>$numero_documento." - ".$apellido_paterno." ".$apellido_materno." ".$nombres]
                             );  
             }
 
             $this->beginTransaction();
-
             
             $campos_valores = [
                 "id_tipo_documento"=>$id_tipo_documento,
@@ -395,7 +401,7 @@ class Paciente extends Conexion {
                 "nombres"=>$nombres,
                 "apellidos_paterno"=>$apellido_paterno,
                 "apellidos_materno"=>$apellido_materno,
-                "domicilio"=>"",
+                "domicilio"=>$direccion,
                 "es_paciente"=>"1",
                 "id_tipo_paciente"=> "1",
                 "id_usuario_registrado"=>$this->id_usuario_registrado,
@@ -413,6 +419,7 @@ class Paciente extends Conexion {
             return array("msj"=>"Registro realizado correctamente.", 
                             "cliente"=>[
                                 "id"=>$id_paciente,
+                                "direccion"=>$direccion,
                                 "documento_nombres_completos"=>$numero_documento." - ".$apellido_paterno." ".$apellido_materno." ".$nombres]
                             );  
 

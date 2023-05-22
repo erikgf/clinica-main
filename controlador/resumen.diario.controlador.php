@@ -70,11 +70,13 @@ try {
                 throw new Exception("No se ha enviado FECHA FINAL para procesar.", 1);
             }
 
+            $notas = isset($_POST["p_nota"]) ? $_POST["p_nota"] : 0;
+        
             $obj->registrar_en_bbdd = (isset($_POST["p_registrar"]) ? $_POST["p_registrar"] : "0") == "1";
             $obj->generar_xml = true;
             $obj->firmar_xml = true;
 
-            Funciones::imprimeJSON("200", "OK", $obj->generarResumenDiario($fecha_inicio, $fecha_final, "1"));
+            Funciones::imprimeJSON("200", "OK", $obj->generarResumenDiario($fecha_inicio, $fecha_final, "1", $notas));
         break;
         
         case "generar_firmar_resumenes_diarios_bajas":
@@ -160,6 +162,24 @@ try {
             }
 
             Funciones::imprimeJSON("200", "OK", $obj->consultarTicketsXID($id_por_comas));
+        break;
+
+        case "copiar_resumen_diario_x_id":
+            $arreglo_ids = $_POST["p_id"];
+            if ($arreglo_ids == ""){
+                throw new Exception("Se necesita ingresar IDs.", 1);
+            }
+
+            $obj->generar_xml = true;
+            $obj->firmar_xml = true;
+
+            $arreglo_ids = json_decode($arreglo_ids, true);
+
+            Funciones::imprimeJSON("200", "OK", $obj->copiarResumenDiarioXID($arreglo_ids));
+        break;
+        
+        case "extra":
+            Funciones::imprimeJSON("200", "OK", $obj->extra());
         break;
         
         default:

@@ -1,1 +1,1 @@
-Internal Error
+No se puede leer (parsear) el archivo XML - Detalle: local:///commons/xsl/validation/2.X/ValidaExprRegFactura-2.0.1.xsl:629: local:///commons/xsl/validation/2.X/ValidaExprRegFactura-2.0.1.xsl:629: Call to unknown template isTrueExpresionEmptyNode

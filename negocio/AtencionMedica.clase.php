@@ -53,6 +53,7 @@ class AtencionMedica extends Conexion {
     public $boleta_apellido_materno;
     public $boleta_sexo;
     public $boleta_fecha_nacimiento;
+    public $boleta_direccion;
 
     public $id_atencion_medica_servicio;
     public $id_medico_atendido;
@@ -80,6 +81,7 @@ class AtencionMedica extends Conexion {
             $this->beginTransaction();
 
             $fecha_ahora = date("Y-m-d H:i:s");
+            $fecha_hoy = date("Y-m-d");
 
             require "Paciente.clase.php";
             $objPaciente = new Paciente();
@@ -95,11 +97,23 @@ class AtencionMedica extends Conexion {
             }
 
             if ($this->id_tipo_comprobante == "03" && $this->boleta_numero_documento != ""){
-                $objClienteCreado = $objPaciente->registrarClienteXOTRO($this->boleta_tipo_documento, $this->boleta_numero_documento, $this->boleta_nombres, $this->boleta_apellido_paterno, $this->boleta_apellido_materno, $this->boleta_sexo, $this->boleta_fecha_nacimiento);
+                $objClienteCreado = $objPaciente->registrarClienteXOTRO($this->boleta_tipo_documento, $this->boleta_numero_documento, 
+                                        $this->boleta_nombres, $this->boleta_apellido_paterno, $this->boleta_apellido_materno, $this->boleta_sexo, $this->boleta_fecha_nacimiento,
+                                        $this->boleta_direccion);
                 $this->boleta_id_cliente = $objClienteCreado["cliente"]["id"];
             }
 
             $resPaciente  = $resPaciente["datos"];
+
+            /* Campaña */
+            $sql = "SELECT id_campaña FROM campaña WHERE :0 BETWEEN fecha_inicio and fecha_fin and estado_mrcb LIMIT 1";
+            $campaña =  $this->consultarFila($sql, [$fecha_hoy]);
+
+            if ($campaña == false){
+                $id_campaña = NULL;
+            } else {
+                $id_campaña = $campaña["id_campaña"];
+            }
 
             if ($this->servicios == NULL || $this->servicios == ""){
                 throw new Exception("No hay servicios válidos enviados.", 1);
@@ -110,7 +124,7 @@ class AtencionMedica extends Conexion {
             $objPaciente->nombres_completos = $resPaciente["nombres_completos"];
             $objPaciente->numero_documento = $resPaciente["numero_documento"];
             $objPaciente->id_tipo_documento = $resPaciente["id_tipo_documento"];
-            $objPaciente->direccion = $resPaciente["direccion"];
+            $objPaciente->direccion = strlen($resPaciente["direccion"]) <= 0 ? $this->boleta_direccion : $resPaciente["direccion"];
             $objPaciente->codigo_ubigeo_distrito = $resPaciente["codigo_ubigeo_distrito"];
 
             if ($objPaciente->numero_documento == "" || $objPaciente->numero_documento == NULL || $objPaciente->numero_documento == "SD"){                
@@ -264,7 +278,8 @@ class AtencionMedica extends Conexion {
                 "es_gratuito_descuento"=>$this->es_gratuito_descuento,
                 "id_usuario_validador_descuento_sin_efectivo"=>$this->id_usuario_validador_descuento_sin_efectivo == "" ? NULL : $this->id_usuario_validador_descuento_sin_efectivo,
                 "id_empresa_convenio"=>$this->id_convenio_empresa,
-                "porcentaje_convenio"=>$this->convenio_porcentaje
+                "porcentaje_convenio"=>$this->convenio_porcentaje,
+                "id_campaña"=>$id_campaña
             ];
 
             $this->insert("atencion_medica",  $campos_valores);
@@ -284,12 +299,23 @@ class AtencionMedica extends Conexion {
             ];
 
             $valores_servicios = [];
+
+            $posible_descuento = NULL;
+            if ($cantidad_servicios <= 1){
+                $posible_descuento = $this->monto_descuento;
+            }
             for ($i=0; $i < $cantidad_servicios; $i++) { 
                 $objServicio = $this->servicios[$i];
                 $objServicio->cantidad = $objServicio->cantidad == NULL ? "1" : $objServicio->cantidad;
                 $subtotal = $objServicio->precio_unitario * $objServicio->cantidad;
                 $objCategoriaComision = $objComision->obtenerComisionCategoriaServicio($objServicio->id_servicio);
-                $monto_comision_categoria = round($objCategoriaComision["porcentaje_comision"] * $subtotal,3);
+
+                if ($i == 0 && $posible_descuento != NULL){
+                    $monto_comision_categoria = round($objCategoriaComision["porcentaje_comision"] * ($subtotal - $posible_descuento),3);
+                } else {
+                    $monto_comision_categoria = round($objCategoriaComision["porcentaje_comision"] * $subtotal,3);
+                }
+                
                 $monto_comision_categoria_sin_igv = round($monto_comision_categoria / (1+IGV),3);
 
                 array_push($valores_servicios,
@@ -426,13 +452,16 @@ class AtencionMedica extends Conexion {
                     pago_tarjeta as total_tarjeta,
                     CONCAT(co.nombres,' ',co.apellido_paterno,' ',co.apellido_materno) as usuario_atendido,
                     COALESCE(eco.razon_social,'') as empresa_convenio,
-                    COALESCE(eco.mensaje_ticket, '') as empresa_convenio_mensaje_ticket
+                    COALESCE(eco.mensaje_ticket, '') as empresa_convenio_mensaje_ticket,
+                    COALESCE(camp.descripcion,'') as campaña_descripcion,
+                    COALESCE(camp.nombre, '') as campaña_nombre
                     FROM atencion_medica am
                     INNER JOIN medico mo ON mo.id_medico = am.id_medico_ordenante
                     INNER JOIN paciente pa ON pa.id_paciente = am.id_paciente
                     INNER JOIN usuario u ON u.id_usuario = am.id_usuario_registrado
                     INNER JOIN colaborador co ON co.id_colaborador = u.id_colaborador
                     LEFT JOIN empresa_convenio eco ON eco.id_empresa_convenio = am.id_empresa_convenio
+                    LEFT JOIN campaña camp ON camp.id_campaña = am.id_campaña
                     WHERE id_atencion_medica = :0 AND am.estado_mrcb";
             $datos = $this->consultarFila($sql, [$id_atencion_medica]);
 
@@ -550,6 +579,7 @@ class AtencionMedica extends Conexion {
 
 
             $nota_credito_comprobante  = "";
+            $objComprobante = null;
             if ($existeComprobanteAsociado != false){
                 include_once 'DocumentoElectronico.clase.php';
                 $objComprobante = new DocumentoElectronico($this->getDB());  
@@ -668,7 +698,7 @@ class AtencionMedica extends Conexion {
                                 "numero_documento"=>$this->boleta_numero_documento,
                                 "nombres_completos"=>$this->boleta_apellido_paterno." ".$this->boleta_apellido_materno." ".$this->boleta_nombres,
                                 "id_tipo_documento"=>$this->boleta_tipo_documento,
-                                "direccion"=>"",
+                                "direccion"=>$this->boleta_direccion,
                                 "codigo_ubigeo_distrito"=>NULL
                             ];
                         }
@@ -762,7 +792,13 @@ class AtencionMedica extends Conexion {
                     TRIM(de.direccion_cliente) as direccion_cliente,
                     '0' as tipo_pago,
                     DATE_FORMAT(de.fecha_emision,'%d/%m/%Y') as fecha_exportacion,
-                    COALESCE(IF (am.pago_deposito > 0.00, 'DP', (IF(am.pago_tarjeta > 0.00, 'TJ', 'EF'))),'') as metodo_pago,
+                    (CASE 
+                    WHEN (de.importe_credito > 0 AND de.idtipo_comprobante IN ('07','08')) THEN 'CR'
+                    WHEN am.pago_deposito > 0.00 THEN 'DP'
+                    WHEN am.pago_tarjeta > 0.00 THEN 'TJ'
+                    ELSE 'EF'
+                    END) as metodo_pago,
+                    -- COALESCE(IF (am.pago_deposito > 0.00, 'DP', (IF(am.pago_tarjeta > 0.00, 'TJ', 'EF'))),'') as metodo_pago,
                     IF (de.idtipo_comprobante IN ('07','08') AND de.estado_anulado = '1', '0.00', IF(de.idtipo_comprobante <> '07', IF(de.anulado_por_nota = 1,de.total_gravadas,'0.00') , -1 * de.total_gravadas)) as total_gravadas,
                     IF (de.idtipo_comprobante IN ('07','08') AND de.estado_anulado = '1', '0.00', IF (de.idtipo_comprobante <> '07', IF(de.anulado_por_nota = 1,de.total_igv,'0.00') , -1 * de.total_igv)) as total_igv,
                     IF (de.idtipo_comprobante IN ('07','08') AND de.estado_anulado = '1', '0.00', IF (de.idtipo_comprobante <> '07', IF(de.anulado_por_nota = 1,de.importe_total,'0.00') , -1 * de.importe_total)) as importe_total,
@@ -886,7 +922,7 @@ class AtencionMedica extends Conexion {
                     COALESCE(am.numero_acto_medico,'-') as numero_acto_medico,
                     DATE_FORMAT(COALESCE(de.fecha_emision, am.fecha_atencion), '%d/%m/%Y') as fecha_registro,
                     DATE_FORMAT(COALESCE(de.fecha_emision, am.fecha_atencion), '%d/%m/%Y') as fecha,
-                    de.iddocumento_electronico as iddocumento_electronico,
+                    de.iddocumento_electronico,
                     COALESCE(CONCAT(de.serie,'-',LPAD(de.numero_correlativo,7,'0')),'S/C') comprobante,
                     nombre_paciente as paciente,
                     COALESCE(p.razon_social, CONCAT(p.nombres,' ',p.apellidos_paterno,' ',p.apellidos_materno),'') as cliente,
@@ -896,20 +932,16 @@ class AtencionMedica extends Conexion {
                     am.pago_credito as monto_credito,
                     (am.pago_efectivo + am.pago_deposito + am.pago_tarjeta + am.pago_credito) as monto_total,
                     COALESCE(de.estado_anulado, NOT am.estado_mrcb) as estado_anulado,
-                    de_nota.iddocumento_electronico as iddocumento_electronico_nota,
-                    CONCAT(de_nota.serie,'-',LPAD(de_nota.numero_correlativo,7,'0')) as  comprobante_nota,
-                    COALESCE(de_nota.descripcion_motivo_nota, am.motivo_anulado) as motivo_nota,
+                    de.DE_NOTA_ID as iddocumento_electronico_nota,
+                    CONCAT(de.DE_NOTA_SERIE,'-',LPAD(de.DE_NOTA_NUMERO_CORRELATIVO,7,'0')) as  comprobante_nota,
+                    COALESCE(de.DE_NOTA_DESCRIPCION_MOTIVO, am.motivo_anulado) as motivo_nota,
                     IF (de.cdr_estado IS NULL, 'NO ENVIADO', (CASE de.cdr_estado WHEN '0' THEN 'ACEPTADO' WHEN '-1' THEN 'REVISAR' WHEN '' THEN 'REENVIAR' ELSE 'RECHAZADO' END)) as cdr_estado_descripcion,
                     IF (de.cdr_estado IS NULL, 'gray', (CASE de.cdr_estado WHEN '0' THEN 'green' WHEN '-1' THEN 'orange' WHEN '' THEN 'blue' ELSE 'red' END)) as cdr_estado_color
                     FROM atencion_medica am
-                    LEFT JOIN documento_electronico de ON de.id_atencion_medica = am.id_atencion_medica AND de.estado_mrcb
                     LEFT JOIN paciente p ON p.id_paciente = am.id_paciente
-                    LEFT JOIN documento_electronico de_nota ON de_nota.serie_documento_modifica = de.serie 
-                                        AND de_nota.numero_documento_modifica = de.numero_correlativo 
-                                        AND de_nota.idtipo_comprobante_modifica = de.idtipo_comprobante
-                                        AND de_nota.estado_mrcb AND de_nota.estado_anulado = 0
+                    LEFT JOIN documento_electronico de ON de.id_atencion_medica = am.id_atencion_medica AND de.estado_mrcb
                     WHERE (COALESCE(de.fecha_emision, am.fecha_atencion) BETWEEN :0 AND :1)
-                    ORDER BY am.numero_acto_medico";
+                    ORDER BY am.id_atencion_medica";
             $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
 
             return $datos;
@@ -1278,7 +1310,7 @@ class AtencionMedica extends Conexion {
             }
 
             if ($this->id_tipo_comprobante == "03" && $this->boleta_numero_documento != ""){
-                $objClienteCreado = $objPaciente->registrarClienteXOTRO($this->boleta_tipo_documento, $this->boleta_numero_documento, $this->boleta_nombres, $this->boleta_apellido_paterno, $this->boleta_apellido_materno, $this->boleta_sexo, $this->boleta_fecha_nacimiento);
+                $objClienteCreado = $objPaciente->registrarClienteXOTRO($this->boleta_tipo_documento, $this->boleta_numero_documento, $this->boleta_nombres, $this->boleta_apellido_paterno, $this->boleta_apellido_materno, $this->boleta_sexo, $this->boleta_fecha_nacimiento, $this->boleta_direccion);
                 $this->boleta_id_cliente = $objClienteCreado["cliente"]["id"];
             }
 
@@ -1443,5 +1475,41 @@ class AtencionMedica extends Conexion {
             throw new Exception($exc->getMessage(), 1);
         }
     }
-    
+
+    public function obtenerReporteAtencionesDescuentos($fechaDesde, $fechaHasta, $idSede = "*"){
+        try {
+
+            $params = [$fechaDesde, $fechaHasta];
+            $whereSede = "";
+            if ($idSede != "*"){
+                array_push($params, $idSede);
+                $whereSede = " AND id_sede = :2";
+            }
+
+            $sql = "SELECT 
+                        id_atencion_medica,
+                        fecha_atencion, 
+                        am.monto_descuento,  
+                        importe_total + am.monto_descuento as importe_total,
+                        CONCAT(cr.apellido_paterno,' ',cr.nombres) as usuario_registro,
+                        CONCAT(c.apellido_paterno,' ',c.nombres) as usuario_validador,
+                        am.nombre_paciente as paciente,
+                        (SELECT nombre_servicio FROM atencion_medica_servicio WHERE id_atencion_medica = am.id_atencion_medica LIMIT 1) as servicio_atendido,
+                        (CASE id_sede WHEN 1 THEN 'CHICLAYO' ELSE 'LAMBAYEQUE' END) as sede
+                        FROM atencion_medica am
+                        INNER JOIN caja_instancia_movimiento cim ON am.id_atencion_medica = cim.id_registro_atencion
+                        INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                        INNER JOIN caja ca oN ca.id_caja = ci.id_caja
+                        LEFT JOIN usuario ur ON ur.id_usuario = am.id_usuario_registrado
+                        LEFT JOIN colaborador cr oN ur.id_colaborador = cr.id_colaborador 
+                        LEFT JOIN usuario u ON u.id_usuario = am.id_usuario_validador
+                        LEFT JOIN colaborador c oN u.id_colaborador = c.id_colaborador
+                        WHERE fecha_atencion >= :0 AND fecha_atencion <= :1 and am.monto_descuento > 0 AND id_empresa_convenio IS NULL $whereSede";
+
+            $registros = $this->consultarFilas($sql, $params);
+            return $registros;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
 }

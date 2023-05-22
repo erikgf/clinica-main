@@ -1,2 +1,2 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"><env:Body><env:Fault><faultcode>env:Server</faultcode><faultstring>Internal Error (from server)</faultstring></env:Fault></env:Body></env:Envelope>
+El sistema no puede responder su solicitud. (El servicio de autenticación no está disponible) - Detalle: <?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"><env:Body><env:Fault><faultcode>env:Client</faultcode><faultstring> (from client)</faultstring></env:Fault></env:Body></env:Envelope>

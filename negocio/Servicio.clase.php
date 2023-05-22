@@ -56,7 +56,7 @@ class Servicio extends Conexion {
                 "precio_unitario"=>$this->precio_unitario,
                 "precio_venta_sin_igv"=>$this->precio_unitario_sin_igv,
                 "id_categoria_servicio"=>$this->id_categoria_servicio,
-                "comision"=>$this->comision,
+                "comision"=>$this->comision / 100,
                 "cantidad_examenes"=>$this->cantidad_examenes,
                 "idtipo_afectacion"=>$this->idtipo_afectacion,
                 "arreglo_perfil"=>$this->arreglo_perfil
@@ -157,7 +157,7 @@ class Servicio extends Conexion {
                     IF (arreglo_perfil IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', 'PERFIL LAB.', IF(se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', 'EXAMEN LAB.', 'SERVICIO')) as tipo_servicio,
                     IF (arreglo_perfil IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '3', IF(se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '2', '1')) as id_tipo_servicio
                     FROM servicio se 
-                    INNER JOIN categoria_servicio cat ON se.id_categoria_servicio =  cat.id_categoria_servicio
+                    LEFT JOIN categoria_servicio cat ON se.id_categoria_servicio =  cat.id_categoria_servicio
                     WHERE se.estado_mrcb  AND $sqlFiltroCategoria
                     ORDER BY se.descripcion";
                     
@@ -224,7 +224,8 @@ class Servicio extends Conexion {
                     idtipo_afectacion,
                     idunidad_medida,
                     precio_venta_sin_igv as precio_sin_IGV,
-                    COALESCE(arreglo_perfil,'') as arreglo_perfil
+                    COALESCE(arreglo_perfil,'') as arreglo_perfil,
+                    id_categoria_servicio
                     FROM servicio se 
                     WHERE se.estado_mrcb AND se.id_servicio = :0 ";
                     
@@ -274,7 +275,7 @@ class Servicio extends Conexion {
                     precio_venta_sin_igv as valor_venta,
                     id_categoria_servicio,
                     idtipo_afectacion,
-                    comision,
+                    COALESCE(comision * 100, '0.00') as comision,
                     cantidad_examenes
                     FROM servicio se 
                     WHERE se.estado_mrcb AND se.id_servicio = :0 ";
@@ -296,7 +297,7 @@ class Servicio extends Conexion {
                     precio_unitario as precio_venta,
                     precio_venta_sin_igv as valor_venta,
                     idtipo_afectacion,
-                    comision,
+                    COALESCE(comision * 100, '0.00') as comision,
                     (SELECT distinct id_lab_seccion FROM lab_examen WHERE id_servicio = se.id_servicio) as id_lab_seccion,
                     (SELECT distinct id_lab_muestra FROM lab_examen WHERE id_servicio = se.id_servicio) as id_lab_muestra
                     FROM servicio se 
@@ -422,7 +423,7 @@ class Servicio extends Conexion {
                 "precio_unitario"=>$this->precio_unitario,
                 "precio_venta_sin_igv"=>$this->precio_unitario_sin_igv,
                 "id_categoria_servicio"=>$this->ID_CATEGORIA_LABORATORIO,
-                "comision"=>$this->comision,
+                "comision"=>$this->comision / 100,
                 "cantidad_examenes"=>"1",
                 "idtipo_afectacion"=>$this->idtipo_afectacion,
                 "arreglo_perfil"=>NULL
@@ -467,7 +468,7 @@ class Servicio extends Conexion {
 
                 $this->update("servicio", $campos_valores, $campos_valores_where);
 
-                //El arreglo detalle debe venir con al menos 1 columna, esa columna tendra un id_lab_examane a lq ue sea hará update, todos los demás s
+                //El arreglo detalle debe venir con al menos 1 FILA, esa FILA tendra un id_lab_examane a lq ue sea hará update, todos los demás s
                 //Los demas serán deleteados y se procederá a registrar como si fuesen nuevos.
                 //Debe llegar una variable que admita los registros (o sea que asegure que se ha cambiado el detalle exceptuan al primer registro)
                 $main_lab_examen = array_shift($this->arreglo_detalle);
@@ -493,11 +494,11 @@ class Servicio extends Conexion {
 
                 if ($this->se_modifico_detalle_lab_examen){
                     $this->ejecutarSimple("DELETE FROM lab_examen WHERE id_servicio = :0 AND id_lab_examen <> :1", [$this->id_servicio, $main_lab_examen["id_lab_examen"]]);
+                    $this->ejecutarSimple("UPDATE lab_examendescripcion SET estado_mrcb = 0 WHERE id_lab_examen = :0", [$main_lab_examen["id_lab_examen"]]);
                     $procedeRegistraExamenLabs = true;
                 }
 
             } else{                
-
                 $campos_valores["id_usuario_registrado"] = $this->id_usuario_registrado;
                 $campos_valores["fecha_hora_registrado"] = $fecha_ahora;
 
@@ -516,12 +517,13 @@ class Servicio extends Conexion {
 
                 $last_padre_0 = NULL;
                 $last_padre_1 = NULL;
-                $last_padre = NULL;
+                $last_padre = $main_lab_examen["id_lab_examen"];
+
                 foreach ($this->arreglo_detalle as $key => $fila) {
                     $abreviatura = !isset( $fila["abreviatura"]) || $fila["abreviatura"] == "" ? NULL : $fila["abreviatura"];
                     $unidad = !isset($fila["unidad"]) || $fila["unidad"] == "" ? NULL : $fila["unidad"];
                     $metodo = !isset($fila["metodo"]) || $fila["metodo"] == "" ? NULL : $fila["metodo"];
-                    $nivel  = $fila["nivel"];
+                    $nivel  = (int) $fila["nivel"];
 
                     if ($nivel <= 3){
                         switch ($nivel){
@@ -586,14 +588,15 @@ class Servicio extends Conexion {
                                 $numero_orden_2++;
                             break;
                         }
-
                     } else {
+
                         $campos_valores_detalle = [
                             "descripcion" =>$fila["valores_referenciales"],
                             "numero_orden"=>$numero_orden_99,
                             "id_lab_examen"=>$last_padre
                         ];
 
+                        
                         $this->insert("lab_examendescripcion", $campos_valores_detalle);
                         $numero_orden_99++;
 
@@ -682,7 +685,7 @@ class Servicio extends Conexion {
                 "precio_unitario"=>$this->precio_unitario,
                 "precio_venta_sin_igv"=>$this->precio_unitario_sin_igv,
                 "id_categoria_servicio"=>$this->ID_CATEGORIA_LABORATORIO,
-                "comision"=>$this->comision,
+                "comision"=>$this->comision / 100,
                 "cantidad_examenes"=>"1",
                 "idtipo_afectacion"=>$this->idtipo_afectacion,
                 "arreglo_perfil"=>$arreglo_perfil

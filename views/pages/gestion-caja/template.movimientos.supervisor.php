@@ -6,6 +6,7 @@
                 Opc.
                 </button>
                 <div class="dropdown-menu" style="">
+                    <a  class="dropdown-item" href="#">ID: {{id}}</a>   
                     {{#id_atencion_medica}}
                     <a class="dropdown-item" target="_blank" href="../../../impresiones/ticket.atencion.php?id={{this}}" title="Ver Ticket"><i class="fa fa-eye"></i> TICKET</a>
                     <a class="dropdown-item" target="_blank" href="../../../impresiones/ticket.atencion.sinprecios.php?id={{this}}" title="Ver Ticket Consulta"><i class="fa fa-eye"></i> TICKET (CONSULTA)</a>
@@ -24,7 +25,7 @@
                     {{/if_}}
                     
                     {{#if_ estado_anulado '==' 0}}
-                    <!--    <a class="dropdown-item btn-anularmovimiento" data-cliente="{{cliente}}" data-id="{{id_atencion_medica}}" href="#" title="Anular Movimiento"><i class="fa fa-trash"></i> ANULAR</a> -->
+                        <a class="dropdown-item btn-anularmovimiento" data-id="{{id}}" data-cliente="{{cliente}}" href="#" title="Anular Movimiento"><i class="fa fa-trash"></i> ANULAR MOVIMIENTO</a>
                     {{/if_}}
                 </div>
             </div>

@@ -77,6 +77,9 @@ $usuario_atendido = utf8_decode($datos["usuario_atendido"]);
 $empresa_convenio = utf8_decode($datos["empresa_convenio"]);
 $empresa_convenio_mensaje_ticket = utf8_decode($datos["empresa_convenio_mensaje_ticket"]);
 
+$campaña_nombre = utf8_decode($datos["campaña_nombre"]);
+$campaña_descripcion = utf8_decode($datos["campaña_descripcion"]);
+
 $pdf->Image('logo_dpi.jpg', 25 , 0 ,30,0);
 $pdf->SetY(30 + 5);
 
@@ -283,6 +286,20 @@ if ($empresa_convenio_mensaje_ticket != NULL && $empresa_convenio_mensaje_ticket
   $pdf->Cell($ANCHO_TICKET - ($MARGENES_LATERALES * 2), .15, "***********************************************" , $BORDES,1);
   $pdf->Ln($SALTO_LINEA * 2);
 }
+
+
+if ($campaña_nombre != NULL && $campaña_nombre != ""){
+  $pdf->Ln($SALTO_LINEA * 3.5); 
+  $pdf->Cell($ANCHO_TICKET - ($MARGENES_LATERALES * 2), .15, "***********************************************" , $BORDES,1);
+  $pdf->Ln($SALTO_LINEA); 
+  $pdf->MultiCell($ANCHO_TICKET - ($MARGENES_LATERALES * 2),$ALTO_LINEA - .35, "---".$campaña_nombre."---",$BORDES,"C");
+  $pdf->Ln($SALTO_LINEA); 
+  $pdf->MultiCell($ANCHO_TICKET - ($MARGENES_LATERALES * 2),$ALTO_LINEA - .35, $campaña_descripcion,$BORDES,"C");
+  $pdf->Ln($SALTO_LINEA * 3); 
+  $pdf->Cell($ANCHO_TICKET - ($MARGENES_LATERALES * 2), .15, "***********************************************" , $BORDES,1);
+  $pdf->Ln($SALTO_LINEA * 1.5);
+}
+
 
 $pdf->SetFont($FONT,'', 6 + $aumento_font); 
 $pdf->Ln($SALTO_LINEA * 10); 

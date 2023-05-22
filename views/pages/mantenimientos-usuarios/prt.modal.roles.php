@@ -14,17 +14,17 @@
                             <input type="text" class="form-control uppercase" required id="txt-rol-descripcion"/>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="txt-rol-nombreinterfaz">Nombre Interfaz Inicial</label>
-                            <select class="form-control" id="txt-rol-nombreinterfaz"></select>
+                </div>
+                <div class="row">
+                    <div class="col-md-12" >
+                        <h6>Permisos Disponibles </h6>
+                        <div class="row" id="blk-interfaces">
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">CERRAR</button>  
-                <button type="button" class="btn btn-danger" id="btn-rol-eliminar" style="display:none">ELIMINAR</button>
                 <button type="button" class="btn btn-success" id="btn-rol-guardar">GUARDAR</button>
             </div>
         </form>

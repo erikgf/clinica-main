@@ -1,5 +1,6 @@
 <?php
 
+
 class Sesion{
     public static $id_usuario_registrado;
     public static $nombre_usuario;
@@ -37,6 +38,9 @@ class Sesion{
     public static function destruirSesion(){
         session_destroy();
     }
+
+
+
 }
 
 Sesion::iniciarSesion();

@@ -125,7 +125,7 @@ try {
             
             $obj->arreglo_detalle = isset($_POST["p_detalle"]) ? $_POST["p_detalle"] : NULL;
 
-            $obj->se_modifico_detalle_lab_examen = isset($_POST["p_se_modifico"]) ? $_POST["p_se_modifico"] : 0;
+            $obj->se_modifico_detalle_lab_examen = isset($_POST["p_se_modifico"]) ? $_POST["p_se_modifico"] : false;
 
             $data = $obj->registrarExamen();
 

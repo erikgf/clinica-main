@@ -141,6 +141,7 @@ var FacturacionConvenio = function(){
         $blkFacturacionConvenioCuotas = $("#blk-facturacionconvenio-cuotascredito");
 
         $txtFormaPago = $("#txt-facturacionconvenio-formapago");
+        $txtTipoMoneda = $("#txt-facturacionconvenio-tipomoneda")
         
         var hoy = new Date();
         var haceDias = new Date(hoy.getTime());
@@ -153,6 +154,10 @@ var FacturacionConvenio = function(){
 
     this.getLblTotal = function(){
         return $lblTotal;
+    };
+
+    this.getTxtFormaPago = function(){
+        return $txtFormaPago;
     };
 
     this.getTxtFechaVencimiento = function(){
@@ -353,7 +358,8 @@ var FacturacionConvenio = function(){
 
         var arregloCuotas = [];
 
-        if ($txtIdTipoComprobante.val() == "01"){
+
+        if ($txtIdTipoComprobante.val() == "01" && $txtFormaPago.val() == "0"){
             var objCuotas = objTablaCuotasCredito.obtenerDatos();
             if (objCuotas.r == "0"){
                 return;
@@ -385,7 +391,8 @@ var FacturacionConvenio = function(){
                 p_detalle : JSON.stringify(arregloDetalle),
                 p_forma_pago : $txtFormaPago.val(),
                 p_cuotas: JSON.stringify(arregloCuotas),
-                p_importe_total : $lblTotal.html()
+                p_importe_total : $lblTotal.html(),
+                p_tipo_moneda : $txtTipoMoneda.val()
             },
             success: function(result){
                 toastr.success(result.msj);
@@ -763,11 +770,13 @@ const TablaCuotasCredito  = function(data){
             });
         });
 
-        if (monto_cuota_acumulado !== total){
-            toastr.error("Se está ingresando montos de cuota que no están acorde al monto de la factura.");
-            return {"r": 0};
+        if (objFacturacionConvenio.getTxtFormaPago().val() == "0"){
+            if (monto_cuota_acumulado !== total){
+                toastr.error("Se está ingresando montos de cuota que no están acorde al monto de la factura.");
+                return {"r": 0};
+            }
         }
-
+        
         if (fecha_vencimiento != objFacturacionConvenio.getTxtFechaVencimiento().val()){
             toastr.error("Se está ingresando una  fecha de vencimiento de cuota que no están acorde a la fecha de vencimiento de la factura.");
             return {"r": 0};

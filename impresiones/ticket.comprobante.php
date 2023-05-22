@@ -34,6 +34,7 @@ $fecha_qr = strftime( "%Y-%m-%d" );
 $empresa = F_RAZON_SOCIAL_IMPRESIONES;
 $ruc = "R.U.C.: ".F_RUC;
 $direccion = F_DIRECCION;
+$direccion_2 = F_DIRECCION_2;
 $lugar = F_URBANIZACION;
 $ubigeo = F_DIRECCION_DISTRITO."-".F_DIRECCION_PROVINCIA."-".F_DIRECCION_DEPARTAMENTO;
 $telefono = "Telf.: ".F_TELEFONO;
@@ -123,6 +124,7 @@ $pdf->SetFont($FONT,'',7 + $aumento_font);
 $ALTO_LINEA_LV1 = 3;
 $ALTO_LINEA_LV2 = $ALTO_LINEA - 1;
 $pdf->Cell($ANCHO_TICKET_MENOS_MARGENES , $ALTO_LINEA_LV1,utf8_decode($direccion),$BORDES,1,"C");
+$pdf->Cell($ANCHO_TICKET_MENOS_MARGENES , $ALTO_LINEA_LV1,utf8_decode($direccion_2),$BORDES,1,"C");
 $pdf->Cell($ANCHO_TICKET_MENOS_MARGENES , $ALTO_LINEA_LV1,utf8_decode($ubigeo),$BORDES,1,"C");
 $pdf->Cell($ANCHO_TICKET_MENOS_MARGENES , $ALTO_LINEA_LV1,$telefono,$BORDES,1,"C");
 

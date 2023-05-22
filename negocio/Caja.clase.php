@@ -38,8 +38,8 @@ class Caja extends Conexion {
                     INNER JOIN caja ca ON ca.id_caja = ci.id_caja
                     INNER JOIN usuario u ON u.id_usuario = ci.id_usuario_registrado
                     INNER JOIN colaborador co ON co.id_colaborador = u.id_colaborador
-                    WHERE ci.estado_caja = 'A' AND ci.estado_mrcb AND ca.estado_mrcb
-                    ORDER BY ca.codigo, ci.id_caja_instancia DESC";
+                    WHERE ci.estado_caja = 'A' AND ci.estado_mrcb AND ca.estado_mrcb AND ci.fecha_apertura = CURRENT_DATE
+                    ORDER BY ca.codigo";
             $data =  $this->consultarFilas($sql);
             return array("rpt"=>true,"datos"=>$data);
         } catch (Exception $exc) {
@@ -247,8 +247,8 @@ class Caja extends Conexion {
             $sql = "SELECT 
                     cim.id_caja_instancia_movimiento as id,
                     cim.id_registro_atencion as id_atencion_medica,
-                    de.iddocumento_electronico as iddocumento_electronico,
-                    de_relacionado.iddocumento_electronico as iddocumento_electronico_relacionado,
+                    am.DE_ID as iddocumento_electronico,
+                    am.DE_NOTA_ID as iddocumento_electronico_relacionado,
                     tm.descripcion as movimiento,
                     IF(tm.tipo = 'I', '1','0') as es_ingreso,
                     COALESCE(p.razon_social, CONCAT(p.nombres,' ',p.apellidos_paterno,' ',p.apellidos_materno),cim.descripcion_movimiento,'') as cliente,
@@ -258,14 +258,17 @@ class Caja extends Conexion {
                     cim.monto_credito,
                     (cim.monto_efectivo + cim.monto_deposito + cim.monto_tarjeta + cim.monto_credito - cim.monto_descuento) as monto_total,
                     cim.id_tipo_movimiento,
-                    COALESCE(de.estado_anulado, NOT cim.estado_mrcb) as estado_anulado
+                    (cim.id_tipo_movimiento  <> 1) es_anulable,
+                    COALESCE(am.DE_ESTADO_ANULADO, NOT cim.estado_mrcb) as estado_anulado
                     FROM caja_instancia_movimiento cim
                     INNER JOIN caja_instancia ci ON cim.id_caja_instancia = ci.id_caja_instancia
                     INNER JOIN tipo_movimiento tm ON tm.id_tipo_movimiento = cim.id_tipo_movimiento
+                    LEFT JOIN atencion_medica am ON am.id_atencion_medica = cim.id_registro_atencion
                     LEFT JOIN paciente p ON p.id_paciente = cim.id_cliente
+            /*
                     LEFT JOIN documento_electronico de ON de.id_atencion_medica = cim.id_registro_atencion
                     LEFT JOIN documento_electronico de_relacionado ON de_relacionado.id_atencion_medica = cim.id_registro_atencion_relacionada
-                                                                        AND  (de.estado_anulado = 0 OR de_relacionado.estado_anulado  = 0) 
+                                                                        AND  (de.estado_anulado = 0 OR de_relacionado.estado_anulado  = 0) */
                     WHERE cim.estado_mrcb  AND cim.id_caja_instancia = :0
                     ORDER BY cim.id_caja_instancia_movimiento DESC";
 
@@ -499,8 +502,8 @@ class Caja extends Conexion {
                     CONCAT(c.codigo,' ',REPLACE(ci.fecha_apertura,'-',''),LPAD(ci.numero_caja_dia, 4,'0')) as caja_instancia,
                     DATE_FORMAT(cim.fecha_hora_registrado, '%d/%m/%Y %H:%i:%s') as fecha_registro,
                     cim.id_registro_atencion as id_atencion_medica,
-                    de.iddocumento_electronico as iddocumento_electronico,
-                    de_relacionado.iddocumento_electronico as iddocumento_electronico_relacionado,
+                    am.DE_ID as iddocumento_electronico,
+                    am.DE_NOTA_ID as iddocumento_electronico_relacionado,
                     tm.descripcion as movimiento,
                     IF(tm.tipo = 'I', '1','0') as es_ingreso,
                     COALESCE(p.razon_social, CONCAT(p.nombres,' ',p.apellidos_paterno,' ',p.apellidos_materno),'') as cliente,
@@ -510,15 +513,17 @@ class Caja extends Conexion {
                     cim.monto_credito,
                     (cim.monto_efectivo + cim.monto_deposito + cim.monto_tarjeta + cim.monto_credito) as monto_total,
                     cim.id_tipo_movimiento,
-                    IF (de.iddocumento_electronico IS NULL, NOT am.estado_mrcb, COALESCE(de.estado_anulado, NOT am.estado_mrcb)) as estado_anulado
+                    IF (am.DE_ID IS NULL, NOT am.estado_mrcb, COALESCE(am.DE_ESTADO_ANULADO, NOT am.estado_mrcb)) as estado_anulado
                     FROM caja_instancia_movimiento cim
                     INNER JOIN caja_instancia ci ON cim.id_caja_instancia = ci.id_caja_instancia
                     INNER JOIN caja c ON ci.id_caja = c.id_caja
                     INNER JOIN tipo_movimiento tm ON tm.id_tipo_movimiento = cim.id_tipo_movimiento
                     INNER JOIN paciente p ON p.id_paciente = cim.id_cliente
+                    /*
                     LEFT JOIN documento_electronico de ON de.id_atencion_medica = cim.id_registro_atencion AND de.estado_anulado = 0
                     LEFT JOIN documento_electronico de_relacionado ON de_relacionado.id_atencion_medica = cim.id_registro_atencion_relacionada
                                                                         AND  (de.estado_anulado = 0 OR de_relacionado.estado_anulado  = 0) 
+                                                                        */
                     LEFT JOIN atencion_medica am ON am.id_atencion_medica = cim.id_registro_atencion
                     WHERE cim.estado_mrcb  AND (DATE(cim.fecha_hora_registrado) >= :0 AND DATE(cim.fecha_hora_registrado) <= :1) AND $sqlCaja
                     ORDER BY cim.fecha_hora_registrado DESC";

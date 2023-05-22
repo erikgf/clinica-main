@@ -70,7 +70,7 @@ class AtencionMedicaServicio extends Conexion {
                     (am.pago_credito - (SELECT COALESCE(SUM(cim.monto_efectivo + cim.monto_tarjeta + cim.monto_deposito),'0.00')
                                     FROM caja_instancia_movimiento cim 
                                     WHERE cim.id_tipo_movimiento IN (4) AND cim.estado_mrcb AND cim.id_registro_atencion_relacionada = am.id_atencion_medica)) as monto_deuda,  
-                    (SELECT COUNT(*) FROM  caja_instancia_movimiento cim
+                    (SELECT COUNT(id_caja_instancia_movimiento) FROM  caja_instancia_movimiento cim
                         WHERE cim.id_tipo_movimiento IN (4) AND cim.estado_mrcb 
                         AND cim.id_registro_atencion_relacionada = am.id_atencion_medica) as veces_amortizacion,
                     CONCAT(IF(am.pago_efectivo > 0, 'EF ',''),
@@ -213,7 +213,8 @@ class AtencionMedicaServicio extends Conexion {
             $sql  = "SELECT ams.nombre_servicio as servicio_atencion,
                         IF(ams.fecha_hora_validado IS NOT NULL,'1','0')  as fue_validado,
                         IF(ams.fecha_hora_resultado IS NOT NULL,'1','0')  as tiene_resultados,
-                        COALESCE(le.arreglo_perfil,'') as arreglo_perfil
+                        COALESCE(le.arreglo_perfil,'') as arreglo_perfil,
+                        nuevo_modo_orden
                         FROM atencion_medica_servicio ams
                         LEFT JOIN lab_examen le ON le.id_servicio = ams.id_servicio
                         WHERE ams.id_atencion_medica_servicio = :0";
@@ -240,7 +241,7 @@ class AtencionMedicaServicio extends Conexion {
                 return $datos;
             }
 
-            $examenes_registros = $this->obtenerServiciosLaboratorioExamenesDescripciones($datos["arreglo_perfil"]);
+            $examenes_registros = $this->obtenerServiciosLaboratorioExamenesDescripciones($datos["arreglo_perfil"], $datos["nuevo_modo_orden"]);
             $datos["detalle"] = $examenes_registros;
             return $datos;
         } catch (Exception $exc) {
@@ -566,6 +567,7 @@ class AtencionMedicaServicio extends Conexion {
 
             $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
 
+            /*
             $sql  = "SELECT 
                     ams.nombre_servicio,
                     ams.precio_unitario,
@@ -574,12 +576,43 @@ class AtencionMedicaServicio extends Conexion {
                     INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                     INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
                     INNER JOIN lab_examen le ON ams.id_servicio = le.id_servicio
-                    WHERE s.id_categoria_servicio IN (14) AND am.estado_mrcb AND ams.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND le.id_lab_seccion = :2
+                    WHERE s.id_categoria_servicio IN (14) AND am.estado_mrcb AND ams.estado_mrcb AND le.nivel = 0 AND (am.fecha_atencion BETWEEN :0 AND :1) AND le.id_lab_seccion = :2
                     GROUP BY ams.nombre_servicio, ams.precio_unitario
                     ORDER BY am.numero_acto_medico DESC";
+                    */
+           $sql  = "SELECT 
+                    ams.nombre_servicio,
+                    ams.precio_unitario,
+                    SUM(ams.cantidad) as cantidad,
+                    le.nivel
+                    FROM atencion_medica_servicio ams
+                    INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
+                    INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
+                    INNER JOIN lab_examen le ON ams.id_servicio = le.id_servicio
+                    WHERE s.id_categoria_servicio IN (14) AND am.estado_mrcb AND ams.estado_mrcb AND le.nivel = 0 AND (am.fecha_atencion BETWEEN :0 AND :1) AND le.id_lab_seccion = :2
+                    GROUP BY ams.nombre_servicio, ams.precio_unitario, le.nivel
+                    ORDER BY ams.nombre_servicio, le.nivel";
 
-            foreach ($datos as $key => $value) {
-                $datos[$key]["examenes"] = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin, $value["id_lab_seccion"]]);
+            foreach ($datos as $_key => $_value) {
+                $examenes = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin, $_value["id_lab_seccion"]]);
+                $lastExamen = NULL;
+                $examenesProcesados = [];
+                foreach ($examenes as $key => $value) {
+                    if ($lastExamen == NULL){
+                        $lastExamen = $value["nombre_servicio"];
+                        array_push($examenesProcesados, $value);
+                        continue;
+                    }
+
+                    if ($value["nombre_servicio"] == $lastExamen){
+                        continue;
+                    }
+
+                    $lastExamen = $value["nombre_servicio"];
+                    array_push($examenesProcesados, $value);
+                }
+
+                $datos[$_key]["examenes"] = $examenesProcesados;
             }
 
             return $datos;
@@ -607,52 +640,95 @@ class AtencionMedicaServicio extends Conexion {
         }
     }
 
-    private function obtenerServiciosLaboratorioExamenesDescripciones($es_examen_perfil = ''){
+    private function obtenerServiciosLaboratorioExamenesDescripciones($es_examen_perfil = '', $nuevo_modo_orden = "0"){
         $sql = []; $examenes_registros = [];
 
-        if ($es_examen_perfil == ''){
-            $sql[0]  = "SELECT
-                le.id_lab_examen,
-                le.nivel,
-                le.descripcion,
-                '' as id_lab_examen_niveluno,
-                '' as id_lab_examen_niveldos,
-                '' as orden_niveluno,
-                '' as orden_niveldos,
-                '' as resultado,
-                le.valor_maximo,
-                le.valor_minimo,
-                COALESCE(le.unidad, '') as unidad,
-                COALESCE(le.metodo, '') as metodo,
-                le.valor_referencial
-                FROM atencion_medica_servicio ams
-                LEFT JOIN lab_examen le ON le.id_servicio = ams.id_servicio 
-                WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0 AND le.estado_mrcb
-                ORDER BY le.orden_niveluno, le.nivel";
+        if ($nuevo_modo_orden == "1"){
+            $sql = "SELECT
+                        le.id_lab_examen,
+                        le.nivel,
+                        le.descripcion,
+                        '' as id_lab_examen_niveluno,
+                        '' as id_lab_examen_niveldos,
+                        '' as orden_niveluno,
+                        '' as orden_niveldos,
+                        '' as resultado,
+                        le.valor_maximo,
+                        le.valor_minimo,
+                        COALESCE(le.unidad, '') as unidad,
+                        COALESCE(le.metodo, '') as metodo,
+                        le.valor_referencial
+                        FROM atencion_medica_servicio ams
+                        LEFT JOIN lab_examen le ON le.id_servicio = ams.id_servicio 
+                        WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0 AND le.estado_mrcb
+                        ORDER BY le.id_lab_examen";
+                
+            $lab_examenes = $this->consultarFilas($sql,  [$this->id_atencion_medica_servicio]);
 
-            $examen_principales = $this->consultarFilas($sql[0], [$this->id_atencion_medica_servicio]);
+            foreach ($lab_examenes as $key => $lab_examen) {
+                $sqlDesc = "SELECT 
+                         descripcion as valor_referencial,
+                         '99' as nivel,
+                         '1' as eliminar
+                         FROM lab_examendescripcion le
+                         WHERE le.id_lab_examen = :0 AND le.estado_mrcb
+                         ORDER BY numero_orden";
+                $lab_examendescripciones = $this->consultarFilas($sqlDesc, [$lab_examen["id_lab_examen"]]);
+
+                array_push($examenes_registros, $lab_examen);
+                if (count($lab_examendescripciones) > 0){
+                     $examenes_registros = array_merge($examenes_registros, $lab_examendescripciones); 
+                }
+             }
+
+             return $examenes_registros;
+
         } else {
-            $cadena_arreglo_perfil = $es_examen_perfil;
 
-            $sql[0]  = "SELECT
-                le.id_lab_examen,
-                le.nivel,
-                le.descripcion,
-                '' as id_lab_examen_niveluno,
-                '' as id_lab_examen_niveldos,
-                '' as orden_niveluno,
-                '' as orden_niveldos,
-                '' as resultado,
-                le.valor_maximo,
-                le.valor_minimo,
-                COALESCE(le.unidad, '') as unidad,
-                le.valor_referencial,
-                COALESCE(le.metodo,'') as metodo
-                FROM lab_examen le 
-                WHERE le.id_lab_examen IN ($cadena_arreglo_perfil) AND le.estado_mrcb
-                ORDER BY le.id_lab_examen, le.nivel";
-
-            $examen_principales = $this->consultarFilas($sql[0]);
+            if ($es_examen_perfil == ''){
+                $sql[0]  = "SELECT
+                    le.id_lab_examen,
+                    le.nivel,
+                    le.descripcion,
+                    '' as id_lab_examen_niveluno,
+                    '' as id_lab_examen_niveldos,
+                    '' as orden_niveluno,
+                    '' as orden_niveldos,
+                    '' as resultado,
+                    le.valor_maximo,
+                    le.valor_minimo,
+                    COALESCE(le.unidad, '') as unidad,
+                    COALESCE(le.metodo, '') as metodo,
+                    le.valor_referencial
+                    FROM atencion_medica_servicio ams
+                    LEFT JOIN lab_examen le ON le.id_servicio = ams.id_servicio 
+                    WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0 AND le.estado_mrcb
+                    ORDER BY  le.id_lab_examen, le.nivel";
+    
+                $examen_principales = $this->consultarFilas($sql[0], [$this->id_atencion_medica_servicio]);
+            } else {
+                $cadena_arreglo_perfil = $es_examen_perfil;
+    
+                $sql[0]  = "SELECT
+                    le.id_lab_examen,
+                    le.nivel,
+                    le.descripcion,
+                    '' as id_lab_examen_niveluno,
+                    '' as id_lab_examen_niveldos,
+                    '' as orden_niveluno,
+                    '' as orden_niveldos,
+                    '' as resultado,
+                    le.valor_maximo,
+                    le.valor_minimo,
+                    COALESCE(le.unidad, '') as unidad,
+                    le.valor_referencial,
+                    COALESCE(le.metodo,'') as metodo
+                    FROM lab_examen le 
+                    WHERE le.id_lab_examen IN ($cadena_arreglo_perfil) AND le.estado_mrcb
+                    ORDER BY le.nivel, le.id_lab_examen";
+    
+                $examen_principales = $this->consultarFilas($sql[0]);
+            }
         }
 
         if (count($examen_principales)<= 0){
@@ -952,6 +1028,59 @@ class AtencionMedicaServicio extends Conexion {
         $this->commit();
 
         return ["res"=>$examenes_por_principal,"c"=>count($examenes_por_principal)];
+    }
+
+    public function listarExamenesAtencionesPorSede($mes, $año, $idSede = "*"){
+        try {
+                $params = [$mes, $año];
+                $sqlWhereSede = "";
+
+                if ($idSede != "*"){
+                    array_push($params, $idSede);
+                    $sqlWhereSede = " AND id_sede = :2";
+                }
+        
+                $sql  = "SELECT 
+                    amd.id_atencion_medica_servicio,
+                    (CASE id_sede WHEN 1 THEN 'CHICLAYO' ELSE 'LAMBAYEQUE' END) as sede,
+                    DATE_FORMAT(am.fecha_atencion,'%d-%m-%Y') as fecha_atencion, 
+                    (CASE amd.fue_atendido WHEN '0' THEN 'PENDIENTE' WHEN '1' THEN 'REALIZADO' ELSE 'CANCELADO' END) as estado,
+                    am.numero_acto_medico as recibo,
+                    DE_NUMERO_COMPROBANTE as comprobante,
+                    am.nombre_paciente, 
+                    amd.nombre_servicio as examen, 
+                    cs.descripcion as area, 
+                    amd.sub_total as monto_examen,
+                    am.importe_total as monto_total_recibo, 
+                    am.monto_descuento as monto_descuento,
+                    COALESCE(amd.observaciones_atendido,'-') as observaciones_atendido,
+                    COALESCE(m.nombres_apellidos,'-') as medico_atendido,
+                    COALESCE(mr.nombres_apellidos,'-') as medico_realizado,
+                    COALESCE(mo.nombres_apellidos,'-') as medico_ordenante,
+                    am.observaciones as observaciones_ticket
+                    FROM atencion_medica_servicio amd 
+                    INNER JOIN atencion_medica am ON am.id_atencion_medica = amd.id_atencion_medica
+                    INNER JOIN servicio s ON s.id_servicio = amd.id_servicio
+                    INNER JOIN categoria_servicio cs ON cs.id_categoria_servicio = s.id_categoria_servicio
+                    LEFT JOIN medico m ON m.id_medico = amd.id_medico_atendido
+                    LEFT JOIN medico mr ON mr.id_medico = amd.id_medico_realizado
+                    LEFT JOIN medico mo ON mo.id_medico = amd.id_medico_realizado
+                    LEFT JOIN usuario u ON u.id_usuario = am.id_medico_ordenante
+                    INNER JOIN caja_instancia_movimiento cim ON am.id_atencion_medica = cim.id_registro_atencion
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja ca oN ca.id_caja = ci.id_caja
+                    WHERE am.estado_mrcb AND amd.estado_mrcb
+                            AND MONTH(am.fecha_atencion) = :0 and YEAR(am.fecha_atencion) = :1
+                            AND cs.es_mostrado_asistentes = 1 
+                            $sqlWhereSede
+                    ORDER BY am.numero_acto_medico DESC";
+
+            $datos = $this->consultarFilas($sql, $params);
+
+            return $datos;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
     }
     
 }
