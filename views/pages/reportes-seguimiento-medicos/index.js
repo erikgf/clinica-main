@@ -1,10 +1,12 @@
 var Reportes = function() {
     var $txtFechaInicio,
-        $txtFechaFin;
+        $txtFechaFin,
+        $txtMonto;
 
     this.setDOM = function(){
         $txtFechaInicio = $("#txt-fechainicio");
         $txtFechaFin = $("#txt-fechafin");
+        $txtMonto = $("#txt-monto");
     };
     
     this.setEventos = function(){
@@ -16,8 +18,10 @@ var Reportes = function() {
 
     var imprimirExcel = function(){
         var fi = $txtFechaInicio.val(),
-            ff = $txtFechaFin.val();
-        window.open("../../../impresiones/liq.seguimiento.medicos.xls.php?fi="+fi+"&ff="+ff);
+            ff = $txtFechaFin.val(),
+            monto = $txtMonto.val();
+
+        window.open("../../../impresiones/liq.seguimiento.medicos.xls.php?fi="+fi+"&ff="+ff+"&m"+monto);
     };  
 
     this.setDOM();

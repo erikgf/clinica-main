@@ -6,6 +6,7 @@ require_once "../negocio/Sesion.clase.php";
 include_once "../plugins/phspreadsheet/vendor/autoload.php";
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+include_once "../negocio/util/Funciones.php";
 
 if (!Sesion::obtenerSesion()){
   echo "No tiene permisos suficientes para ver esto.";
@@ -47,35 +48,6 @@ try {
   exit;
 }
 
-function getMes($mes){
-  switch($mes){
-    case 1:
-    return "ENERO";
-    case 2:
-    return "FEBRERO";
-    case 3:
-    return "MARZO";
-    case 4:
-    return "ABRIL";
-    case 5:
-    return "MAYO";
-    case 6:
-    return "JUNIO";
-    case 7:
-    return "JULIO";
-    case 8:
-    return "AGOSTO";
-    case 9:
-    return "SETIEMBRE";
-    case 10:
-    return "OCTUBRE";
-    case 11:
-    return "NOVIEMBRE";
-    case 12:
-    return "DICIEMBRE";
-  }
-}
-
 try {
     $spreadsheet = new Spreadsheet();
 
@@ -94,7 +66,7 @@ try {
     $sheetActivo->setCellValue('A'.$actualFila, "SEDE");	
     $sheetActivo->setCellValue('B'.$actualFila++, $id_sede === "*" ? "CHICLAYO/LAMBAYEQUE" : ($id_sede === "1" ? "CHICLAYO" : "LAMBAYEQUE"));	
     $sheetActivo->setCellValue('A'.$actualFila, "MES");	
-    $sheetActivo->setCellValue('B'.$actualFila++,getMes($mes));	
+    $sheetActivo->setCellValue('B'.$actualFila++,Funciones::getMes($mes));	
     $sheetActivo->setCellValue('A'.$actualFila, "AÑO");	
     $sheetActivo->setCellValue('B'.$actualFila++, $año);	
 

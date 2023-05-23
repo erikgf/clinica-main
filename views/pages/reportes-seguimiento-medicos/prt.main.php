@@ -31,6 +31,12 @@
                                     <input type="date" id="txt-fechafin" class="form-control"/>
                                 </div>
                             </div>
+                            <div class="col-md-2 col-sm-6">
+                                <div class="form-group input-group-sm">
+                                    <label for="txt-monto">Monto mayor a</label>
+                                    <input type="number" id="txt-monto" value="100.00" step="0.01" class="form-control"/>
+                                </div>
+                            </div>
                             <div class="col-md-2">
                                 <br>
                                 <button class="btn btn-success btn-block" id="btn-excel"><span class="fa fa-file-excel"></span> EXCEL</button>
