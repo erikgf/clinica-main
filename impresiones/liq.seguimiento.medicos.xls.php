@@ -17,6 +17,9 @@ $login = Sesion::obtenerSesion()["nombre_usuario"];
 $fecha_inicio = isset($_GET["fi"]) ? $_GET["fi"] : NULL;
 $fecha_fin = isset($_GET["ff"]) ? $_GET["ff"] : NULL;
 $monto =  isset($_GET["m"]) ? $_GET["m"] : 0.00;
+$areas =  isset($_GET["area"]) ? $_GET["area"] : '[*]';
+$promotoras =  isset($_GET["promo"]) ? $_GET["promo"] : '[*]';
+$sedes =  isset($_GET["sede"]) ? $_GET["sede"] : '[*]';
 
 if ($fecha_inicio == NULL){
     echo "No se ha ingresado parámetro de FECHA DE INICIO";
@@ -35,7 +38,7 @@ require "../negocio/Medico.clase.php";
 $titulo_xls  = "";
 try {
   $obj = new Medico();
-  $data = $obj->listarLiquidacionesSeguimientoMedico($fecha_inicio, $fecha_fin, $monto);
+  $data = $obj->listarLiquidacionesSeguimientoMedico($fecha_inicio, $fecha_fin,json_decode($sedes), json_decode($promotoras), json_decode($areas), $monto);
 
   if (count($data["data"]) <= 0){
     echo "Sin datos encontrados.";
@@ -79,7 +82,7 @@ try {
     $sheetActivo->mergeCells('B2:E2');
 
     $sheetActivo->setCellValue('A3', "PROMOTOR");
-    $sheetActivo->setCellValue('B3', "SUSANA/JUAN CARLOS/DMI/NO TIENE/TODOS");
+    $sheetActivo->setCellValue('B3', $data["promotoras"]);
     $sheetActivo->mergeCells('B3:E3');
 
     $sheetActivo->setCellValue('A4', "MONTO");
@@ -87,11 +90,11 @@ try {
     $sheetActivo->mergeCells('B4:E4');
 
     $sheetActivo->setCellValue('A5', "ÁREA");
-    $sheetActivo->setCellValue('B5', "ECO/DENSI/MAMO/RESO/TOMO/LAB/BIOPSIA/RAYOS X/OTROS");
+    $sheetActivo->setCellValue('B5', $data["areas"]);
     $sheetActivo->mergeCells('B5:E5');
 
     $sheetActivo->setCellValue('A6', "SEDE");
-    $sheetActivo->setCellValue('B6', "CHICLAYO/LAMBAYEQUE");
+    $sheetActivo->setCellValue('B6', $data["sedes"]);
     $sheetActivo->mergeCells('B6:E6');
 
     $actualFila = 7;
@@ -162,10 +165,6 @@ try {
                                 );
     $sheetActivo->getStyle('A7:'.$alfabeto[$i].'E7')->applyFromArray($cabeceraEstilos);
     /*
-
-    setName => [data | mes_atencion | valor]
-
-
     $worksheet->getStyle("E2")->getNumberFormat()->setFormatCode("YYYY-MM-DD");
     $actualFila++;
 

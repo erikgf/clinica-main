@@ -1029,15 +1029,27 @@ class AtencionMedicaServicio extends Conexion {
 
         return ["res"=>$examenes_por_principal,"c"=>count($examenes_por_principal)];
     }
-
-    public function listarExamenesAtencionesPorSede($mes, $año, $idSede = "*"){
+    
+    public function listarExamenesAtencionesPorSede($fechaInicio, $fechaFin, $idEstado, $idAreas, $idSede = "*"){
         try {
-                $params = [$mes, $año];
+                $params = [$fechaInicio, $fechaFin];
                 $sqlWhereSede = "";
 
                 if ($idSede != "*"){
                     array_push($params, $idSede);
-                    $sqlWhereSede = " AND id_sede = :2";
+                    $sqlWhereSede = " AND id_sede = :".(count($params) - 1);
+                }
+
+                $sqlWhereEstado = " AND fue_atendido IN (0,1) ";
+
+                if ($idEstado != "*"){
+                    array_push($params, $idEstado);
+                    $sqlWhereEstado = "  AND fue_atendido IN (:".(count($params) - 1).")";
+                }
+
+                $sqlWhereAreas = " ";
+                if (count($idAreas) <= 0 || !in_array("*", $idAreas)){
+                    $sqlWhereAreas = "  AND s.id_categoria_servicio IN (".implode(",", $idAreas).")";
                 }
         
                 $sql  = "SELECT 
@@ -1070,13 +1082,14 @@ class AtencionMedicaServicio extends Conexion {
                     INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
                     INNER JOIN caja ca oN ca.id_caja = ci.id_caja
                     WHERE am.estado_mrcb AND amd.estado_mrcb
-                            AND MONTH(am.fecha_atencion) = :0 and YEAR(am.fecha_atencion) = :1
-                            AND cs.es_mostrado_asistentes = 1 
+                            AND DATE(am.fecha_atencion) BETWEEN :0 AND :1
+                            AND cs.es_mostrado_asistentes = 1
                             $sqlWhereSede
+                            $sqlWhereEstado
+                            $sqlWhereAreas
                     ORDER BY am.numero_acto_medico DESC";
 
             $datos = $this->consultarFilas($sql, $params);
-
             return $datos;
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);

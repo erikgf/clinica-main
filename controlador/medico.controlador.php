@@ -162,6 +162,17 @@ try {
             Funciones::imprimeJSON("200", "OK", $data);
         break;
         
+        case "listar_liquidaciones_seguimiento_medico":
+            $fecha_inicio = Funciones::sanitizar($_POST["p_fecha_inicio"]);
+            $fecha_fin = Funciones::sanitizar($_POST["p_fecha_fin"]);
+            $id_area = $_POST["p_id_area"];
+            $id_promotora = $_POST["p_id_promotora"];
+            $id_sede = $_POST["p_sede"];
+            $totales_mayores_a = Funciones::sanitizar($_POST["p_monto"]);
+
+            $data = $obj->listarLiquidacionesSeguimientoMedico($fecha_inicio, $fecha_fin, $id_sede, $id_promotora, $id_area, $totales_mayores_a);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
         default:
             throw new Exception( "No existe la función consultada en el API.", 1);
         break;

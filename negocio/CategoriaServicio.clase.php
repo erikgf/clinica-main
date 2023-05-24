@@ -31,6 +31,27 @@ class CategoriaServicio extends Conexion {
         }
     }
 
+    public function listarSoloAsistentes(){
+        try {
+            $sql = "SELECT 
+                        cs.id_categoria_servicio as id,
+                        cs.descripcion,
+                        COALESCE((SELECT ROUND(porcentaje_comision * 100, 2)
+                            FROM categoria_porcentaje_comision
+                            WHERE estado_validez = 'A' AND estado_mrcb AND fecha_fin IS NULL 
+                            AND id_categoria_servicio = cs.id_categoria_servicio),'0.00') as porcentaje_comision
+                    FROM categoria_servicio cs
+                    WHERE estado_mrcb AND cs.es_mostrado_asistentes = 1
+                    ORDER BY cs.descripcion";
+                    
+            $data =  $this->consultarFilas($sql);
+            return $data;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+    
+
     public function guardar(){
         try {
 

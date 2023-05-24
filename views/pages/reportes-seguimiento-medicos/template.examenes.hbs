@@ -1,0 +1,26 @@
+<thead style="font-size:small">
+    <tr>
+        <th>APELLIDOS NOMBRES</th>
+        <th>PROMOTOR</th>
+        {{#fechas}}
+            <th>{{this}}</th>
+        {{/fechas}}
+    </tr>
+</thead>
+<tbody style="font-size:.9em;">
+    {{#registros}}
+        <tr >
+            <td>{{medico}}</td>
+            <td>{{promotora}}</td>
+            {{#../fechas}}
+                <th>{{renderKey ../this this}}</th>
+            {{/../fechas}}
+        </tr>
+    {{else}}
+        <tr>
+            <td colspan="15" class="text-center">
+                <i>Sin registros que mostrar</i>   
+            </td>
+        </tr>
+    {{/registros}}
+</tbody>

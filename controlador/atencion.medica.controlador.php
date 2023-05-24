@@ -152,11 +152,9 @@ try {
         case "obtener_atencion_medica_para_egreso":
             //devuelve siempre un registro (este o no anulado)
             $obj->numero_acto_medico = Funciones::sanitizar($_POST["p_numero_acto_medico"]);
-
             $data = $obj->obtenerAtencionMedicaParaEgreso();
             Funciones::imprimeJSON("200", "OK", $data);
         break;
-        
         
         case "pagar_saldo_atencion":
             $obj->id_atencion_medica = Funciones::sanitizar($_POST["p_id_atencion_medica"]);
@@ -312,6 +310,19 @@ try {
         case "obtener_ticket_convenio_facturar":
             $numero_ticket = Funciones::sanitizar(isset($_POST["p_numero_ticket"]) ? $_POST["p_numero_ticket"] : "");
             $data = $obj->obtenerTicketConvenioFactura($numero_ticket);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "obtener_reporte_atenciones_descuentos":
+            $fecha_inicio = Funciones::sanitizar($_POST["p_fecha_inicio"]);
+            $fecha_fin = Funciones::sanitizar($_POST["p_fecha_fin"]);
+            $sede = Funciones::sanitizar($_POST["p_sede"]);
+
+            /*
+            $id_area = $_POST["p_id_area"];
+            $estado = Funciones::sanitizar($_POST["p_estado"]);
+            */
+            $data = $obj->obtenerReporteAtencionesDescuentos($fecha_inicio, $fecha_fin, $sede);
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 

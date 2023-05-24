@@ -1490,7 +1490,11 @@ class AtencionMedica extends Conexion {
                         id_atencion_medica,
                         fecha_atencion, 
                         am.monto_descuento,  
+                        motivo_descuento,
                         importe_total + am.monto_descuento as importe_total,
+                        (am.pago_credito - (SELECT COALESCE(SUM(cim.monto_efectivo + cim.monto_tarjeta + cim.monto_deposito),'0.00')
+                            FROM caja_instancia_movimiento cim 
+                            WHERE cim.id_tipo_movimiento IN (4) AND cim.estado_mrcb AND cim.id_registro_atencion_relacionada = am.id_atencion_medica)) as monto_adeuda, -- ahora tras pagar
                         CONCAT(cr.apellido_paterno,' ',cr.nombres) as usuario_registro,
                         CONCAT(c.apellido_paterno,' ',c.nombres) as usuario_validador,
                         am.nombre_paciente as paciente,

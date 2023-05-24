@@ -14,17 +14,19 @@ if (!Sesion::obtenerSesion()){
 }
 $login = Sesion::obtenerSesion()["nombre_usuario"];
 
-$mes = isset($_GET["m"]) ? $_GET["m"] : NULL;
-$año = isset($_GET["a"]) ? $_GET["a"] : NULL;
-$id_sede = isset($_GET["sede"]) ? $_GET["sede"] : "*";
+$fecha_inicio = isset($_GET["fi"]) ? $_GET["fi"] : NULL;
+$fecha_fin = isset($_GET["ff"]) ? $_GET["ff"] : NULL;
+$id_sede = isset($_GET["s"]) ? $_GET["s"] : "*";
+$id_estado = isset($_GET["e"]) ? $_GET["e"] : "*";
+$id_areas = isset($_GET["ar"]) ? $_GET["ar"] : "[*]";
 
-if ($mes == NULL){
-    echo "No se ha ingresado parámetro de MES";
+if ($fecha_inicio == NULL){
+    echo "No se ha ingresado parámetro de FECHA FIN";
     exit;
 }
 
-if ($año == NULL){
-    echo "No se ha ingresado parámetro de AÑO";
+if ($fecha_fin == NULL){
+    echo "No se ha ingresado parámetro de FECHA FIN";
     exit;
 }
 $fecha_impresion = date("d/m/Y");
@@ -35,13 +37,15 @@ require "../negocio/AtencionMedicaServicio.clase.php";
 $titulo_xls  = "";
 try {
   $obj = new AtencionMedicaServicio();
-  $data = $obj->listarExamenesAtencionesPorSede($mes, $año, $id_sede);
+
+  $data = $obj->listarExamenesAtencionesPorSede($fecha_inicio, $fecha_fin, $id_estado, json_decode($id_areas), $id_sede);
 
   if (count($data) <= 0){
     echo "Sin datos encontrados.";
     exit;
   }
-  $titulo_xls = "RPTE_ATN_SEDES_".$mes."_".$año;
+
+  $titulo_xls = "RPTE_ATN_SEDES_".str_replace("-","",$fecha_inicio).str_replace("-","",$fecha_fin);
 
 } catch (\Throwable $th) {
   echo $th->getMessage();
@@ -63,12 +67,22 @@ try {
     
     $tituloEstilos = array('font' => array( 'name' => 'Arial','size' => 16));
 
+    $timestamp_inicio = strtotime($fecha_inicio);
+    $diaInicio = date("d", $timestamp_inicio);
+    $anioInicio = date("Y", $timestamp_inicio);
+    $mesInicio = Funciones::getMes(date("m", $timestamp_inicio));
+
+    $timestamp_fin = strtotime($fecha_fin);
+    $diaFin = date("d", $timestamp_fin);
+    $anioFin = date("Y", $timestamp_fin);
+    $mesFin = Funciones::getMes(date("m", $timestamp_fin));
+
     $sheetActivo->setCellValue('A'.$actualFila, "SEDE");	
     $sheetActivo->setCellValue('B'.$actualFila++, $id_sede === "*" ? "CHICLAYO/LAMBAYEQUE" : ($id_sede === "1" ? "CHICLAYO" : "LAMBAYEQUE"));	
-    $sheetActivo->setCellValue('A'.$actualFila, "MES");	
-    $sheetActivo->setCellValue('B'.$actualFila++,Funciones::getMes($mes));	
-    $sheetActivo->setCellValue('A'.$actualFila, "AÑO");	
-    $sheetActivo->setCellValue('B'.$actualFila++, $año);	
+    $sheetActivo->setCellValue('A'.$actualFila, "DESDE");	
+    $sheetActivo->setCellValue('B'.$actualFila++, $diaInicio." DE ".$mesInicio." DEL ".$anioInicio);
+    $sheetActivo->setCellValue('A'.$actualFila, "HASTA");	
+    $sheetActivo->setCellValue('B'.$actualFila++, $diaFin." DE ".$mesFin." DEL ".$anioFin);
 
     $sheetActivo->getStyle('A2:B4')->applyFromArray($tituloEstilos);
 

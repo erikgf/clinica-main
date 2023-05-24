@@ -27,6 +27,11 @@ try {
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 
+        case "listar_solo__asistentes":
+            $data = $obj->listarSoloAsistentes();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
         case "obtener":
             $sin_laboratorio = isset($_POST["p_sin_laboratorio"]) ? $_POST["p_sin_laboratorio"] : "0";
             $data = $obj->obtener($sin_laboratorio);
