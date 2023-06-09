@@ -93,8 +93,8 @@ var Reportes = function() {
                 let objMedicoRegistrar = {};
 
                 data.forEach((reg,i)=>{
-                    let medico, promotora, mesAnioAtencion;
-                    if (lastMedico == null || lastMedico != reg.medico){
+                    let medico = reg.medico, promotora, mesAnioAtencion;
+                    if (lastMedico == null || lastMedico != medico){
                         if (lastMedico != null){
                             registros.push(objMedicoRegistrar);
                         }
@@ -102,7 +102,6 @@ var Reportes = function() {
 
                         objMedicoRegistrar = {};
                         
-                        medico = reg.medico;
                         promotora = reg.promotora;
                         fechasTemp = [...fechas];
 
@@ -114,7 +113,7 @@ var Reportes = function() {
 
                     for (let index = 0; index < fechasTemp.length; index++) {
                         const fecha = fechasTemp[index];
-                        if (fecha== mesAnioAtencion){
+                        if (fecha == mesAnioAtencion){
                             objMedicoRegistrar[fecha] = reg.comision_sin_igv;
                             fechasTemp.splice(0, index + 1);
                             break;

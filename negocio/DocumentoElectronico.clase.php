@@ -1686,7 +1686,7 @@ class DocumentoElectronico extends Conexion {
             } else {
                 $sql  = "SELECT de.iddocumento_electronico as id, de.xml_filename as nombre_archivo, de.fecha_emision
                         FROM documento_electronico de
-                        LEFT JOIN documento_electronico fact ON fact.serie = de.serie_documento_modifica AND fact.numero_correlativo = de.numero_documento_modifica
+                        LEFT JOIN documento_electronico fact ON fact.serie = de.serie_documento_modifica AND fact.numero_correlativo = de.numero_documento_modifica AND fact.estado_mrcb
                         WHERE de.estado_mrcb AND  (de.fecha_emision BETWEEN :1 AND :2) AND (de.cdr_estado IS NULL OR de.cdr_estado < -1) AND de.enviar_a_sunat = 0
                              AND de.idtipo_comprobante IN (:0) AND de.serie LIKE 'F%' AND ". ($id_tipo_comprobante == '01' ? "true" : " fact.cdr_estado = 0 ");
             }

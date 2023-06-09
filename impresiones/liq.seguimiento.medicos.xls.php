@@ -131,11 +131,11 @@ try {
 
 
     foreach ($dataRegistros as $key => $registro) {
-        if ($last_medico == NULL ||  $last_medico != $registro["medico"]){
+        $medico = $registro["medico"];
+        if ($last_medico == NULL ||  $last_medico != $medico){
             $i = 0;
             $actualFila++;
 
-            $medico = $registro["medico"];
             $promotora = $registro["promotora"];
             $fechasTemp = $data["fechas"];
 

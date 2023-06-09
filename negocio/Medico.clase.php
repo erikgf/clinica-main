@@ -338,7 +338,7 @@ class Medico extends Conexion {
             }
 
             $sql = "SELECT 
-                    distinct am.id_medico_ordenante as id_medico, me.nombres_apellidos, 
+                        distinct am.id_medico_ordenante as id_medico, me.nombres_apellidos, 
                         SUM(ams.monto_comision_categoria_sin_igv) as sin_igv,
                         COUNT(distinct(am.id_paciente)) as total_pacientes
                     FROM atencion_medica am 
@@ -350,7 +350,8 @@ class Medico extends Conexion {
                     ORDER BY me.nombres_apellidos";
             $data = $this->consultarFilas($sql, $params);
 
-            $sql = "SELECT cs.descripcion as categoria, cs.id_categoria_servicio
+            $sql = "SELECT cs.descripcion as categoria, 
+                            cs.id_categoria_servicio
                     FROM atencion_medica am 
                     INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
                     INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio
@@ -364,7 +365,7 @@ class Medico extends Conexion {
                 
                 $sql_ = "SELECT 
                             am.fecha_atencion, am.nombre_paciente, ams.nombre_servicio,  
-                                    SUM(ams.sub_total), (SUM(sub_total) / 1.18)  as subtotal_sin_igv, 
+                                    SUM(ams.sub_total) as subtotal, 
                                     SUM(ams.monto_comision_categoria) as con_igv, 
                                     SUM(ams.monto_comision_categoria_sin_igv) as sin_igv,
                                     porcentaje_comision_categoria
