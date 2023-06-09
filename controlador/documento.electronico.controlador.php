@@ -166,7 +166,9 @@ try {
                 throw new Exception("No se ha enviado FECHA FINAL para procesar.", 1);
             }
 
-            Funciones::imprimeJSON("200", "OK", $obj->enviarComprobantesFactura("07", $fecha_inicio, $fecha_final));
+            $forzado = isset($_POST["p_forzado"]) ? $_POST["p_forzado"] : 0;
+
+            Funciones::imprimeJSON("200", "OK", $obj->enviarComprobantesFactura("07", $fecha_inicio, $fecha_final, $forzado));
 
         break;
 

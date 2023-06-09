@@ -101,6 +101,18 @@ try {
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 
+        case "listar_examenes_atenciones_por_sede":
+            $fecha_inicio = Funciones::sanitizar($_POST["p_fecha_inicio"]);
+            $fecha_fin = Funciones::sanitizar($_POST["p_fecha_fin"]);
+            $id_area = $_POST["p_id_area"];
+            //$id_area = Funciones::sanitizar($_POST["p_id_area"]);
+            $estado = Funciones::sanitizar($_POST["p_estado"]);
+            $sede = Funciones::sanitizar($_POST["p_sede"]);
+            
+            $data = $obj->listarExamenesAtencionesPorSede($fecha_inicio, $fecha_fin, $estado, $id_area, $sede);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
         default:
             throw new Exception( "No existe la función consultada en el API.", 1);
         break;

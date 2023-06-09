@@ -1,12 +1,33 @@
 var Reportes = function() {
-    var $txtAnio,
-        $txtMes,
-        $txtSede;
+    var $txtFechaInicio,
+        $txtFechaFin,
+        $txtSede,
+        $txtArea,
+        $txtEstado,
+        $tblExamenes,
+        $frm;
+
+    let $btnListar;
+    let tplExamenes;
+    var TABLA_EXAMENES;
+
+
+    this.getTemplates = async () => {
+        const $templateExamenes = await $.get("./template.examenes.hbs");
+        tplExamenes = Handlebars.compile($templateExamenes);
+    };
 
     this.setDOM = function(){
-        $txtAnio = $("#txt-anio");
-        $txtMes = $("#txt-mes");
+        $txtFechaInicio = $("#txt-fechainicio");
+        $txtFechaFin = $("#txt-fechafin");
         $txtSede = $("#txt-sede");
+        $txtArea = $("#txt-area");
+        $txtEstado = $("#txt-estado");
+        $tblExamenes = $("#tbl-examenes");
+
+        $btnListar = $("#btn-listar");
+
+        $frm = $("form");
     };
     
     this.setEventos = function(){
@@ -14,58 +35,119 @@ var Reportes = function() {
             e.preventDefault();
             imprimirExcel();
         });
+
+        $frm.on("submit", (e)=>{
+            e.preventDefault();
+            this.listarExamenes();
+        });
     };
 
     var imprimirExcel = function(){
-        var anio = $txtAnio.val(),
-            mes = $txtMes.val(),
-            sede = $txtSede.val();
+        var fi = $txtFechaInicio.val(),
+            ff = $txtFechaFin.val(),
+            sede = $txtSede.val(),
+            areas = $txtArea.val(),
+            estado = $txtEstado.val();
 
-        window.open("../../../impresiones/atenciones.sede.xls.php?a="+anio+"&m="+mes+"&sede="+sede);
+        window.open(`../../../impresiones/atenciones.sede.xls.php?fi=${fi}&ff=${ff}&s=${sede}&e=${estado}&ar=${JSON.stringify(areas)}`);
     };
 
-    this.setMeses = () =>{
-        const mesActual = new Date().getMonth() + 1;
-        const meses = [
-            {id: 1, rotulo : "ENERO"},
-            {id: 2, rotulo : "FEBRERO"},
-            {id: 3, rotulo : "MARZO"},
-            {id: 4, rotulo : "ABRIL"},
-            {id: 5, rotulo : "MAYO"},
-            {id: 6, rotulo : "JUNIO"},
-            {id: 7, rotulo : "JULIO"},
-            {id: 8, rotulo : "AGOSTO"},
-            {id: 9, rotulo : "SETIEMBRE"},
-            {id: 10, rotulo : "OCTUBRE"},
-            {id: 11, rotulo : "NOVIEMBRE"},
-            {id: 12, rotulo : "DICIEMBRE"},
-        ];
+    const getHTMLForCombo = (data)=>{
+        let html = `<option value="*" selected>Todos</option>`;
 
-        let $html ="";
-
-        meses.forEach(o=>{
-            $html += `<option ${o.id === mesActual ? 'selected' : ''} value="${o.id}">${o.rotulo}</option>`;
+        data.forEach(o=>{
+            html += `<option value=${o.id}>${o.descripcion}</option>`;    
         });
 
-        $txtMes.html($html);
+        return html;
     };
 
-    this.setAños = () =>{
-        const anios = [2019,2020,2021,2022,2023,2024,2025];
-        const anioActual = new Date().getFullYear();
-        let $html ="";
+    this.listarExamenes = function(){
+        const tmpHtml = $btnListar.html();
+        $btnListar.prop("disabled", true);
+        $btnListar.html("<span class='fa fa-spin fa-spinner'></span>");
 
-        anios.forEach(o=>{
-            $html += `<option ${o === anioActual ? 'selected' : ''} value="${o}">${o}</option>`;
-        });
+        $.ajax({ 
+            url : VARS.URL_CONTROLADOR+"atencion.medica.servicio.controlador.php?op=listar_examenes_atenciones_por_sede",
+            type: "POST",
+            dataType: 'json',
+            delay: 250,
+            data: {
+                p_fecha_inicio : $txtFechaInicio.val(),
+                p_fecha_fin : $txtFechaFin.val(),
+                p_estado: $txtEstado.val(),
+                p_id_area : $txtArea.val(),
+                p_sede : $txtSede.val()
+            },
+            success: function(result){
+                $btnListar.prop("disabled", false);
+                $btnListar.html(tmpHtml);
 
-        $txtAnio.html($html);
+                if (TABLA_EXAMENES){
+                    TABLA_EXAMENES.destroy();
+                    TABLA_EXAMENES = null;
+                }
+                $tblExamenes.find("tbody").html(tplExamenes(result));
+                if (result.length){
+                    TABLA_EXAMENES = $tblExamenes.DataTable({
+                        "pageLength": 25,
+                        "ordering": true,
+                        "scrollX": true
+                    });
+                }
+            },
+            error: function (request) {
+                $btnListar.html(tmpHtml);
+                $btnListar.prop("disabled", false);
+                toastr.error(request.responseText);
+                return;
+            },
+            always : function(){
+                console.log("always");
+            },
+            cache: true
+            }
+        );
+    };
+
+    this.listarAreas = function(){
+        $.ajax({ 
+            url : VARS.URL_CONTROLADOR+"categoria.servicio.controlador.php?op=listar_solo__asistentes",
+            type: "POST",
+            dataType: 'json',
+            delay: 250,
+            success: function(result){
+                $txtArea.html(getHTMLForCombo(result));
+            },
+            error: function (request) {
+                toastr.error(request.responseText);
+                return;
+            }
+        })
+    };
+
+    this.listarSedes = function(){
+        $.ajax({ 
+            url : VARS.URL_CONTROLADOR+"sede.controlador.php?op=listar",
+            type: "POST",
+            dataType: 'json',
+            delay: 250,
+            success: function(result){
+                $txtSede.html(getHTMLForCombo(result));
+            },
+            error: function (request) {
+                toastr.error(request.responseText);
+                return;
+            }
+        })
     };
 
     this.setDOM();
     this.setEventos();
-    this.setMeses();
-    this.setAños();
+    this.getTemplates();
+
+    this.listarAreas();
+    this.listarSedes();
 
     return this;
 };

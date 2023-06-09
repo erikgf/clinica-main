@@ -338,7 +338,7 @@ class Medico extends Conexion {
             }
 
             $sql = "SELECT 
-                    distinct am.id_medico_ordenante as id_medico, me.nombres_apellidos, 
+                        distinct am.id_medico_ordenante as id_medico, me.nombres_apellidos, 
                         SUM(ams.monto_comision_categoria_sin_igv) as sin_igv,
                         COUNT(distinct(am.id_paciente)) as total_pacientes
                     FROM atencion_medica am 
@@ -350,7 +350,8 @@ class Medico extends Conexion {
                     ORDER BY me.nombres_apellidos";
             $data = $this->consultarFilas($sql, $params);
 
-            $sql = "SELECT cs.descripcion as categoria, cs.id_categoria_servicio
+            $sql = "SELECT cs.descripcion as categoria, 
+                            cs.id_categoria_servicio
                     FROM atencion_medica am 
                     INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
                     INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio
@@ -364,7 +365,7 @@ class Medico extends Conexion {
                 
                 $sql_ = "SELECT 
                             am.fecha_atencion, am.nombre_paciente, ams.nombre_servicio,  
-                                    SUM(ams.sub_total), (SUM(sub_total) / 1.18)  as subtotal_sin_igv, 
+                                    SUM(ams.sub_total) as subtotal, 
                                     SUM(ams.monto_comision_categoria) as con_igv, 
                                     SUM(ams.monto_comision_categoria_sin_igv) as sin_igv,
                                     porcentaje_comision_categoria
@@ -541,9 +542,8 @@ class Medico extends Conexion {
         }
     }
 
-    public function listarLiquidacionesSeguimientoMedico($fecha_inicio, $fecha_fin, $totales_mayores_a){
+    public function listarLiquidacionesSeguimientoMedico($fecha_inicio, $fecha_fin, $idSedes, $idPromotoras, $idAreas, $totalesMayoresA){
         try {
-
             $params = [$fecha_inicio, $fecha_fin];
 
             $sql = "SELECT MONTH('$fecha_inicio') as mes_inicio, YEAR('$fecha_inicio') as anio_inicio,  MONTH('$fecha_fin') as mes_fin, YEAR('$fecha_fin') as anio_fin";
@@ -568,7 +568,27 @@ class Medico extends Conexion {
                 }
 
             } while (!$detenerLoop);
-            
+
+            $sqlWhereSedes = " ";
+            if (count($idSedes) <= 0 || !in_array("*", $idSedes)){
+                $sqlWhereSedes = "  AND caja.id_sede IN (".implode(",", $idSedes).")";
+            }
+
+            $sqlWherePromotoras = " ";
+            if (count($idPromotoras) <= 0 || !in_array("*", $idPromotoras)){
+                $sqlWherePromotoras = "  AND (pr.id_promotora IN (".implode(",", $idPromotoras).")";
+                if (in_array("0", $idPromotoras)){
+                    $sqlWherePromotoras .= " OR pr.id_promotora  IS NULL";
+                } else {
+                    $sqlWherePromotoras .= ")";
+                }
+            }
+
+            $sqlWhereAreas = " ";
+            if (count($idAreas) <= 0 || !in_array("*", $idAreas)){
+                $sqlWhereAreas = "  AND s.id_categoria_servicio IN (".implode(",", $idAreas).")";
+            }
+
             $sql = "SELECT 
                         m.nombres_apellidos as medico,
                         COALESCE(pr.descripcion, 'NO TIENE') as promotora,
@@ -576,15 +596,43 @@ class Medico extends Conexion {
                         ROUND(SUM(ams.monto_comision_categoria_sin_igv),2) as comision_sin_igv
                         FROM atencion_medica am 
                         INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
+                        LEFT JOIN servicio s ON s.id_servicio = ams.id_servicio
                         INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
                         LEFT JOIN promotora pr ON pr.id_promotora = am.id_promotora_ordenante
-                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND  :1) AND id_medico_ordenante NOT IN (1,2)
+                        LEFT JOIN caja_instancia ci ON ci.id_caja_instancia= am.id_caja_instancia
+                        LEFT JOIN caja ON caja.id_caja = ci.id_caja
+                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND  :1) AND id_medico_ordenante NOT IN (1,2) $sqlWhereSedes $sqlWherePromotoras $sqlWhereAreas
                         GROUP BY m.id_medico, m.nombres_apellidos, CONCAT(MONTH(am.fecha_atencion),'-',YEAR(am.fecha_atencion))
-                        HAVING  comision_sin_igv >  ".$totales_mayores_a."
+                        HAVING  comision_sin_igv >  ".$totalesMayoresA."
                         ORDER BY m.nombres_apellidos";
                     
             $data =  $this->consultarFilas($sql, $params);
-            return ["data"=>$data, "fechas"=>$fechas];
+
+            if (!in_array("*", $idAreas)){
+                $sql =  "SELECT GROUP_CONCAT(descripcion)  as descripcion FROM categoria_servicio s WHERE estado_mrcb ".$sqlWhereAreas;
+                $areas = $this->consultarValor($sql);
+            } else {
+                $areas = "TODAS";
+            }   
+
+            if (!in_array("*", $idPromotoras)){
+                $sql =  "SELECT GROUP_CONCAT(descripcion)  as descripcion FROM promotora pr  WHERE estado_mrcb ".$sqlWherePromotoras;
+                $promotoras = $this->consultarValor($sql);
+                if (in_array("0", $idPromotoras)){
+                    $promotoras .= ",NO TIENE";
+                }
+            } else {
+                $promotoras = "TODOS";
+            }
+
+            if (!in_array("*", $idSedes)){
+                $sql =  "SELECT GROUP_CONCAT(nombre) as descripcion FROM sede  WHERE estado_mrcb ".$sqlWhereSedes;
+                $sedes = $this->consultarValor($sql);
+            } else {
+                $sedes = "TODAS";
+            }
+
+            return ["data"=>$data, "fechas"=>$fechas, "areas"=>$areas, "promotoras"=>$promotoras, "sedes"=>$sedes];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }

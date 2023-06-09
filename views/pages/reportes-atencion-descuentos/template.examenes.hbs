@@ -1,0 +1,22 @@
+{{#.}}
+    <tr >
+        <td  class="text-center">{{id_atencion_medica}}</td>
+        <td class="text-center">{{fecha_atencion}}</td>
+        <td>{{paciente}}</td>
+        <td>{{servicio_atendido}}</td>
+        <td>{{motivo_descuento}}</td>
+        <td class="text-center">S/ {{round importe_total 2}}</td>
+        <td class="text-center">S/ {{round monto_descuento 2}}</td>
+        <td class="text-center">S/ {{round monto_cancelado 2}}</td>
+        <td class="text-center">S/ {{round monto_deuda 2}}</td>
+        <td class="text-center">{{sede}}</td>
+        <td>{{usuario_registro}}</td>
+        <td>{{usuario_validador}}</td>
+    </tr>
+{{else}}
+    <tr>
+        <td colspan="15" class="text-center">
+            <i>Sin registros que mostrar</i>   
+        </td>
+    </tr>
+{{/.}}

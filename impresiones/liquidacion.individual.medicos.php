@@ -173,10 +173,11 @@ foreach ($data as $key => $data_medico) {
            // $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, number_format(round($value["porcentaje_comision_categoria"] * 100,2),2). "%", $BORDES,0 ,"R");   
             $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, "S/ ".round($value["sin_igv"],3), $BORDES,1 ,"R");   
 
-            $total_importe += $value["subtotal_sin_igv"];
+            $total_importe += $value["subtotal"];
             $total_comisiones +=$value["sin_igv"];
         }
 
+        $total_importe = round($total_importe / 1.18,2);
         $pdf->SetFont($FONT,'B', 5.55 + $aumento_font); 
         $i = 0;
         $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 2.5, "", $BORDES,0 ,"C");    

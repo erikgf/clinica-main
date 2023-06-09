@@ -1,0 +1,24 @@
+{{#.}}
+    <tr >
+        <td class="text-center">{{sede}}</td>
+        <td  class="text-center">{{estado}}</td>
+        <td  class="text-center">{{fecha_atencion}}</td>
+        <td  class="text-center">{{recibo}}</td>
+        <td class="text-center">{{comprobante}}</td>
+        <td>{{nombre_paciente}}</td>
+        <td>{{area}}</td>
+        <td>{{examen}}</td>
+        <td class="text-center">S/ {{round monto_examen 2}}</td>
+        <td class="text-center">S/ {{round monto_total_recibo 2}}</td>
+        <td>{{medico_atendido}}</td>
+        <td>{{medico_realizado}}</td>
+        <td>{{medico_ordenante}}</td>
+        <td>{{observaciones_ticket}}</td>
+    </tr>
+{{else}}
+    <tr>
+        <td colspan="15" class="text-center">
+            <i>Sin registros que mostrar</i>   
+        </td>
+    </tr>
+{{/.}}
