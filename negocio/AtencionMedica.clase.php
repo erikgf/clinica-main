@@ -170,6 +170,10 @@ class AtencionMedica extends Conexion {
                 throw new Exception("Caja no válida.", 1);
             }
 
+            if ($cajaValidada["datos"] == false){
+                throw new Exception("Caja no válida para el día de HOY.", 1);
+            }
+
             $cajaValidada = $cajaValidada["datos"];
 
             if ($this->pago_efectivo > 0.00 && $cajaValidada["bloquear_efectivo"] == "1"){

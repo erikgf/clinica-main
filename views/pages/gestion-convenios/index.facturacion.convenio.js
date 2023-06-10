@@ -413,7 +413,7 @@ var FacturacionConvenio = function(){
         );
     };
 
-    TABLA_FACTURACION_CONVENIO  = null;
+    var TABLA_FACTURACION_CONVENIO  = null;
     this.listar = function(){
         $btnActualizar.prop("disabled", true);
         $overlayTabla.show();
@@ -646,7 +646,33 @@ var FacturacionConvenio = function(){
             return;
         }
 
-        new EnviadorSUNAT({id_documento_electronico: id_documento_electronico, $btnEnviar: $btnEnviar}).enviarSUNAT();
+        const fnActualizarResultado = (result) =>{
+            if (result.respuesta == "ok"){
+                toastr.success(result.mensaje);
+            } else {
+                toastr.error(result.mensaje);
+            }
+            
+            var TR_FILA = $btnEnviar.parents("tr");
+            var arr = [].slice.call($(template([result.registro])).find("td")),
+                dataNuevaFila = $.map(arr, function(item) {
+                    return item.innerHTML;
+                });
+
+            if (TABLA_FACTURACION_CONVENIO){
+                if (TR_FILA){ 
+                    TABLA_FACTURACION_CONVENIO
+                        .row(TR_FILA)
+                        .data(dataNuevaFila)
+                        .draw();  
+                } else {
+                    TABLA_FACTURACION_CONVENIO.row.add(dataNuevaFila).draw(false);     
+                }
+            }
+        }
+
+        new EnviadorSUNAT({id_documento_electronico: id_documento_electronico, $btnEnviar: $btnEnviar})
+                            .enviarSUNAT(fnActualizarResultado);
     };
 
     var modificarPorNotaCredito = function(id_documento_electronico){
@@ -815,6 +841,7 @@ const TablaCuotasCredito  = function(data){
     return this.init();
 };
 
+/*
 const EnviadorSUNAT = function(data){
     var self = this;
     this.enviandoSUNAT = false;
@@ -836,7 +863,6 @@ const EnviadorSUNAT = function(data){
                 p_id_documento_electronico : this.id_documento_electronico
             },
             success: function(result){
-                /*update $tr*/
                 self.enviandoSUNAT = false;
                 if (result.respuesta == "ok"){
                     toastr.success(result.mensaje);
@@ -871,9 +897,9 @@ const EnviadorSUNAT = function(data){
         );
     };
 
-
     return this;
 };
+*/
 
 $(document).ready(function(){
     objFacturacionConvenio = new FacturacionConvenio();
