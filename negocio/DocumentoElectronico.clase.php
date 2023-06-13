@@ -2175,7 +2175,7 @@ class DocumentoElectronico extends Conexion {
             } else {
                 $sql  = "SELECT iddocumento_electronico as id, idtipo_comprobante as id_tipo_comprobante, xml_filename as nombre_archivo, fecha_emision 
                             FROM documento_electronico
-                            WHERE estado_mrcb AND (cdr_estado IS NULL OR (cdr_estado <> 0  AND cdr_estado < 2000)) AND enviar_a_sunat = 0
+                            WHERE estado_mrcb AND (cdr_estado IS NULL OR (cdr_estado <> 0  AND cdr_estado < 2000) OR cdr_estado = '')
                             AND iddocumento_electronico IN (:0)";
             }
 

@@ -5,12 +5,15 @@
                 <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                 Opc.
                 </button>
-                <div class="dropdown-menu" style="">
+                <div class="dropdown-menu">
                     {{#id_atencion_medica}}
                     <a class="dropdown-item" target="_blank" href="../../../impresiones/ticket.atencion.sinprecios.php?id={{this}}" title="Ver Ticket Consulta"><i class="fa fa-eye"></i> TICKET (CONSULTA)</a>
                     {{/id_atencion_medica}}
 
                     {{#iddocumento_electronico}}
+                    {{#if_ ../debo_mostrar_enviar '==' 1}}
+                        <a class="dropdown-item btn-enviarsunat" style="color:red;font-weight:bold" data-comprobante="{{../comprobante}}" data-id="{{this}}" href="#" title="Enviar a SUNAT"><i class="fa fa-upload"></i> ENVIAR A SUNAT</a>
+                    {{/if_}}
                     <a class="dropdown-item" rel="noopener noreferrer" target="_blank" href="../../../impresiones/ticket.comprobante.php?id={{this}}" title="Ver Comprobante"><i class="fa fa-eye"></i> COMPROBANTE</a>
                     <a class="dropdown-item" rel="noopener noreferrer" target="_blank" href="../../../impresiones/comprobante.a4.pdf.php?id={{this}}" title="Ver Comprobante"><i class="fa fa-eye"></i> COMPROBANTE (A4)</a>
                     <a class="dropdown-item btn-copiarcomprobante" data-comprobante="{{../comprobante}}" data-id="{{this}}" href="#" title="Copiar Comprobante"><i class="fa fa-copy"></i> COPIAR COMPROBANTE</a>
@@ -44,7 +47,7 @@
                 </div>
             </div>
         </td>
-        <td class="text-center" style="max-width: 200px;">  
+        <td class="text-center cdrestadodescripcion" style="max-width: 200px;">  
             <span class="badge bg-{{cdr_estado_color}}">{{cdr_estado_descripcion}}</span>
         </td>
         <td class="text-center">{{fecha_registro}}</td>

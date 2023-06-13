@@ -78,6 +78,12 @@ var GestionAtenciones = function() {
             e.preventDefault();
             copiarComprobante(dataset.id, dataset.comprobante);
         });
+
+        $tblMovimientos.on("click", ".btn-enviarsunat", function (e) {
+            const $button = $(this);
+            e.preventDefault();
+            enviarSUNAT($button.data("id"), $button.data("comprobante"), $button);
+        });
     };
 
     var TABLA_MOVIMIENTOS;
@@ -103,7 +109,12 @@ var GestionAtenciones = function() {
                     TABLA_MOVIMIENTOS.destroy();
                     TABLA_MOVIMIENTOS = null;
                 }
-                $tblMovimientos.find("tbody").html(tplMovimientos(result));
+                $tblMovimientos.find("tbody").html(tplMovimientos(result.map(r=>{
+                    return {
+                        ...r,
+                        debo_mostrar_enviar: Boolean((r.comprobante.charAt(0) === "F") && (r.cdr_descripcion != 'ENVIADO' && r.cdr_descripcion != 'RECHAZADO')) ? 1 : 0
+                    }
+                })));
 
                 if (result.length){
                     TABLA_MOVIMIENTOS = $tblMovimientos.DataTable({
@@ -122,7 +133,6 @@ var GestionAtenciones = function() {
             }
         );
     };
-
 
     this.TABLA_MOVIMIENTOS = function(){
         return TABLA_MOVIMIENTOS;
@@ -240,6 +250,39 @@ var GestionAtenciones = function() {
         });
     };
 
+    const enviarSUNAT = function(id_documento_electronico, numero_comprobante, $btnEnviar){
+        if (!confirm(`¿Desea enviar el comprobante ${numero_comprobante} a SUNAT?`)){
+            return;
+        }
+        
+        const fnActualizarResultado = (resultado)=>{
+            const $tdCdr = $btnEnviar.parents("tr").find(".cdrestadodescripcion");
+            let cdr_estado_color, cdr_estado_descripcion;
+
+            if (resultado?.cod_sunat === ""){
+                cdr_estado_color = "info";
+                cdr_estado_descripcion = "REENVIAR";
+            } else if (resultado?.cod_sunat == 0){
+                cdr_estado_color = "success";
+                cdr_estado_descripcion = "ACEPTADO";
+                $btnEnviar.remove();
+            } else if (resultado?.cod_sunat == -1){
+                cdr_estado_color = "warning";
+                cdr_estado_descripcion = "REVISAR";
+            } else {
+                cdr_estado_color = "danger";
+                cdr_estado_descripcion = "RECHAZADO";
+                $btnEnviar.remove();
+                alert(`Comprobante rechazado: ${resultado.mensaje}`);
+            }
+
+            $tdCdr.html(`<span class="badge bg-${cdr_estado_color}">${cdr_estado_descripcion}</span>`);
+        };
+
+        new EnviadorSUNAT({id_documento_electronico: id_documento_electronico, $btnEnviar: $btnEnviar})
+                        .enviarSUNAT(fnActualizarResultado);
+    };
+
     this.setDOM();
     this.setEventos();
     this.getTemplates();
@@ -250,5 +293,3 @@ var GestionAtenciones = function() {
 $(document).ready(function(){
     objGestionAtenciones = new GestionAtenciones(); 
 });
-
-

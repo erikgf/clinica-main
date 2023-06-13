@@ -20,6 +20,7 @@ include_once "prt.modal.facturacion.convenio.php";
 <script type="text/javascript" src="../../componentes/PrecioVenta.componente.js" defer></script>
 <script type="text/javascript" src="../../componentes/Select.componente.js" defer></script>
 <script type="text/javascript" src="../../componentes/ConsultarDocumento.componente.js" defer></script>
+<script type="text/javascript" src="../../componentes/EnviadorSUNAT.componente.js" defer></script>
 <!--
 <script type="text/javascript" src="ClsServicioGeneral.js" defer></script>
 <script type="text/javascript" src="ClsServicioExamen.js" defer></script>
@@ -27,5 +28,5 @@ include_once "prt.modal.facturacion.convenio.php";
 -->
 <script type="text/javascript" src="index.empresas.convenio.js" defer></script>
 <script type="text/javascript" src="index.atenciones.convenio.js" defer></script>
-<script type="text/javascript" src="index.facturacion.convenio.js" defer></script>
+<script type="text/javascript" src="index.facturacion.convenio.1.js" defer></script>
 
