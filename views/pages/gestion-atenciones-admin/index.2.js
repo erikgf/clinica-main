@@ -256,25 +256,24 @@ var GestionAtenciones = function() {
         }
         
         const fnActualizarResultado = (resultado)=>{
-            const { registro } = resultado;
             const $tdCdr = $btnEnviar.parents("tr").find(".cdrestadodescripcion");
             let cdr_estado_color, cdr_estado_descripcion;
 
-            if (registro.cdr_estado === ""){
+            if (resultado?.cod_sunat === ""){
                 cdr_estado_color = "info";
                 cdr_estado_descripcion = "REENVIAR";
-            } else if (registro.cdr_estado == 0){
+            } else if (resultado?.cod_sunat == 0){
                 cdr_estado_color = "success";
-                cdr_estado_descripcion = "ENVIADO";
+                cdr_estado_descripcion = "ACEPTADO";
                 $btnEnviar.remove();
-            } else if (registro.cdr_estado == -1){
+            } else if (resultado?.cod_sunat == -1){
                 cdr_estado_color = "warning";
                 cdr_estado_descripcion = "REVISAR";
             } else {
                 cdr_estado_color = "danger";
                 cdr_estado_descripcion = "RECHAZADO";
                 $btnEnviar.remove();
-                alert(`Comprobante rechazado: ${registro.cdr_descripcion}`);
+                alert(`Comprobante rechazado: ${resultado.mensaje}`);
             }
 
             $tdCdr.html(`<span class="badge bg-${cdr_estado_color}">${cdr_estado_descripcion}</span>`);
@@ -294,5 +293,3 @@ var GestionAtenciones = function() {
 $(document).ready(function(){
     objGestionAtenciones = new GestionAtenciones(); 
 });
-
-

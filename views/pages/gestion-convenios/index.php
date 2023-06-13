@@ -28,5 +28,5 @@ include_once "prt.modal.facturacion.convenio.php";
 -->
 <script type="text/javascript" src="index.empresas.convenio.js" defer></script>
 <script type="text/javascript" src="index.atenciones.convenio.js" defer></script>
-<script type="text/javascript" src="index.facturacion.convenio.js" defer></script>
+<script type="text/javascript" src="index.facturacion.convenio.1.js" defer></script>
 

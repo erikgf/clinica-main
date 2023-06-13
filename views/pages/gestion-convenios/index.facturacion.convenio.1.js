@@ -654,7 +654,7 @@ var FacturacionConvenio = function(){
             }
             
             var TR_FILA = $btnEnviar.parents("tr");
-            var arr = [].slice.call($(template([result.registro])).find("td")),
+            var arr = [].slice.call($(tplFacturacionConvenio([result.registro])).find("td")),
                 dataNuevaFila = $.map(arr, function(item) {
                     return item.innerHTML;
                 });
