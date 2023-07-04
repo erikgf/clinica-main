@@ -312,7 +312,7 @@ $pdf->SetY($pdf->GetY() + $altura_pdf417);
 
 $pdf->SetFont( $FONT, "", 6 + $aumento_font);
 $pdf->CellFitScale($ANCHO_TICKET_MENOS_MARGENES, $ALTO_LINEA, utf8_decode("Representación Impresa de la ".mb_strtoupper($rotuloTipoComprobante,'UTF-8')), $BORDES,1,"C");
-$pdf->CellFitScale($ANCHO_TICKET_MENOS_MARGENES, $ALTO_LINEA, utf8_decode("AUTORIZADO MEDIANTE LA RESOLUCIÓN DE INTENDENCIA ".F_RESOLUCION), $BORDES,1,"C");
+$pdf->CellFitScale($ANCHO_TICKET_MENOS_MARGENES, $ALTO_LINEA, utf8_decode("AUTORIZADO MEDIANTE LA RESOLUCIÓN DE SUPERINTENDENCIA ".F_RESOLUCION), $BORDES,1,"C");
 
 $pdf->Ln($SALTO_LINEA * 2.5);
 

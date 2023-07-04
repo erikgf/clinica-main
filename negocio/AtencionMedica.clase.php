@@ -1428,6 +1428,7 @@ class AtencionMedica extends Conexion {
                         */
                         , de_f.iddocumento_electronico as id_documento_electronico_factura
                         , de_nc.iddocumento_electronico as id_documento_electronico_notacredito
+                        , marcado
                         FROM atencion_medica am
                         INNER JOIN empresa_convenio ec ON ec.id_empresa_convenio = am.id_empresa_convenio
                         LEFT JOIN documento_electronico de_f ON de_f.idtipo_comprobante = '01' AND de_f.id_atencion_medica_convenio = am.id_atencion_medica AND de_f.estado_mrcb
@@ -1512,6 +1513,18 @@ class AtencionMedica extends Conexion {
 
             $registros = $this->consultarFilas($sql, $params);
             return $registros;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function marcarRegistroConvenio($marcado){
+        try {
+
+            $marcadoNuevo = $marcado == "0" ? "1" : "0";
+            $this->update("atencion_medica", ["marcado"=>$marcadoNuevo], ["id_atencion_medica"=>$this->id_atencion_medica]);
+
+            return true;
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }

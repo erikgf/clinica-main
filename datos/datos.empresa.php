@@ -18,7 +18,7 @@
  define("F_DIRECCION_PROVINCIA","CHICLAYO");
  define("F_DIRECCION_DISTRITO","CHICLAYO");
  define("F_URBANIZACION"," Urb Federico Villareal");
- define("F_RESOLUCION","097-2012/SUNAT");
+ define("F_RESOLUCION","N° 097-2012/SUNAT");
  define("F_CODIGO_PAIS","PE");
  define("F_TELEFONO","74273007 - 978102103");
 

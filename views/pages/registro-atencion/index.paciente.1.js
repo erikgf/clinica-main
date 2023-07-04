@@ -383,9 +383,9 @@ var Paciente = function() {
 
 
         EVITAR_EVENTO_CAMBIAR_UBIGEO = true;
-        $txtDepartamento.append(new Option(data_paciente.departamento, data_paciente.department_id, true, true)).trigger('change');
-        $txtProvincia.append(new Option(data_paciente.provincia, data_paciente.province_id, true, true)).trigger('change');
-        $txtDistrito.append(new Option(data_paciente.distrito, data_paciente.district_id, true, true)).trigger('change');
+        $txtDepartamento.append(new Option(data_paciente.departamento, data_paciente.codigo_ubigeo_departamento, true, true)).trigger('change');
+        $txtProvincia.append(new Option(data_paciente.provincia, data_paciente.codigo_ubigeo_provincia, true, true)).trigger('change');
+        $txtDistrito.append(new Option(data_paciente.distrito, data_paciente.codigo_ubigeo_distrito, true, true)).trigger('change');
         EVITAR_EVENTO_CAMBIAR_UBIGEO = false;
 
         $txtTelefono.val(data_paciente.telefono_fijo);
