@@ -317,9 +317,8 @@ class DocumentoElectronico extends Conexion {
                 
                 $this->insertMultiple("documento_electronico_detalle", $campos_detalle, $valores_detalle);
 
-                $this->numero_correlativo = $this->numero_correlativo + 1;
                 $this->update("serie_documento", 
-                            [ "numero"=>$this->numero_correlativo ],
+                            [ "numero"=>$this->numero_correlativo + 1],
                             ["serie"=>$this->serie, "idtipo_comprobante"=>$this->id_tipo_comprobante]);
 
             }
@@ -642,6 +641,30 @@ class DocumentoElectronico extends Conexion {
     
     public function consultarDocumentoCliente($numero_documento){
         $respuesta = [];
+
+        $sql = "SELECT id_tipo_documento, nombres, apellidos_paterno, apellidos_materno, domicilio, fecha_nacimiento, sexo
+                    FROM paciente 
+                    WHERE numero_documento = :0 AND estado_mrcb";
+
+        $registro = $this->consultarFila($sql, [$numero_documento]);
+
+        if ($registro != null && ($registro["id_tipo_documento"] == "1")){
+            $respuesta['respuesta'] = 'ok';
+			$respuesta['titulo'] = 'local';
+            $respuesta['api'] = [
+                "nombres"=>$registro["nombres"],
+                "apell_mat"=>$registro["apellidos_materno"],
+                "apell_pat"=>$registro["apellidos_paterno"],
+                "direccion"=>$registro["domicilio"],
+                "fec_nacimiento"=>$registro["fecha_nacimiento"],
+                "sexo"=>$registro["sexo"]
+            ];
+			$respuesta['encontrado'] = true;
+			$respuesta['mensaje'] = '';
+			$respuesta['errores_curl'] = "";
+            return $respuesta;
+        }
+
 		$token_cliente = F_TOKEN_PROVEEDOR; //KEY para que puedas consumir nuestra api
 		//$data['ruc_proveedor'] = F_RUC_PROVEEDOR; //Tu número de RUC, el cuál será responsable por los datos enviados en todos los json
 		$ruta = "";
@@ -672,8 +695,6 @@ class DocumentoElectronico extends Conexion {
 		}
 
 		if ($ruta == ""){
-			
-
 			$respuesta['respuesta'] = 'error';
 			$respuesta['titulo'] = 'Error';
 			$respuesta['data'] = '';
@@ -730,7 +751,7 @@ class DocumentoElectronico extends Conexion {
 
             foreach ($datos as $key => $value) {
                 $this->id_documento_electronico = $value["iddocumento_electronico"];
-                $o = $this->generarComprobante($value["idtipo_comprobante"]);
+                $this->generarComprobante($value["idtipo_comprobante"]);
             }
             
             return  $datos;
@@ -902,9 +923,8 @@ class DocumentoElectronico extends Conexion {
                 
             $this->id_documento_electronico = $iddocumento_electronico_notacredito;
 
-            $this->numero_correlativo = $this->numero_correlativo + 1;
             $this->update("serie_documento", 
-                        [ "numero"=>$this->numero_correlativo],
+                        [ "numero"=>$this->numero_correlativo + 1],
                         ["serie"=>$this->serie, "idtipo_comprobante"=>$this->id_tipo_comprobante]);
 
             $this->commit();
@@ -1189,9 +1209,8 @@ class DocumentoElectronico extends Conexion {
                             ["id_atencion_medica"=>$this->id_atencion_medica]);
             }
 
-            $this->numero_correlativo = $this->numero_correlativo + 1;
             $this->update("serie_documento", 
-                        [ "numero"=>$this->numero_correlativo],
+                        [ "numero"=>$this->numero_correlativo + 1],
                         ["serie"=>$this->serie, "idtipo_comprobante"=>$this->id_tipo_comprobante]);
 
             if ($this->descuento_global > 0.00){
@@ -1927,11 +1946,6 @@ class DocumentoElectronico extends Conexion {
                 
             $this->id_documento_electronico = $iddocumento_electronico;   
 
-            $this->numero_correlativo = $this->numero_correlativo + 1;
-            $this->update("serie_documento", 
-                        [ "numero"=>$this->numero_correlativo],
-                        ["serie"=>$this->serie, "idtipo_comprobante"=>$this->id_tipo_comprobante]);
-
             $respuesta = [];
             $respuestafirma = [];
             $datosComprobante = null;
@@ -1963,6 +1977,10 @@ class DocumentoElectronico extends Conexion {
                             "xml_filename"=>$xml_filename,
                             "fue_firmado"=>$fue_firmado],
                         ["iddocumento_electronico"=>$this->id_documento_electronico]);
+
+            $this->update("serie_documento", 
+                        [ "numero"=>$this->numero_correlativo + 1],
+                        ["serie"=>$this->serie, "idtipo_comprobante"=>$this->id_tipo_comprobante]);
 
             $this->commit();
             return ["msj"=>"Registro realizado correctamente.", 
@@ -2457,9 +2475,8 @@ class DocumentoElectronico extends Conexion {
                 
             $this->id_documento_electronico = $iddocumento_electronico;   
 
-            $this->numero_correlativo = $this->numero_correlativo + 1;
             $this->update("serie_documento", 
-                        [ "numero"=>$this->numero_correlativo],
+                        [ "numero"=>$this->numero_correlativo + 1],
                         ["serie"=>$this->serie, "idtipo_comprobante"=>$this->id_tipo_comprobante]);
 
             $respuesta = [];

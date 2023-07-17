@@ -54,9 +54,9 @@ var CanjearComprobante = function() {
         $txtBoletaNombres = $("#txt-boletanombres");
         $txtBoletaApellidoPaterno = $("#txt-boletaapellidopaterno");
         $txtBoletaApellidoMaterno = $("#txt-boletaapellidomaterno");
+        $txtBoletaDireccion = $("#txt-boletadireccion");
         $txtBoletaFechaNacimiento = $("#txt-boletafechanacimiento");
         $txtBoletaSexo = $("#txt-boletasexo");
-        $txtBoletaDireccion = $("#txt-boletadireccion");
 
         $txtFacturaRazonSocial  = $("#txt-facturarazonsocial");
         $txtFacturaDireccion  = $("#txt-facturadireccion");
@@ -92,9 +92,9 @@ var CanjearComprobante = function() {
         $txtBoletaNombres.val("");
         $txtBoletaApellidoPaterno.val("");
         $txtBoletaApellidoMaterno.val("");
+        $txtBoletaDireccion.val("");
         $txtBoletaFechaNacimiento.val("");
         $txtBoletaSexo.val("");
-        $txtBoletaDireccion.val("");
 
         $txtFacturaRazonSocial.val("");
         $txtFacturaDireccion.val("");
@@ -152,9 +152,9 @@ var CanjearComprobante = function() {
                 p_boleta_nombres: $txtBoletaNombres.val(),
                 p_boleta_apellido_paterno: $txtBoletaApellidoPaterno.val(),
                 p_boleta_apellido_materno : $txtBoletaApellidoMaterno.val(),
+                p_boleta_direccion : $txtBoletaDireccion.val(),
                 p_boleta_fecha_nacimiento : $txtBoletaFechaNacimiento.val(),
                 p_boleta_sexo : $txtBoletaSexo.val(),
-                p_boleta_direccion : $txtBoletaDireccion.val(),
                 p_factura_razon_social: $txtFacturaRazonSocial.val(),
                 p_factura_direccion : $txtFacturaDireccion.val()
             },
@@ -182,9 +182,9 @@ var CanjearComprobante = function() {
             $txtBoletaNombres.prop("required", false).removeClass("is-invalid").val("");
             $txtBoletaApellidoMaterno.prop("required", false).removeClass("is-invalid").val("");
             $txtBoletaApellidoPaterno.prop("required", false).removeClass("is-invalid").val("");
+            $txtBoletaDireccion.prop("required", false).removeClass("is-invalid").val("");
             $txtBoletaFechaNacimiento.prop("required", false).removeClass("is-invalid").val("");
             $txtBoletaSexo.prop("required", false).removeClass("is-invalid").val("");
-            $txtBoletaDireccion.prop("required", false).removeClass("is-invalid").val("");
 
             $txtNumeroDocumento.prop("maxlength", 11);
             $txtNumeroDocumento.val($txtNumeroDocumento.val().substr(0,11));
@@ -208,9 +208,9 @@ var CanjearComprobante = function() {
             $txtBoletaNombres.prop("required", true).removeClass("is-invalid").val("");
             $txtBoletaApellidoMaterno.prop("required", true).removeClass("is-invalid").val("");
             $txtBoletaApellidoPaterno.prop("required", true).removeClass("is-invalid").val("");
+            $txtBoletaDireccion.prop("required", true).removeClass("is-invalid").val("");
             $txtBoletaFechaNacimiento.prop("required", true).removeClass("is-invalid").val("");
             $txtBoletaSexo.prop("required", true).removeClass("is-invalid").val("");
-            $txtBoletaDireccion.prop("required", true).removeClass("is-invalid").val("");
         }
     };
 
@@ -232,8 +232,7 @@ var CanjearComprobante = function() {
             return;
         }
 
-        var numeroDocumentoLength = numeroDocumento.length,
-            idTipoDocumento = $txtTipoDocumento.val();
+        const idTipoDocumento = $txtTipoDocumento.val();
 
         if (idTipoDocumento == "1" || idTipoDocumento == "6"){
             buscandoNumeroDocumentoCliente = true;
@@ -248,6 +247,7 @@ var CanjearComprobante = function() {
                 },
                 success: function(res){
                     buscandoNumeroDocumentoCliente = false;
+
                     if (res.respuesta == "error"){
                         fnError(res.mensaje);
                         return;
@@ -267,12 +267,20 @@ var CanjearComprobante = function() {
                             $txtFacturaDireccion.val(res.direccion.trim());
                         } else {
                            if (res.api){
+                                var isLocal = res?.titulo === "local";
                                 var api = res.api;
                                 $txtBoletaNombres.val(api.nombres);
                                 $txtBoletaApellidoMaterno.val(api.apell_mat);
                                 $txtBoletaApellidoPaterno.val(api.apell_pat);
-                                $txtBoletaFechaNacimiento.val(Util.formatearFechaCorrectamente(api.fec_nacimiento));
                                 $txtBoletaSexo.val(api.sexo);
+
+                                if (Boolean(isLocal)){
+                                    $txtBoletaDireccion.val(api.direccion);
+                                    $txtBoletaFechaNacimiento.val(api.fec_nacimiento);
+                                } else {
+                                    $txtBoletaDireccion.val("");
+                                    $txtBoletaFechaNacimiento.val(Util.formatearFechaCorrectamente(api.fec_nacimiento));
+                                }
 
                                 $txtBoletaDireccion.focus();
                             }      
@@ -289,7 +297,6 @@ var CanjearComprobante = function() {
             });  
         }
     };
-
 
     getTemplates();
 

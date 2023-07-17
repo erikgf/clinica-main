@@ -1,1 +1,1 @@
- {"msj":"Se ha generado 1 resumenes diarios."}
+ {"msj":"Se ha generado 0 resumenes diarios."}

@@ -76,6 +76,14 @@
                             </div>
                         </div>
                         <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="txt-boletafechanacimiento">Dirección (<span style="color:red">*</span>)</label>
+                                    <textarea required rows="2" class="form-control uppercase"  id="txt-boletadireccion"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-3 col-sm-12">
                                 <div class="form-group">
                                     <label for="txt-boletafechanacimiento">F. Nacimiento (<span style="color:red">*</span>)</label>

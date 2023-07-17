@@ -18,7 +18,7 @@
  define("F_DIRECCION_PROVINCIA","CHICLAYO");
  define("F_DIRECCION_DISTRITO","CHICLAYO");
  define("F_URBANIZACION"," Urb Federico Villareal");
- define("F_RESOLUCION","097-2012/SUNAT");
+ define("F_RESOLUCION","N° 097-2012/SUNAT");
  define("F_CODIGO_PAIS","PE");
  define("F_TELEFONO","74273007 - 978102103");
 
@@ -37,7 +37,7 @@
  define("F_CORREO","erik.ur.gf.10@gmail.com");
  define("F_PASS_MAIL","");
  define("F_TOKEN_PROVEEDOR", "FACTURALAYA_FN567YHDJC2NRHNZ0CXD");
- define("F_FECHA_TOPE", "13-07-2023");
+ define("F_FECHA_TOPE", "13-08-2023");
  
  define("F_MODO_PROCESO","3"); /*PRODUCCION: 1, BETA: 3*/
  define("F_RUTA","https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService"); 

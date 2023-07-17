@@ -62,7 +62,7 @@ class AtencionMedica extends Conexion {
     public $id_convenio_empresa;
     public $convenio_porcentaje;
 
-
+    private $fecha_hora_hoy;
     private $MAX_CREDITO = 0.50;
 
     private $ID_CATEGORIA_LABORATORIO = 14;
@@ -722,7 +722,7 @@ class AtencionMedica extends Conexion {
                     if ($id_documento_electronico_canje != NULL){
                         $objComprobante->id_documento_electronico_previo = $id_documento_electronico_canje;
 
-                        $this->anularComprobanteAtencion("CANJEO DE COMPROBANTE", false);
+                        $comprobanteNota = $this->anularComprobanteAtencion("CANJEO DE COMPROBANTE", false);
                         $r = $objComprobante->canjearComprobante();
                     } else {
 
@@ -776,7 +776,7 @@ class AtencionMedica extends Conexion {
                 break;
             }
 
-            return ["r"=>$r, "id_documento_electronico_registrado"=>$id_documento_electronico_registrado];
+            return ["r"=>$r, "id_documento_electronico_registrado"=>$id_documento_electronico_registrado, "cn"=>$comprobanteNota];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }
@@ -1303,8 +1303,6 @@ class AtencionMedica extends Conexion {
 
             $this->beginTransaction();
 
-            $fecha_ahora = date("Y-m-d H:i:s");
-
             require "Paciente.clase.php";
             $objPaciente = new Paciente();
 
@@ -1334,12 +1332,14 @@ class AtencionMedica extends Conexion {
             
             $resComprobante = $this->generarComprobante($objPaciente, $costo_total_atencion, $id_documento_electronico_canje);
             $id_documento_electronico_registrado = $resComprobante["id_documento_electronico_registrado"];
+            $cn = $resComprobante["cn"];
 
             $this->commit();
 
             return ["msj"=>"Registro realizado correctamente.",
-                        "id_atencion_medica"=>$this->id_atencion_medica,
-                        "id_documento_electronico"=>$id_documento_electronico_registrado];  
+                    "id_atencion_medica"=>$this->id_atencion_medica,
+                    "id_documento_electronico"=>$id_documento_electronico_registrado,
+                    "cn"=>$cn];  
 
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage());
@@ -1432,6 +1432,7 @@ class AtencionMedica extends Conexion {
                         */
                         , de_f.iddocumento_electronico as id_documento_electronico_factura
                         , de_nc.iddocumento_electronico as id_documento_electronico_notacredito
+                        , marcado
                         FROM atencion_medica am
                         INNER JOIN empresa_convenio ec ON ec.id_empresa_convenio = am.id_empresa_convenio
                         LEFT JOIN documento_electronico de_f ON de_f.idtipo_comprobante = '01' AND de_f.id_atencion_medica_convenio = am.id_atencion_medica AND de_f.estado_mrcb
@@ -1516,6 +1517,18 @@ class AtencionMedica extends Conexion {
 
             $registros = $this->consultarFilas($sql, $params);
             return $registros;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function marcarRegistroConvenio($marcado){
+        try {
+
+            $marcadoNuevo = $marcado == "0" ? "1" : "0";
+            $this->update("atencion_medica", ["marcado"=>$marcadoNuevo], ["id_atencion_medica"=>$this->id_atencion_medica]);
+
+            return true;
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }

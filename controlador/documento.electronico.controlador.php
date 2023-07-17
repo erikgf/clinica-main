@@ -36,7 +36,7 @@ try {
             $obj->id_documento_electronico = $id;
             $obj->registrar_en_bbdd = false;
             $obj->generar_xml = false;
-            $obj->firmar_xml = true;
+            $obj->firmar_comprobante = true;
 
             Funciones::imprimeJSON("200", "OK", $obj->generarFactura());
         break;
@@ -52,7 +52,7 @@ try {
             $obj->id_documento_electronico = $id;
             $obj->registrar_en_bbdd = false;
             $obj->generar_xml = true;
-            $obj->firmar_xml = true;
+            $obj->firmar_comprobante = true;
 
             Funciones::imprimeJSON("200", "OK", $tc == "01" ? $obj->generarFactura() : $obj->generarBoleta());
         break;
@@ -65,7 +65,7 @@ try {
         case "generar_firmar_xml_todos":	
             $obj->registrar_en_bbdd = false;
             $obj->generar_xml = true;
-            $obj->firmar_xml = true;
+            $obj->firmar_comprobante = true;
 
             Funciones::imprimeJSON("200", "OK", $obj->generarTodos());
         break;
@@ -83,7 +83,7 @@ try {
 
             $obj->registrar_en_bbdd = (isset($_POST["p_registrar"]) ? $_POST["p_registrar"] : "0") == "1";
             $obj->generar_xml = true;
-            $obj->firmar_xml = true;
+            $obj->firmar_comprobante = true;
 
             Funciones::imprimeJSON("200", "OK", $obj->generarResumenDiario($fecha_inicio, $fecha_final));
         break;
@@ -101,7 +101,7 @@ try {
 
             $obj->registrar_en_bbdd = (isset($_POST["p_registrar"]) ? $_POST["p_registrar"] : "0") == "1";
             $obj->generar_xml = true;
-            $obj->firmar_xml = true;
+            $obj->firmar_comprobante = true;
 
             Funciones::imprimeJSON("200", "OK", $obj->generarResumenDiarioBajas($fecha_inicio, $fecha_final));
         break;
@@ -206,7 +206,7 @@ try {
 
             $obj->registrar_en_bbdd = true;
             $obj->generar_xml = true;
-            $obj->firmar_xml = true;
+            $obj->firmar_comprobante = true;
 
             $obj->Cliente = [
                 "id_tipo_documento"=>"6",
@@ -289,7 +289,7 @@ try {
             }
 
             $obj->generar_xml = true;
-            $obj->firmar_xml = true;
+            $obj->firmar_comprobante = true;
 
             $obj->observaciones = Funciones::sanitizar($_POST["p_observaciones"]);
             $obj->observaciones = $obj->observaciones == "" ? NULL : $obj->observaciones;

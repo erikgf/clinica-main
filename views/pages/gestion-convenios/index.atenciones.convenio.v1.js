@@ -52,6 +52,12 @@ var AtencionesConvenio = function() {
             e.preventDefault();
             self.crearComprobante(this.dataset.numeroticket);
         });
+
+        $tbdAtencionesConvenio.on("click", ".btn-marcarregistro", function (e) {
+            e.preventDefault();
+            const $tr = $(this).parents("tr");
+            self.marcarRegistro($tr, this.dataset.id, this.dataset.marcado, this.dataset.numeroticket);
+        });
     };      
 
     TABLA_ATENCION_CONVENIOS  = null;
@@ -108,6 +114,34 @@ var AtencionesConvenio = function() {
     this.crearComprobante = function(numeroTicket){
         $('a[href="#blk-tab-facturacionconvenio"]').tab('show');
         objFacturacionConvenio.crearComprobante(numeroTicket);
+    };
+
+    this.marcarRegistro = function($tr, id_atencion_medica, marcadoActual, numeroTicket){
+        if (!confirm(`¿Marcar atención con ticket: ${numeroTicket}?`)){
+            return;
+        }
+
+        $.ajax({ 
+            url : VARS.URL_CONTROLADOR+"atencion.medica.controlador.php?op=marcar_registro_convenio",
+            type: "POST",
+            dataType: 'json',
+            delay: 250,
+            data: {
+                p_id_atencion_medica : id_atencion_medica,
+                p_marcado : marcadoActual
+            },
+            success: (result) => {
+                const $blkCheck = $tr.find(".blk-check");
+                const marcadoNuevo = marcadoActual == "0";
+                $blkCheck.css({"display": (marcadoNuevo ? "flex" : "none")});
+                $tr.find(".btn-marcarregistro")[0].dataset.marcado = marcadoNuevo ? "1" : "0";
+            },
+            error:(request) => {
+                toastr.error(request.responseText);
+            },
+            cache: true
+            }
+        );
     };
 
     this.setDOM();

@@ -1,1 +1,1 @@
- {"respuestas":[{"respuesta":"error","cod_sunat":"0000","mensaje":false,"hash_cdr":"","id":"860"},{"respuesta":"ok","cod_ticket":"400000043978514","id":"861"}]}
+ {"respuestas":[{"respuesta":"ok","cod_ticket":"500000055995856","id":"939"},{"respuesta":"ok","cod_ticket":"500000055992218","id":"940"}]}

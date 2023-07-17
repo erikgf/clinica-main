@@ -326,6 +326,14 @@ try {
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 
+        case "marcar_registro_convenio":
+            $obj->id_atencion_medica = Funciones::sanitizar($_POST["p_id_atencion_medica"]);
+            $marcado = Funciones::sanitizar($_POST["p_marcado"]);
+
+            $data = $obj->marcarRegistroConvenio($marcado);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break; 
+
         default:
             throw new Exception( "No existe la función consultada en el API.", 1);
         break;

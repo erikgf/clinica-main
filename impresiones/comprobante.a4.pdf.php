@@ -427,7 +427,7 @@ class PDFComprobante extends PDF{
       $this->Ln(2.75);
       $this->SetFont("Arial","",5.5);
       $this->CellFitScale($ANCHO_COLUMNAS[1], $ALTO_FILA * .85, utf8_decode("Representación Impresa de la ".mb_strtoupper($rotuloTipoComprobante,'UTF-8')), $BORDES,1,"L");
-      $this->CellFitScale($ANCHO_COLUMNAS[1], $ALTO_FILA * .85, utf8_decode("AUTORIZADO MEDIANTE LA RESOLUCIÓN DE INTENDENCIA ".F_RESOLUCION), $BORDES,1,"L");
+      $this->CellFitScale($ANCHO_COLUMNAS[1], $ALTO_FILA * .85, utf8_decode("AUTORIZADO MEDIANTE LA RESOLUCIÓN DE SUPERINTENDENCIA ".F_RESOLUCION), $BORDES,1,"L");
       $this->SetFont("Arial","B",7.5);
       $this->CellFitScale($ANCHO_COLUMNAS[1], $ALTO_FILA, utf8_decode("Resumen: ".$obj["hash"]), $BORDES,1,"L");
 
