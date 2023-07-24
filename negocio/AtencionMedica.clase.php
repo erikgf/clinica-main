@@ -776,7 +776,7 @@ class AtencionMedica extends Conexion {
                 break;
             }
 
-            return ["r"=>$r, "id_documento_electronico_registrado"=>$id_documento_electronico_registrado, "cn"=>$comprobanteNota];
+            return ["r"=>$r, "id_documento_electronico_registrado"=>$id_documento_electronico_registrado];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }
