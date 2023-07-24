@@ -11,17 +11,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
   <title><?php $objTemplate->renderTitle(); ?></title>
 
+  <link rel="icon" href="<?php echo RUTA_BASE; ?>/icon/icon_dmi_white.png">
   <!-- Font Awesome Icons -->
   <link href="<?php echo RUTA_BASE; ?>/views/css/toastr.css" rel="stylesheet"/>
-  <link rel="stylesheet" href="<?php echo RUTA_BASE; ?>/template/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="<?php echo RUTA_BASE; ?>/plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
-  <link rel="stylesheet" href="<?php echo RUTA_BASE; ?>/template/dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="<?php echo RUTA_BASE; ?>/adminlte/dist/css/adminlte.min.css">
   <link rel="stylesheet" href="<?php echo RUTA_BASE; ?>/views/css/custom-styles.css">
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
   <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css">
   <link rel="stylesheet" type="text/css" href="<?php echo RUTA_BASE; ?>/views/css/datatables.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap4.min.css">
   <link rel="manifest" href="<?php echo RUTA_BASE; ?>/manifest.webmanifest">
 
   <link rel="stylesheet" href="<?php echo RUTA_BASE; ?>/plugins/tempusdominus-bootstrap-4.css" crossorigin="anonymous" />
@@ -38,7 +40,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <div class="wrapper">
   <!-- Navbar -->
     <!-- Left navbar links -->
-
       <?php $objTemplate->renderNavbarItems(); ?>
       <!--
   <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -62,9 +63,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="index3.html" class="brand-link">
-      <img src="<?php echo RUTA_BASE; ?>/template/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
-           style="opacity: .8">
+    <a href="#" class="brand-link">
+      <img src="<?php echo RUTA_BASE; ?>/icon/icon_dmi_white.png" alt="DMI Logo" class="brand-image img-circle elevation-3">
       <span class="brand-text font-weight-light">Software | DMI</span>
     </a>
 
@@ -72,8 +72,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <div class="sidebar">
       <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-        <div class="image">
-          <img src="<?php echo RUTA_BASE; ?>/template/dist/img/boxed-bg.jpg" class="img-circle elevation-2" alt="User Image">
+        <div class="image" style="display:flex;justify-content:center;align-items:center">
+          <img style="background-color: #d6d6d6;" src="<?php echo RUTA_BASE; ?>/icon/user_icon.png" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
           <a href="#" class="d-block"><?php echo Sesion::obtenerSesion()["nombre_usuario"]; ?> <br>
@@ -121,11 +121,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <!-- REQUIRED SCRIPTS -->
 
 <!-- jQuery -->
-<script src="<?php echo RUTA_BASE; ?>/template/plugins/jquery/jquery.min.js"></script>
+<script src="<?php echo RUTA_BASE; ?>/plugins/jquery/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
-<script src="<?php echo RUTA_BASE; ?>/template/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="<?php echo RUTA_BASE; ?>/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
-<script src="<?php echo RUTA_BASE; ?>/template/dist/js/adminlte.min.js"></script>
+<script src="<?php echo RUTA_BASE; ?>/adminlte/dist/js/adminlte.min.js"></script>
 <script type="text/javascript" src="<?php echo RUTA_BASE; ?>/plugins/moment.js"></script>
 <script type="text/javascript" src="<?php echo RUTA_BASE; ?>/plugins/handlebars-v4.7.7.js"></script>
 <script src="<?php echo RUTA_BASE; ?>/plugins/tempusdominus-bootstrap-4.js" crossorigin="anonymous"></script>
@@ -134,6 +134,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script type="text/javascript" charset="utf8" src="<?php echo RUTA_BASE; ?>/views/js/jquery.dataTables.js"></script>
 
 <script type="text/javascript"  src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript"  src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script type="text/javascript"  src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap4.min.js"></script>
 <script type="text/javascript"  src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
 <script type="text/javascript"  src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
 <script type="text/javascript"  src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
@@ -143,9 +145,5 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script src="<?php echo RUTA_BASE; ?>/views/js/toastr.min.js"></script>
 <script type="text/javascript" src="<?php echo RUTA_BASE; ?>/views/js/variables.js"></script>
 
-<!--
-  <script type="text/javascript" src="<?php echo RUTA_BASE; ?>/views/js/showContent.js"></script>
-  <script type="text/javacript" src="<?php echo RUTA_BASE; ?>/index.js"></script> 
--->
 </body>
 </html>

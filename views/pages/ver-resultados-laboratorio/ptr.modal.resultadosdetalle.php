@@ -12,25 +12,29 @@
                         <h3 class="card-title">Examenes <b id="lbl-cantidadservicios"></b></h3>
                     </div>
                     <div class="card-body">
-                        <table style="font-size:.95em" class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th style="width:80px;">¿Imprimir?</th>
-                                    <th>Descripción</th>
-                                    <th style="width:80px;">Validado</th>
-                                    <th style="width:130px;">Fecha Muestra</th>
-                                    <th style="width:130px;">Fecha Entrega</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbd-resultadosdetalle">
-                            </tbody>
-                        </table>
+                        <div style="overflow:auto">
+                            <div style="min-width:600px">
+                                <table style="font-size:.95em" class="table table-sm nowrap display" width= "100%">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:80px;">¿Imprimir?</th>
+                                            <th>Descripción</th>
+                                            <th style="width:80px;">Validado</th>
+                                            <th style="width:130px;">Fecha Muestra</th>
+                                            <th style="width:130px;">Fecha Entrega</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbd-resultadosdetalle">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">CERRAR</button>  
-                <div class="btn-group">
+                <button type="button" class="btn btn-responsiver btn-default" data-dismiss="modal">CERRAR</button>  
+                <div class="btn-responsiver btn-group">
                     <button id="btn-imprimirmuestratodojunto"  type="button" class="btn btn-primary  dropdown-toggle dropdown-icon"  data-toggle="dropdown"><span class="fa fa-print"></span> IMPRIMIR TODO JUNTO</button>
                         <span class="sr-only">Toggle Dropdown</span>
                         <div class="dropdown-menu" role="menu">
@@ -39,7 +43,7 @@
                         </div>
                     </button>
                 </div>
-                <div class="btn-group">
+                <div class="btn-responsiver btn-group">
                     <button id="btn-imprimirmuestra"  type="button" class="btn btn-info  dropdown-toggle dropdown-icon"  data-toggle="dropdown"><span class="fa fa-print"></span> IMPRIMIR</button>
                         <span class="sr-only">Toggle Dropdown</span>
                         <div class="dropdown-menu" role="menu">

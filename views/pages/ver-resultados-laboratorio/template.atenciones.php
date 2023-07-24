@@ -1,5 +1,6 @@
 {{#.}}
     <tr data-id="{{id_atencion_medica}}">
+        <td></td>
         <td>
             <button data-id="{{id_atencion_medica}}" data-recibo="{{numero_recibo}}" data-paciente="{{nombre_paciente}}" title="Imprimir" data-id="{{id_atencion_medica}}" class="btn-preimprimir btn btn-sm {{#if_ cantidad_validados '==' cantidad_total}}btn-success{{else}}btn-danger{{/if_}}"><i class="fa fa-print"></i> IMPRIMIR</button>
         </td>

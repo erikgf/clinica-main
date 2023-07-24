@@ -2,7 +2,7 @@
 
 include_once "../../../datos/configuracion.vista.php";
 include_once "../../../negocio/Sesion.clase.php";
-include_once "../Template.php";
+include_once "../Template.demo.php";
 
 $objUsuario = Sesion::obtenerSesion();
 

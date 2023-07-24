@@ -128,9 +128,10 @@ var Atenciones = function() {
             listarAtenciones();     
         });
 
-        $tbdAtenciones.on("click","tr", function(){
+        $tbdAtenciones.on("click","tr  .btn-ver", function(){
             var $this = this,
-                classList = $this.classList;
+                $tr = $this.parentElement.parentElement,
+                classList = $tr.classList;
 
             if (classList.contains("not-tr")){
                 return;
@@ -142,7 +143,7 @@ var Atenciones = function() {
                 return;
             } else {
                 classList.add(CLASE_TR_SELECCIONADO);
-                seleccionarAtencion($this);
+                seleccionarAtencion($tr);
             }
         });
 
@@ -294,6 +295,8 @@ var Atenciones = function() {
         $blkRegistroMuestra.show();
         $blkRegistroResultados.hide();
         listarAtencionesDetalle($tr.dataset.id);
+
+        $blkRegistroMuestra.focus();
     };
 
     var listarAtenciones = function(){
@@ -322,7 +325,7 @@ var Atenciones = function() {
     TABLA_ATENCIONES = null;
     var renderAtenciones = function(data) {
         if (TABLA_ATENCIONES){
-            $tbdAtenciones.parent().DataTable().clear().destroy();
+            $tblAtenciones.DataTable().clear().destroy();
             TABLA_ATENCIONES = null;
         }
 
@@ -330,8 +333,10 @@ var Atenciones = function() {
         if (!data.length){
             return;
         }
-        TABLA_ATENCIONES = $tbdAtenciones.parent().DataTable({
-            "ordering": false
+
+        TABLA_ATENCIONES = $tblAtenciones.DataTable({
+            ordering: false,
+            responsive: true,
         });
     };
 
@@ -357,23 +362,54 @@ var Atenciones = function() {
         );
     };
 
+    TABLA_ATENCIONES_DETALLE = null;
     var renderAtencionesDetalle = function(data, noQuitarDePantalla) {
-        var detalle = data.detalle,
-            yaSeRegistroMuestra = data.ya_fue_registrado_muestra == "1",
-            yaSeRegistroResultado = data.ya_fue_registrado_resultado == "1",
-            yaSeRegistroValidado = data.ya_fue_registrado_validado == "1";
+        const $tblAtencionDetalle = $tbdAtencionDetalle.parent();
+        const detalle = data.detalle,
+            yaSeRegistroMuestra = data.ya_fue_registrado_muestra == "1"
+            //,yaSeRegistroResultado = data.ya_fue_registrado_resultado == "1",
+            //yaSeRegistroValidado = data.ya_fue_registrado_validado == "1";
+            ;
 
         $lblRecibo.html(data.numero_recibo);
         $lblPaciente.html(data.paciente);
-        $tbdAtencionDetalle.html(tplAtencionDetalle({registros: detalle}));
 
+        if (TABLA_ATENCIONES_DETALLE){
+            $tblAtencionDetalle.DataTable().clear().destroy();
+            TABLA_ATENCIONES_DETALLE = null;
+        }
+
+        $tbdAtencionDetalle.html(tplAtencionDetalle({registros: detalle}));
+        if (!detalle.length){
+            return;
+        }
+
+        setTimeout(()=>{ 
+            TABLA_ATENCIONES_DETALLE = $tblAtencionDetalle.DataTable({
+                searching: false,
+                ordering: false,
+                responsive: true,
+                paging:false,
+                info: false,
+                columnDefs: [
+                    {width: 40, responsivePriority : 1, targets: 1},
+                    {width: 50, targets: 2},
+                    {width: 50, targets: 3},
+                    {responsivePriority : 2, targets: 4},
+                    {width: 120, targets: 5},
+                    {width: 120, targets: 6},
+                    {width: 120,targets: 7},
+                    {width: 120, targets: 8},
+                ] 
+            });
+        }, 100);
+        
 
         if (yaSeRegistroMuestra){
             $btnGuardarMuestra.hide();
         } else {
             $btnGuardarMuestra.show();
         }
-
         /*
         if (yaSeRegistroResultado){
             $btnImprimirMuestra.prop("disabled", false);

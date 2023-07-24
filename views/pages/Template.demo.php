@@ -33,6 +33,7 @@ class Template{
 
         $this->interfazActual = basename($_SERVER['REQUEST_URI']);
 
+        $this->loadNavbar();
         //$id_rol = isset( $this->usuario) ?  $this->usuario["id_rol"] : "";
         $actualDir = getcwd();
         chdir("../../");
@@ -50,8 +51,12 @@ class Template{
         $this->content = file_get_contents($ruta, true);
     }
 
+    public function loadNavbar(){
+        $this->navbar = file_get_contents("../navbar.php", true);
+    }
+
     public function renderNavbarItems(){
-        echo "";
+        echo $this->navbar;
     }
 
     public function renderContent(){

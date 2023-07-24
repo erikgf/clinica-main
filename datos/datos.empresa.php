@@ -39,6 +39,6 @@
  define("F_TOKEN_PROVEEDOR", "FACTURALAYA_FN567YHDJC2NRHNZ0CXD");
  define("F_FECHA_TOPE", "13-08-2023");
  
- define("F_MODO_PROCESO","1"); /*PRODUCCION: 1, BETA: 3*/
+ define("F_MODO_PROCESO","3"); /*PRODUCCION: 1, BETA: 3*/
  define("F_RUTA","https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService"); 
  define("F_RUTA_BETA","https://e-beta.sunat.gob.pe:443/ol-ti-itcpfegem-beta/billService"); /*PRODUCCION: 1, BETA: 3*/

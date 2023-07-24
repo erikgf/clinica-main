@@ -112,7 +112,8 @@ var GestionAtenciones = function() {
                 
                 if (result.length){
                     TABLA_ATENCIONES = $tblAtenciones.DataTable({
-                        "ordering": true
+                        ordering: true,
+                        responsive: true
                     });
                 }
             },

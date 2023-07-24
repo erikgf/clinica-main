@@ -1,6 +1,6 @@
 {{#detalle}}
     <tr data-id="{{id_lab_examen}}" data-nivel="{{nivel}}"> 
-        <td class="input-group-sm" {{#if_ nivel '==' '1'}}style="padding-left:20px;" {{else}} {{#if_ nivel '==' '2'}} style="padding-left:48px;"{{else}} style="font-weight:bold;" {{/if_}} {{/if_}}>
+        <td class="input-group-sm th-examen" {{#if_ nivel '==' '1'}}style="padding-left:20px;" {{else}} {{#if_ nivel '==' '2'}} style="padding-left:48px;"{{else}} style="font-weight:bold;" {{/if_}} {{/if_}}>
             {{#if_ ../fue_validado '==' '1'}}
                 {{descripcion}}
             {{else}}

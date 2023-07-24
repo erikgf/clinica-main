@@ -55,6 +55,74 @@
         .blk-buscador ul li:hover{
             background: #80bdff;
         }
+
+        
+        #tbl-atenciones table.dataTable tbody th, table.dataTable tbody td {
+            padding: 2px 5px;
+        }
+
+        .fixTableHead {
+            min-width:1220px;
+            /*overflow-y:auto;*/
+        }
+
+        .verresultadosguide{
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+
+            .card-tabs > .card-body{
+                padding: 0px;
+            }
+            
+            .btn-responsiver {
+                margin: 8px 0px;
+                width: 100%;
+            }
+
+            .pull-left, .pull-right {
+                width: 100%;
+            }
+            
+            .fixTableHead {
+                max-height: 500px;
+            }
+
+            .fixTableHead table {
+                border-collapse: collapse;        
+                width: 100%;
+            }
+
+            .fixTableHead thead th {
+                position: sticky;
+                top: 0;
+                background-color: white;
+                z-index: 333;
+            }
+
+            .verresultadosguide{
+                display: block;
+            }
+
+            .fixTableHead thead th, .fixTableHead tbody td, .fixTableHead tbody td input {
+                font-size: .8em;
+            }
+
+            .fixTableHead tbody td input {
+                padding: .1rem .25rem!important;
+            }
+
+            .th-examen{
+                width: 70px !important;
+                position: sticky !important;
+                left: 0 !important;
+                background-color: white;
+                z-index : 335 !important;
+            }
+        }
+
+       
     </style>
     <div class="card-body">
     <div class="tab-content" id="tabs-content">
@@ -65,37 +133,38 @@
                         <div class="card-header">
                             <h3 class="card-title">Atenciones</h3>
                         </div>
-                        <div class="card-body row">
-                            <div class="col-md-2 col-sm-6">
-                                <div class="form-group input-group-sm">
-                                    <label for="">Fecha Inicio</label>
-                                    <input type="date" id="txt-fechainicio" class="form-control"/>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-2 col-sm-6">
+                                    <div class="form-group input-group-sm">
+                                        <label for="">Fecha Inicio</label>
+                                        <input type="date" id="txt-fechainicio" class="form-control"/>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 col-sm-6">
+                                    <div class="form-group input-group-sm">
+                                        <label for="">Fecha Fin</label>
+                                        <input type="date" id="txt-fechafin" class="form-control"/>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group input-group-sm">
+                                        <label for="txt-tipofiltro">Tipo Filtro</label>
+                                        <select class="form-control" id="txt-tipofiltro">
+                                            <option value="*">Todos</option>
+                                            <option value="M" selected>Pendientes</option>
+                                            <option value="R">Faltan Resultados</option>
+                                            <option value="V">Faltan Validar</option>
+                                            <option value="C">Completados</option>
+                                            <option value="I">Completados - Faltan Imprimir</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 col-xs-12" style="margin: auto 0;">
+                                    <button class="btn btn-responsiver btn-success btn-sm btn-block" id="btn-actualizaratenciones"><span class="fa fa-refresh"></span> ACTUALIZAR</button>
                                 </div>
                             </div>
-                            <div class="col-md-2 col-sm-6">
-                                <div class="form-group input-group-sm">
-                                    <label for="">Fecha Fin</label>
-                                    <input type="date" id="txt-fechafin" class="form-control"/>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="form-group input-group-sm">
-                                    <label for="txt-tipofiltro">Tipo Filtro</label>
-                                    <select class="form-control" id="txt-tipofiltro">
-                                        <option value="*">Todos</option>
-                                        <option value="M" selected>Pendientes</option>
-                                        <option value="R">Faltan Resultados</option>
-                                        <option value="V">Faltan Validar</option>
-                                        <option value="C">Completados</option>
-                                        <option value="I">Completados - Faltan Imprimir</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <br>
-                                <button class="btn btn-success btn-sm" id="btn-actualizaratenciones"><span class="fa fa-refresh"></span> ACTUALIZAR</button>
-                            </div>
-                            <div style="overflow-y:scroll;max-height:350px;width:100%">
+                            <div style="overflow-y:scroll;width:100%">
                                 <table class="table table-sm nowrap display" id="tbl-atenciones" style="width:100%;">
                                     <thead style="font-size:small">
                                         <tr>
@@ -119,10 +188,13 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-12" id="blk-registromuestra" style="display:none;">
+                <div class="col-sm-12" id="blk-registromuestra" tabindex="-1" style="display:none;">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Registro de Muestras</h3>
+                            <div class="pull-right">
+                                <button class="btn btn-responsiver btn-warning" id="btn-cancelarmuestra" type="button"><i class="fa fa-ban"></i> CANCELAR</button>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -140,10 +212,11 @@
                                     <table class="table table-sm nowrap display" id="tbl-atenciondetalle" style="width:100%;">
                                         <thead style="font-size:small">
                                             <tr>
+                                                <th style="width:50px"></th>
                                                 <th style="width:70px">OPC</th>
                                                 <th style="width:70px">Imprimir</th>
                                                 <th style="width:70px">¿Muestra?</th>
-                                                <th>Examen/Grupo Examenes</th>
+                                                <th>Examen/G. Ex.</th>
                                                 <th style="width:120px">F. Muestra</th>
                                                 <th style="width:120px">F. Entrega</th>
                                                 <th style="width:120px">F. Resultados</th>
@@ -158,8 +231,7 @@
                         </div>
                         <div class="card-footer">
                             <div class="pull-right">
-                                <button class="btn btn-default" id="btn-cancelarmuestra" type="button"><i class="fa fa-ban"></i> CANCELAR</button>
-                                <div class="btn-group">
+                                <div class="btn-group btn-responsiver">
                                     <button id="btn-imprimirmuestratodojunto"  type="button" class="btn btn-primary  dropdown-toggle dropdown-icon"  data-toggle="dropdown"><span class="fa fa-print"></span> IMPRIMIR TODO JUNTO</button>
                                         <span class="sr-only">Toggle Dropdown</span>
                                         <div class="dropdown-menu" role="menu">
@@ -168,7 +240,7 @@
                                         </div>
                                     </button>
                                 </div>
-                                <div class="btn-group">
+                                <div class="btn-group btn-responsiver">
                                     <button id="btn-imprimirmuestra"  type="button" class="btn btn-info  dropdown-toggle dropdown-icon"  data-toggle="dropdown"><span class="fa fa-print"></span> IMPRIMIR</button>
                                         <span class="sr-only">Toggle Dropdown</span>
                                         <div class="dropdown-menu" role="menu">
@@ -177,7 +249,7 @@
                                         </div>
                                     </button>
                                 </div>
-                                <button class="btn btn-success" id="btn-guardarmuestra" type="button"><i class="fa fa-save"></i> GUARDAR</button>
+                                <button class="btn btn-responsiver btn-success" id="btn-guardarmuestra" type="button"><i class="fa fa-save"></i> GUARDAR</button>
                             </div>
                         </div>
                     </div>   
@@ -188,7 +260,7 @@
                         <div class="card-header">
                             <h3 class="card-title">Registro de Resultados </h3>
                             <div class="pull-right">
-                                <button class="btn btn-default btn-cancelarresultados" type="button"><i class="fa fa-arrow-circle-left"></i> ATRÁS</button>
+                                <button class="btn btn-warning btn-responsiver btn-cancelarresultados" type="button"><i class="fa fa-arrow-circle-left"></i> ATRÁS</button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -213,34 +285,39 @@
                                 </div>
                                 -->
                             </div>
+                            <p class="lbl-verresultadosguide"><small>Deslice hacia la derecha para ver los resultados.</small></p>
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <table class="table table-sm nowrap display" id="tbl-examenes" style="width:100%;">
-                                        <thead style="font-size:small">
-                                            <tr>
-                                                <th>Examen</th>
-                                                <th class="text-center" style="width:180px">Resultado</th>
-                                                <th class="text-center" style="width:100px">Unidad</th>
-                                                <th class="text-center" style="width:220px">Valores de Referencia</th>
-                                                <th class="text-center" style="width:120px">Método</th>
-                                                <th class="text-center" style="width:80px">OPC</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="tbd-examenes"> 
-                                            
-                                        </tbody>
-                                    </table>
+                                    <div style="overflow-x:scroll">
+                                        <div class="fixTableHead">
+                                            <table class="table table-sm nowrap display" id="tbl-examenes" style="width:100%;">
+                                                <thead style="font-size:small">
+                                                    <tr>
+                                                        <th class="th-examen">Examen</th>
+                                                        <th class="text-center" style="width:180px">Resultado</th>
+                                                        <th class="text-center" style="width:100px">Unidad</th>
+                                                        <th class="text-center" style="width:220px">Valores de Referencia</th>
+                                                        <th class="text-center" style="width:120px">Método</th>
+                                                        <th class="text-center" style="width:80px">OPC</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbd-examenes"> 
+                                                    
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer">
                             <div class="pull-left">
-                                <button class="btn bg-blue" id="btn-validarresultados" type="button"><i class="fa fa-check"></i>  VALIDAR RESULTADOS</button>
-                                <button class="btn bg-danger" id="btn-cancelarvalidacion" type="button"><i class="fa fa-close"></i>  CANCELAR VALIDACIÓN</button>
+                                <button class="btn btn-responsiver bg-blue" id="btn-validarresultados" type="button"><i class="fa fa-check"></i>  VALIDAR RESULTADOS</button>
+                                <button class="btn btn-responsiver bg-danger" id="btn-cancelarvalidacion" type="button"><i class="fa fa-close"></i>  CANCELAR VALIDACIÓN</button>
                             </div>
                             <div class="pull-right">
-                                <button class="btn btn-default btn-cancelarresultados" type="button"><i class="fa fa-arrow-circle-left"></i> ATRÁS</button>
-                                <button class="btn btn-success" id="btn-guardarresultados" type="button"><i class="fa fa-save"></i>  GUARDAR</button>
+                                <button class="btn btn-responsiver btn-warning btn-cancelarresultados" type="button"><i class="fa fa-arrow-circle-left"></i> ATRÁS</button>
+                                <button class="btn btn-responsiver btn-success" id="btn-guardarresultados" type="button"><i class="fa fa-save"></i>  GUARDAR</button>
                             </div>
                         </div>
                     </div>   

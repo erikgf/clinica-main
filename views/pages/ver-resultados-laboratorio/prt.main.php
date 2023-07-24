@@ -1,4 +1,15 @@
+<style>
+    @media (max-width: 480px) {
+        .card-tabs > .card-body{
+            padding: 0px;
+        }
 
+        .btn-responsiver {
+            margin: 8px 0px;
+            width: 100%;
+        }
+    }
+</style>
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Ver Resultados Laboratorio</h3>
@@ -47,6 +58,7 @@
                 <table class="table table-sm" id="tbl-atenciones">
                     <thead>
                         <tr>
+                            <th></th>
                             <th style="width:120px"></th>
                             <th style="width:100px">N° Recibo</th>
                             <th>Paciente</th>

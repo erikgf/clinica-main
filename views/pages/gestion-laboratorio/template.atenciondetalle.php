@@ -1,5 +1,6 @@
 {{#registros}}
     <tr data-id="{{id_atencion_medica_servicio}}" data-fuemuestreadoantes="{{fue_muestreado}}">
+        <td></td>
         <td class="text-center">
             {{#if_ fue_muestreado '==' '1'}}
                 <button title="Registrar Resultados" data-id="{{id_atencion_medica_servicio}}" class="btn-registraresultados btn btn-sm btn-primary"><i class="fa fa-edit"></i></button>
