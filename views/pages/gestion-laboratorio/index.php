@@ -20,7 +20,7 @@ include_once "../../template.php";
 <script type="text/javascript" src="index.liquidaciones.medicos.js" defer></script>
 <script type="text/javascript" src="index.medicos.asignar.promotora.js" defer></script>
 -->
-<script type="text/javascript" src="index.muestrasresultados.js" defer></script>
+<script type="text/javascript" src="index.muestrasresultados.1.js" defer></script>
 <!--
 <script type="text/javascript" src="index.paciente.js" defer></script>
 <script type="text/javascript" src="index.continuar.pago.js" defer></script>

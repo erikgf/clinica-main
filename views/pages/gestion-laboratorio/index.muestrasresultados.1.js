@@ -426,12 +426,12 @@ var Atenciones = function() {
     };
 
     var COLS_TABLA_ATENCION_DETALLE = {
-        "opcion": 0,
-        "imprimir" : 1,
-        "fue_muestreado" : 2,
-        "descripcion": 3,
-        "fecha_hora_muestra" : 4,
-        "fecha_hora_entrega": 5
+        "opcion": 1,
+        "imprimir" : 2,
+        "fue_muestreado" : 3,
+        "descripcion": 4,
+        "fecha_hora_muestra" : 5,
+        "fecha_hora_entrega": 6
     };
 
     var guardarMuestra = function(id_atencion_medica){
