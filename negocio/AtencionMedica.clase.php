@@ -1332,14 +1332,12 @@ class AtencionMedica extends Conexion {
             
             $resComprobante = $this->generarComprobante($objPaciente, $costo_total_atencion, $id_documento_electronico_canje);
             $id_documento_electronico_registrado = $resComprobante["id_documento_electronico_registrado"];
-            $cn = $resComprobante["cn"];
 
             $this->commit();
 
             return ["msj"=>"Registro realizado correctamente.",
                     "id_atencion_medica"=>$this->id_atencion_medica,
-                    "id_documento_electronico"=>$id_documento_electronico_registrado,
-                    "cn"=>$cn];  
+                    "id_documento_electronico"=>$id_documento_electronico_registrado];  
 
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage());
