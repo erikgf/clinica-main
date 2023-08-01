@@ -26,7 +26,7 @@ include_once "prt.modal.canjearcomprobante.php";
 </script>
 
 <script type="text/javascript" src="canjear.comprobante.1.js" defer></script>
-<script type="text/javascript" src="index.js" defer></script>
+<script type="text/javascript" src="index.1.js" defer></script>
 <!--
 <script type="text/javascript" src="index.paciente.js" defer></script>
 <script type="text/javascript" src="index.continuar.pago.js" defer></script>
