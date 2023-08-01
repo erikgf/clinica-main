@@ -20,12 +20,11 @@ include_once 'prt.modal.cerrar.caja.php';
 include_once 'ptr.modal.registrar.ingreso.php';
 include_once 'ptr.modal.registrar.egreso.php';
 
-
 ?>
 
 <script type="text/javascript" src="cls.recibo.js" defer></script>
 
-<script type="text/javascript" src="index.registrar.ingreso.js" defer></script>
+<script type="text/javascript" src="index.registrar.ingreso.1.js" defer></script>
 <script type="text/javascript" src="index.registrar.egreso.js" defer></script>
 <script type="text/javascript" src="index.js" defer></script>
 

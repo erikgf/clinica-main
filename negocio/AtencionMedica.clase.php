@@ -19,11 +19,13 @@ class AtencionMedica extends Conexion {
     public $pago_deposito;
     public $id_banco;
     public $numero_operacion;
+    public $fecha_deposito;
     public $pago_tarjeta;
     public $pago_credito;
     public $monto_vuelto;
     public $numero_tarjeta;
     public $numero_voucher;
+    public $fecha_transaccion;
     public $servicios;
 
     public $monto_descuento;
@@ -65,6 +67,7 @@ class AtencionMedica extends Conexion {
     private $fecha_hora_hoy;
     private $MAX_CREDITO = 0.50;
 
+    private $MONTO_MAXIMO_GENERAR_COMPROBANTE = 5.00;
     private $ID_CATEGORIA_LABORATORIO = 14;
 
     public function __construct($objDB = null){
@@ -206,9 +209,14 @@ class AtencionMedica extends Conexion {
                 if ($this->numero_operacion == NULL || $this->numero_operacion == ""){
                     throw new Exception("Número de operación de transacción no válida.", 1);
                 }
+
+                if ($this->fecha_deposito == NULL || $this->fecha_deposito == ""){
+                    throw new Exception("Fecha de depósito no válida.", 1);
+                }
             } else {
                 $this->id_banco = NULL;
                 $this->numero_operacion = NULL;
+                $this->fecha_deposito = NULL;
             }
 
             if ($this->pago_tarjeta > 0){
@@ -219,9 +227,14 @@ class AtencionMedica extends Conexion {
                 if ($this->numero_voucher == NULL || $this->numero_voucher == ""){
                     throw new Exception("Número de operación de transacción no válida.", 1);
                 }
+
+                if ($this->fecha_transaccion == NULL || $this->fecha_transaccion == ""){
+                    throw new Exception("Fecha de transacción tarjeta no válida.", 1);
+                }
             } else {
                 $this->numero_tarjeta = NULL;
                 $this->numero_voucher = NULL;
+                $this->fecha_transaccion = NULL;
             }   
 
             $pago_totalizado = (float) $this->pago_tarjeta + (float) $this->pago_efectivo + (float) $this->pago_deposito;
@@ -268,9 +281,11 @@ class AtencionMedica extends Conexion {
                 "pago_deposito"=>$this->pago_deposito,
                 "id_banco"=>$this->id_banco,
                 "numero_operacion"=>$this->numero_operacion,
+                "fecha_deposito"=>$this->fecha_deposito,
                 "pago_tarjeta"=>$this->pago_tarjeta,
                 "numero_tarjeta"=>$this->numero_tarjeta,
                 "numero_voucher"=>$this->numero_voucher,
+                "fecha_transaccion"=>$this->fecha_transaccion,
                 "pago_credito"=>$this->pago_credito,
                 "monto_vuelto"=>$this->monto_vuelto,
                 "importe_total"=>$costo_total_atencion,
@@ -361,7 +376,7 @@ class AtencionMedica extends Conexion {
             $id_documento_electronico_registrado = "";
 
             $generar_comprobante = true;
-            $MONTO_MAXIMO_GENERAR_COMPROBANTE = 5.00;
+            $MONTO_MAXIMO_GENERAR_COMPROBANTE = $this->MONTO_MAXIMO_GENERAR_COMPROBANTE;
             if ($this->pago_credito > 0.00 || 
                     ($pago_totalizado < $MONTO_MAXIMO_GENERAR_COMPROBANTE && $this->id_convenio_empresa != NULL) ||
                     (($objPaciente->numero_documento == "" || $objPaciente->numero_documento == NULL || $objPaciente->numero_documento == "SD") && $this->id_convenio_empresa != NULL)
@@ -387,9 +402,11 @@ class AtencionMedica extends Conexion {
             $objCajaMovimiento->monto_deposito = $this->pago_deposito;
             $objCajaMovimiento->id_banco = $this->id_banco;
             $objCajaMovimiento->numero_operacion = $this->numero_operacion;
+            $objCajaMovimiento->fecha_deposito = $this->fecha_deposito;
             $objCajaMovimiento->monto_tarjeta = $this->pago_tarjeta;
             $objCajaMovimiento->numero_tarjeta = $this->numero_tarjeta;
             $objCajaMovimiento->numero_voucher = $this->numero_voucher;
+            $objCajaMovimiento->fecha_transaccion = $this->fecha_transaccion;
             $objCajaMovimiento->monto_credito = $this->pago_credito;
             $objCajaMovimiento->monto_descuento = $this->monto_descuento;
             $objCajaMovimiento->id_usuario_registrado = $this->id_usuario_registrado;
@@ -422,7 +439,7 @@ class AtencionMedica extends Conexion {
             $numero_acto_medico = $this->consultarValor($sql);
 
             if ($numero_acto_medico == NULL){
-                throw new Exception($exc->getMessage(), 1); 
+                throw new Exception("Número acto médico no encontrado.", 1); 
             }
 
             $this->numero_acto_medico = $numero_acto_medico;
@@ -581,7 +598,6 @@ class AtencionMedica extends Conexion {
                             WHERE id_atencion_medica = :0 AND estado_mrcb AND estado_anulado = 0";
             $existeComprobanteAsociado = $this->consultarFila($sql, [$this->id_atencion_medica]);
 
-
             $nota_credito_comprobante  = "";
             $objComprobante = null;
             if ($existeComprobanteAsociado != false){
@@ -656,7 +672,7 @@ class AtencionMedica extends Conexion {
         }
     }
 
-    public function generarComprobante($objPaciente, $costo_total_atencion, $id_documento_electronico_canje = NULL){
+    public function generarComprobante($objPaciente, $costo_total_atencion = 0.00, $id_documento_electronico_canje = NULL){
         try {
 
             $id_documento_electronico_registrado = "";
@@ -722,7 +738,7 @@ class AtencionMedica extends Conexion {
                     if ($id_documento_electronico_canje != NULL){
                         $objComprobante->id_documento_electronico_previo = $id_documento_electronico_canje;
 
-                        $comprobanteNota = $this->anularComprobanteAtencion("CANJEO DE COMPROBANTE", false);
+                        $this->anularComprobanteAtencion("CANJEO DE COMPROBANTE", false);
                         $r = $objComprobante->canjearComprobante();
                     } else {
 

@@ -257,11 +257,13 @@
                                         <label for="txt-numerooperacion"  class="form-check-label">N° Operación</label>
                                         <input id="txt-numerooperacion"  type="text" class="form-control">
                                     </div>
+
+                                    <div class="form-group col-sm-6">
+                                        <label  class="form-check-label" for="txt-fechadeposito">Fecha Depósito</label>
+                                        <input  class="form-control" type="date" id="txt-fechadeposito">
+                                    </div>
                                 </div>
                             </div>
-
-
-                                
 
                             <div class="col-md-5">
                                 <div class="row">
@@ -317,6 +319,12 @@
                                             <div class="form-group">
                                                 <label  class="form-check-label" for="txt-numerovoucher">N° de Voucher</label>
                                                 <input  class="form-control" type="text" maxlength="8" id="txt-numerovoucher">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-5">
+                                            <div class="form-group">
+                                                <label  class="form-check-label" for="txt-fechatransacciontarjeta">Fecha Trans.</label>
+                                                <input  class="form-control" type="date" id="txt-fechatransacciontarjeta">
                                             </div>
                                         </div>
                                     </div>

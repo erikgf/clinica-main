@@ -3,7 +3,16 @@
 require_once '../datos/Conexion.clase.php';
 
 class Caja extends Conexion {
-
+    public $codigo;
+    public $descripcion;
+    public $serie_atencion;
+    public $serie_ingresos;
+    public $serie_egresos;
+    public $serie_boleta;
+    public $serie_factura;
+    public $bloquear_efectivo;
+    public $id_sede;
+    
     public $id_caja;
     public $id_caja_instancia;
     public $numero_caja_dia;
@@ -13,6 +22,125 @@ class Caja extends Conexion {
     public $monto_cierre_efectivo;
 
     public $id_usuario_registrado;
+
+    public function crearCaja(){
+        try {
+            
+            if (!(strlen($this->serie_atencion) === 4 &&
+                    strlen($this->serie_boleta) === 4 &&
+                    strlen($this->serie_factura) === 4 )){
+                throw new Exception("Todas las series asociadas a la caja por crear deben tener 4 caracteres.", 1);
+            }
+
+            $this->serie_egresos = 'E'.substr($this->serie_atencion, 1, 4);
+            $this->serie_ingresos = 'I'.substr($this->serie_atencion, 1, 4);
+
+            $sql = "SELECT 
+                        (SELECT COUNT(id_caja) FROM caja WHERE codigo = :0  AND estado_mrcb) as existe_codigo,
+                        (SELECT COUNT(id_caja) FROM caja WHERE serie_atencion = :1  AND estado_mrcb) as existe_serie_atencion,
+                        (SELECT COUNT(id_caja) FROM caja WHERE serie_egresos = :2 AND estado_mrcb) as existe_serie_egresos,
+                        (SELECT COUNT(id_caja) FROM caja WHERE serie_ingresos = :3  AND estado_mrcb) as existe_serie_ingresos,
+                        (SELECT COUNT(id_caja) FROM caja WHERE serie_boleta = :4  AND estado_mrcb) as existe_serie_boleta,
+                        (SELECT COUNT(id_caja) FROM caja WHERE serie_factura = :5  AND estado_mrcb) as existe_serie_factura";
+
+            $resultadoExiste = $this->consultarFila($sql, 
+                            [$this->codigo, $this->serie_atencion, $this->serie_egresos, $this->serie_ingresos, $this->serie_boleta, $this->serie_factura]
+                        );
+
+            if ($resultadoExiste){
+                if ($resultadoExiste["existe_codigo"] > 0){
+                    throw new Exception("Ya existe una caja con este código.", 1);
+                }
+
+                if ($resultadoExiste["existe_serie_atencion"] > 0){
+                    throw new Exception("Ya existe una caja con esta serie para caja.", 1);
+                }
+
+                if ($resultadoExiste["existe_serie_egresos"] > 0){
+                    throw new Exception("Ya existe una caja con esta serie para egresos.", 1);
+                }
+
+                if ($resultadoExiste["existe_serie_ingresos"] > 0){
+                    throw new Exception("Ya existe una caja con esta serie para ingresos.", 1);
+                }
+
+                if ($resultadoExiste["existe_serie_boleta"] > 0){
+                    throw new Exception("Ya existe una caja con esta serie para boleta.", 1);
+                }
+
+                if ($resultadoExiste["existe_serie_factura"] > 0){
+                    throw new Exception("Ya existe una caja con esta serie para factura.", 1);
+                }
+            }
+
+            $this->beginTransaction();
+            $campos_valores_caja = [
+                "codigo"=>$this->codigo,
+                "descripcion"=>$this->descripcion,
+                "serie_atencion"=>$this->serie_atencion,
+                "serie_egresos"=>$this->serie_egresos,
+                "serie_ingresos"=>$this->serie_ingresos,
+                "serie_boleta"=>$this->serie_boleta,
+                "serie_factura"=>$this->serie_factura,
+                "bloquear_efectivo"=>$this->bloquear_efectivo,
+                "id_sede"=>$this->id_sede
+            ];
+            $this->insert("caja", $campos_valores_caja);
+
+            $id_caja_creada = $this->getLastID();
+
+            $tiposDocumentosCrearSeries = ["CA", "01", "03"]; //01 y 03 también se crean con 07 y 08
+
+            foreach ($tiposDocumentosCrearSeries as $key => $value) {
+                switch ($value) {
+                    case 'CA':
+                        $tipoComprobantesRegistrar = [
+                            ["serie"=>$this->serie_atencion, "codigo"=>$value],
+                            ["serie"=>$this->serie_egresos, "codigo"=>"EG"],
+                            ["serie"=>$this->serie_ingresos, "codigo"=>"IN"],
+                        ];
+
+                        foreach ($tipoComprobantesRegistrar as $i => $tipoComprobante) {
+                            $campos_valores_serie_documento = [
+                                "serie"=> $tipoComprobante["serie"],
+                                "numero"=>1,
+                                "idtipo_comprobante"=>$tipoComprobante["codigo"]
+                            ];
+                
+                            $this->insert("serie_documento", $campos_valores_serie_documento);
+                        }
+                        break;
+                    case '01':
+                    case '03':
+                        $serie = $value === "01" 
+                                    ? $this->serie_factura
+                                    : $this->serie_boleta;
+
+                        $tipoComprobantesRegistrar = [$value, "07", "08"];
+
+                        foreach ($tipoComprobantesRegistrar as $i => $tipoComprobante) {
+                            $campos_valores_serie_documento = [
+                                "serie"=>$serie,
+                                "numero"=>1,
+                                "idtipo_comprobante"=>$tipoComprobante
+                            ];
+                
+                            $this->insert("serie_documento", $campos_valores_serie_documento);
+                        }
+                        break;
+                }
+            }
+
+            $this->commit();
+           
+            $sql = "SELECT codigo, descripcion, serie_atencion, serie_boleta, serie_factura FROM caja WHERE id_caja = :0";
+            $data = $this->consultarFila($sql, [$id_caja_creada]);
+
+            return $data;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
 
     public function obtenerCajas(){
         try {
@@ -394,7 +522,10 @@ class Caja extends Conexion {
                     DATE_FORMAT(fecha_hora_registrado, '%H:%i:%s') as hora_apertura,
                     DATE_FORMAT(fecha_hora_cierre, '%d/%m/%Y') as fecha_cierre, 
                     DATE_FORMAT(fecha_hora_cierre, '%H:%i:%s') as hora_cierre,
-                    CONCAT(co.numero_documento,' - ', co.apellido_paterno,' ',co.apellido_materno,' ',co.nombres) as usuario_apertura
+                    CONCAT(co.numero_documento,' - ', co.apellido_paterno,' ',co.apellido_materno,' ',co.nombres) as usuario_apertura,
+                    DATE_FORMAT(fecha_hora_registrado, '%Y-%m-%d') as raw_fecha_apertura, 
+                    c.serie_boleta,
+                    c.serie_factura
                     FROM caja_instancia ci
                     INNER JOIN caja c ON c.id_caja = ci.id_caja
                     INNER JOIN usuario u ON u.id_usuario = ci.id_usuario_registrado
@@ -404,79 +535,152 @@ class Caja extends Conexion {
             $data =  $this->consultarFila($sql, [$this->id_caja_instancia]);
 
             $sql = "SELECT 
-                    DATE_FORMAT(am.fecha_atencion, '%d/%m/%Y') as fecha_registro,
-                    cim.id_registro_atencion as id_atencion_medica,
-                    COALESCE(am.nombre_paciente,'') as cliente,
-                    'RI' as tipo_documento,
-                    am.numero_acto_medico as numero_documento,
+                    DATE_FORMAT(cim.fecha_hora_registrado, '%d/%m/%Y') as fecha_registro,
+                    CONCAT(c.serie_atencion,'-',cim.correlativo_atencion) as recibo,
+                    CONCAT(de.serie,'-',de.numero_correlativo) as comprobante,
+                    COALESCE(am.nombre_paciente,'') as descripcion,
                     '1' as es_ingreso,
-                    cim.monto_efectivo,
-                    cim.monto_deposito,
-                    cim.monto_tarjeta,
-                    cim.monto_credito as monto_saldo,
-                    cim.monto_descuento,
-                    am.monto_vuelto,
+                    CONCAT(p.apellidos_paterno,' ',p.apellidos_materno,' ',p.nombres) as paciente,
+                    cim.monto_efectivo,cim.monto_deposito,cim.monto_tarjeta,cim.monto_credito  as monto_saldo, cim.monto_descuento,
                     (cim.monto_efectivo + cim.monto_deposito + cim.monto_tarjeta + cim.monto_credito - cim.monto_descuento) as monto_total,
-                    ban.descripcion as banco,
+                    COALESCE(am.monto_vuelto,'0.00') as monto_vuelto,
+                    b.descripcion as banco,
                     cim.numero_operacion,
                     cim.numero_voucher,
-                    cim.numero_tarjeta
+                    cim.numero_tarjeta,
+                    COALESCE(cim.fecha_deposito, '-') as fecha_deposito,
+                    COALESCE(cim.fecha_transaccion, '-') as fecha_transaccion
                     FROM caja_instancia_movimiento cim
-                    INNER JOIN caja_instancia ci ON cim.id_caja_instancia = ci.id_caja_instancia
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
                     INNER JOIN atencion_medica am ON cim.id_registro_atencion = am.id_atencion_medica
-                    LEFT JOIN banco ban ON ban.id_banco = cim.id_banco
-                    WHERE cim.estado_mrcb AND am.estado_mrcb AND cim.id_caja_instancia = :0 AND cim.id_tipo_movimiento IN (1)
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
+                    LEFT JOIN banco b ON b.id_banco = cim.id_banco
+                    INNER JOIN documento_electronico de ON de.id_atencion_medica = cim.id_registro_atencion
+                    INNER JOIN paciente p ON p.id_paciente = cim.id_cliente
+                    WHERE ci.id_caja_instancia = :0 AND cim.id_tipo_movimiento = 1
                     ORDER BY am.fecha_atencion, am.hora_atencion";
-
             $data["atenciones"] =  $this->consultarFilas($sql, [$this->id_caja_instancia]);
 
+
             $sql = "SELECT 
-                    DATE_FORMAT(COALESCE(am.fecha_atencion, cim.fecha_hora_registrado), '%d/%m/%Y') as fecha_registro,
+                    DATE_FORMAT(cim.fecha_hora_registrado, '%d/%m/%Y') as fecha_registro,
                     cim.id_registro_atencion as id_atencion_medica,
-                    COALESCE(cim.descripcion_movimiento, am.nombre_paciente,'') as cliente,
-                    'IN' as tipo_documento,
-                    COALESCE(tm.descripcion,'-') as descripcion,
+                    CONCAT(c_r.serie_atencion,'-',cim_r.correlativo_atencion) as recibo,
+                    CONCAT(de.serie,'-',de.numero_correlativo) as comprobante,
+                    CONCAT(p.apellidos_paterno,' ',p.apellidos_materno,' ',p.nombres) as descripcion,
                     '1' as es_ingreso,
-                    cim.monto_efectivo,
-                    cim.monto_deposito,
-                    cim.monto_tarjeta,
-                    cim.monto_credito as monto_saldo,
-                    cim.monto_descuento,
-                    COALESCE(am.monto_vuelto,'0.00') as monto_vuelto,
+                    '0.00' as monto_vuelto, cim.monto_descuento,
+                    (cim.monto_efectivo + cim.monto_deposito + cim.monto_tarjeta + cim.monto_credito - cim.monto_descuento) as monto_total,
+                    cim.monto_efectivo, cim.monto_deposito, cim.monto_tarjeta, cim.monto_credito   as monto_saldo,
+                    b.descripcion as banco,
+                    cim.numero_operacion,
+                    cim.numero_voucher,
+                    cim.numero_tarjeta,
+                    COALESCE(cim.fecha_deposito, '-') as fecha_deposito,
+                    COALESCE(cim.fecha_transaccion, '-') as fecha_transaccion
+                    FROM caja_instancia_movimiento cim
+                    INNER JOIN caja_instancia_movimiento cim_r ON cim.id_registro_atencion_relacionada = cim_r.id_registro_atencion
+                    LEFT JOIN tipo_movimiento tm ON tm.id_tipo_movimiento = cim.id_tipo_movimiento
+                    LEFT JOIN banco b ON b.id_banco = cim.id_banco
+                    INNER JOIN caja_instancia ci_r ON ci_r.id_caja_instancia = cim_r.id_caja_instancia
+                    INNER JOIN caja c_r ON c_r.id_caja = ci_r.id_caja
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
+                    INNER JOIN paciente p ON p.id_paciente = cim.id_cliente
+                    LEFT JOIN documento_electronico de ON de.id_atencion_medica = cim_r.id_registro_atencion
+                    WHERE ci.id_caja_instancia = :0  AND cim.id_tipo_movimiento = 4 AND cim.estado_mrcb
+                    ORDER BY cim.fecha_hora_registrado";
+            $data["saldos"] =  $this->consultarFilas($sql, [$this->id_caja_instancia]);
+
+            $sql = "SELECT 
+                    DATE_FORMAT(cim.fecha_hora_registrado, '%d/%m/%Y') as fecha_registro,
+                    COALESCE(CONCAT(c.serie_atencion,'-',cim.correlativo_atencion), CONCAT(c.serie_ingresos,'-',cim.correlativo_ingreso)) as recibo,
+                    'S/C' as comprobante,
+                    CONCAT(p.apellidos_paterno,' ',p.apellidos_materno,' ',p.nombres) as descripcion,
+                    '1' as es_ingreso,
+                    '0.00' as monto_vuelto, cim.monto_descuento, 
+                    cim.monto_efectivo, cim.monto_deposito, cim.monto_tarjeta, cim.monto_credito   as monto_saldo,
+                    (cim.monto_efectivo + cim.monto_deposito + cim.monto_tarjeta + cim.monto_credito - cim.monto_descuento) as monto_total,
+                    b.descripcion as banco,
+                    cim.numero_operacion,
+                    cim.numero_voucher,
+                    cim.numero_tarjeta,
+                    COALESCE(cim.fecha_deposito, '-') as fecha_deposito,
+                    COALESCE(cim.fecha_transaccion, '-') as fecha_transaccion
+                    FROM caja_instancia_movimiento cim
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
+                    LEFT JOIN banco b ON b.id_banco = cim.id_banco
+                    INNER JOIN paciente p ON p.id_paciente = cim.id_cliente
+                    LEFT JOIN documento_electronico de ON de.id_atencion_medica = cim.id_registro_atencion
+                    WHERE ci.id_caja_instancia = :0 AND cim.id_tipo_movimiento = 1 AND de.iddocumento_electronico IS NULL AND cim.monto_credito > 0
+                    ORDER BY cim.fecha_hora_registrado";
+            $data["amortizaciones"] =  $this->consultarFilas($sql, [$this->id_caja_instancia]);
+
+            $sql = "SELECT 
+                    DATE_FORMAT(de.fecha_emision, '%d/%m/%Y') as fecha_registro,
+                    CONCAT(c.serie_atencion,'-',cim.correlativo_atencion) as recibo,
+                    CONCAT(de.serie,'-',de.numero_correlativo,' (',de_r.serie,'-',de_r.numero_correlativo,')') as comprobante,
+                    de.descripcion_cliente as descripcion,
+                    '0.00' as monto_vuelto, cim.monto_descuento, 
+                    cim.monto_efectivo * -1 as monto_efectivo, cim.monto_deposito * -1 as  monto_deposito, cim.monto_tarjeta * -1 as monto_tarjeta, cim.monto_credito * -1 as monto_saldo,
+                    (0 + cim.monto_deposito + cim.monto_tarjeta + cim.monto_credito - cim.monto_descuento) * -1 as monto_total,
+                    b.descripcion as banco,
+                    cim.numero_operacion,
+                    cim.numero_voucher,
+                    cim.numero_tarjeta,
+                    COALESCE(cim.fecha_deposito, '-') as fecha_deposito,
+                    COALESCE(cim.fecha_transaccion, '-') as fecha_transaccion
+                    FROM documento_electronico de
+                    INNER JOIN documento_electronico de_r ON de_r.iddocumento_electronico = de.id_documento_electronico_previo
+                    LEFT JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = de_r.id_atencion_medica
+                    LEFT JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    LEFT JOIN caja c ON c.id_caja = ci.id_caja
+                    LEFT JOIN banco b ON b.id_banco = cim.id_banco
+                    WHERE de.idtipo_comprobante = '07' AND de.fecha_emision = :0 AND de.serie IN (:1, :2)
+                    ORDER BY cim.fecha_hora_registrado";
+            $data["notas_credito"] =  $this->consultarFilas($sql, [$data["raw_fecha_apertura"], $data["serie_boleta"], $data["serie_factura"]]);
+
+            $sql = "SELECT 
+                    DATE_FORMAT(cim.fecha_hora_registrado, '%d/%m/%Y') as fecha_registro,
+                    COALESCE(CONCAT(c.serie_atencion,'-',cim.correlativo_atencion), CONCAT(c.serie_ingresos,'-',cim.correlativo_ingreso)) as recibo,
+                    'S/C' as comprobante,
+                    COALESCE(CONCAT(p.apellidos_paterno,' ',p.apellidos_materno,' ',p.nombres),cim.descripcion_movimiento,'-')  as descripcion,
+                    COALESCE(am.monto_vuelto,'0.00') as monto_vuelto, cim.monto_descuento,
+                    cim.monto_efectivo, cim.monto_deposito, cim.monto_tarjeta, cim.monto_credito as monto_saldo,
                     (cim.monto_efectivo + cim.monto_deposito + cim.monto_tarjeta + cim.monto_credito - cim.monto_descuento) as monto_total,
                     ban.descripcion as banco,
                     cim.numero_operacion,
                     cim.numero_voucher,
-                    cim.numero_tarjeta
+                    cim.numero_tarjeta,
+                    COALESCE(cim.fecha_deposito, '-') as fecha_deposito,
+                    COALESCE(cim.fecha_transaccion, '-') as fecha_transaccion
                     FROM caja_instancia_movimiento cim
-                    INNER JOIN caja_instancia ci ON cim.id_caja_instancia = ci.id_caja_instancia
                     LEFT JOIN atencion_medica am ON cim.id_registro_atencion_relacionada = am.id_atencion_medica AND am.estado_mrcb
-                    LEFT JOIN tipo_movimiento tm ON tm.id_tipo_movimiento = cim.id_tipo_movimiento
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
+                    INNER JOIN tipo_movimiento tm ON tm.id_tipo_movimiento = cim.id_tipo_movimiento
                     LEFT JOIN banco ban ON ban.id_banco = cim.id_banco
-                    WHERE cim.estado_mrcb  AND cim.id_caja_instancia = :0 AND tm.tipo = 'I' AND cim.id_tipo_movimiento NOT IN (1)
+                    LEFT JOIN paciente p ON p.id_paciente = cim.id_cliente
+                    LEFT JOIN documento_electronico de ON de.id_atencion_medica = cim.id_registro_atencion
+                    WHERE ci.id_caja_instancia = :0 AND tm.tipo = 'I' AND cim.id_tipo_movimiento NOT IN (4) AND de.iddocumento_electronico IS NULL
                     ORDER BY cim.fecha_hora_registrado";
-
-            $data["ingresos"] =  $this->consultarFilas($sql, [$this->id_caja_instancia]);
+            $data["ingresos_tickets"] =  $this->consultarFilas($sql, [$this->id_caja_instancia]);
 
             $sql = "SELECT 
-                    DATE_FORMAT(am.fecha_atencion, '%d/%m/%Y') as fecha_registro,
-                    cim.id_registro_atencion as id_atencion_medica,
-                    COALESCE(cim.descripcion_movimiento, am.nombre_paciente,'') as cliente,
-                    'EG' as tipo_documento,
-                    COALESCE(tm.descripcion,'-') as descripcion,
+                    DATE_FORMAT(cim.fecha_hora_registrado, '%d/%m/%Y') as fecha_registro,
+                    CONCAT(c.serie_egresos,'-',cim.correlativo_egreso) as recibo,
+                    'S/C' as comprobante,
+                    COALESCE(cim.descripcion_movimiento, am.nombre_paciente,'') as descripcion,
                     '0' as es_ingreso,
-                    cim.monto_efectivo,
-                    cim.monto_deposito,
-                    cim.monto_tarjeta,
-                    cim.monto_credito as monto_saldo,
-                    cim.monto_descuento,
-                    am.monto_vuelto,
+                    am.monto_vuelto, cim.monto_efectivo, cim.monto_deposito, cim.monto_tarjeta, cim.monto_credito  as monto_saldo, cim.monto_descuento,
                     (cim.monto_efectivo + cim.monto_deposito + cim.monto_tarjeta + cim.monto_credito - cim.monto_descuento) as monto_total
                     FROM caja_instancia_movimiento cim
-                    INNER JOIN caja_instancia ci ON cim.id_caja_instancia = ci.id_caja_instancia
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
                     LEFT JOIN atencion_medica am ON cim.id_registro_atencion_relacionada = am.id_atencion_medica
-                    LEFT JOIN tipo_movimiento tm ON tm.id_tipo_movimiento = cim.id_tipo_movimiento
-                    WHERE cim.estado_mrcb AND cim.id_caja_instancia = :0 AND tm.tipo = 'E'
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
+                    INNER JOIN tipo_movimiento tm ON tm.id_tipo_movimiento = cim.id_tipo_movimiento
+                    WHERE cim.estado_mrcb AND ci.id_caja_instancia = :0 AND tm.tipo = 'E'
                     ORDER BY am.fecha_atencion, am.hora_atencion";
 
             $data["egresos"] =  $this->consultarFilas($sql, [$this->id_caja_instancia]);
@@ -535,7 +739,6 @@ class Caja extends Conexion {
             throw new Exception($exc->getMessage(), 1);
         }
     }
-
 
     public function listarMovimientosGeneral($fecha_inicio, $fecha_fin){
         try {

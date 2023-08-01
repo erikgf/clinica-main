@@ -6,6 +6,7 @@ class CajaMovimiento extends Conexion {
     public $id_caja_instancia;
     public $id_caja_instancia_movimiento;
     public $id_cliente;
+    public $id_paciente;
     public $id_registro_atencion;
     public $id_registro_atencion_relacionada;
     public $id_tipo_movimiento;
@@ -13,11 +14,23 @@ class CajaMovimiento extends Conexion {
     public $monto_deposito;
     public $id_banco;
     public $numero_operacion;
+    public $fecha_deposito;
     public $monto_tarjeta;
     public $numero_tarjeta;
     public $numero_voucher;
+    public $fecha_transaccion;
     public $monto_credito;
     public $monto_descuento;
+    public $correlativo_atencion;
+    public $correlativo_egreso;
+    public $correlativo_ingreso;
+
+    public $id_atencion_medica;
+    public $serie;
+    public $fecha_atencion;
+    public $servicios;
+    public $observaciones;
+
     public $id_usuario_registrado;
 
     public $id_tipo_comprobante;
@@ -40,6 +53,8 @@ class CajaMovimiento extends Conexion {
     public $descripcion_movimiento;
     public $fecha_hora_registrado;
 
+    public $tipo_flujo_movimiento;
+
     public $ip_terminal;
 
     //Ingresos
@@ -48,9 +63,9 @@ class CajaMovimiento extends Conexion {
     private $ID_OTROS_INGRESOS = "10";
 
     //Egresos
-    private $ID_DEVOLUCIONES_PACIENTE = "8";
-    private $ID_VUELTOS_PACIENTE = "7";
     private $ID_GASTOS = "2";
+    private $ID_VUELTOS_PACIENTE = "7";
+    private $ID_DEVOLUCIONES_PACIENTE = "8";
     private $ID_OTROS_EGRESOS = "11";
 
     public function __construct($objDB = null){
@@ -72,9 +87,16 @@ class CajaMovimiento extends Conexion {
                 throw new Exception("El monto pagado no es valido. Debe ser un monto mayor a 0", 1);
             }
 
-            $sql = "SELECT ci.estado_caja
-                    FROM caja_instancia ci
-                    WHERE ci.id_caja_instancia = :0 AND ci.estado_mrcb";
+            $sql = "SELECT  ci.estado_caja, 
+                            c.serie_atencion,
+                            ( SELECT numero FROM serie_documento WHERE serie = c.serie_atencion) as correlativo_atencion,
+                            c.serie_ingresos,
+                            ( SELECT numero FROM serie_documento WHERE serie = c.serie_ingresos) as correlativo_ingresos,
+                            c.serie_egresos,
+                            ( SELECT numero FROM serie_documento WHERE serie = c.serie_egresos) as correlativo_egresos
+                            FROM caja_instancia ci
+                            INNER JOIN caja c ON c.id_caja = ci.id_caja
+                            WHERE ci.id_caja_instancia = :0 AND ci.estado_mrcb";
             $obj = $this->consultarFila($sql, [$this->id_caja_instancia]);
 
             if ($obj == false){
@@ -87,6 +109,16 @@ class CajaMovimiento extends Conexion {
                 throw new Exception("No puedo registrar movimientos en una caja CERRADA.", 1);
             }
 
+            if ($this->id_tipo_movimiento == 1){
+                $this->correlativo_atencion = $obj["correlativo_atencion"];
+            } else {
+                if ($this->tipo_flujo_movimiento === "E"){
+                    $this->correlativo_egreso = $obj["correlativo_egresos"];
+                } else {
+                    $this->correlativo_ingreso = $obj["correlativo_ingresos"];
+                }
+            }
+
             $campos_valores = [
                 "id_caja_instancia"=>$this->id_caja_instancia,
                 "id_cliente"=>$this->id_cliente == "" ? NULL : $this->id_cliente,
@@ -97,11 +129,16 @@ class CajaMovimiento extends Conexion {
                 "monto_deposito"=>$this->monto_deposito,
                 "id_banco"=>$this->id_banco,
                 "numero_operacion"=>$this->numero_operacion,
+                "fecha_deposito"=>$this->fecha_deposito,
                 "monto_tarjeta"=>$this->monto_tarjeta,
                 "numero_tarjeta"=>$this->numero_tarjeta,
                 "numero_voucher"=>$this->numero_voucher,
+                "fecha_transaccion"=>$this->fecha_transaccion,
                 "monto_credito"=>$this->monto_credito,
                 "monto_descuento"=>$this->monto_descuento,
+                "correlativo_atencion"=>$this->correlativo_atencion,
+                "correlativo_ingreso"=>$this->correlativo_ingreso,
+                "correlativo_egreso"=>$this->correlativo_egreso,
                 "id_usuario_registrado"=>$this->id_usuario_registrado,
                 "fecha_hora_registrado"=>$this->fecha_hora_registrado,
                 "descripcion_movimiento"=>$this->descripcion_movimiento == "" ? NULL : $this->descripcion_movimiento,
@@ -110,8 +147,18 @@ class CajaMovimiento extends Conexion {
 
             $this->insert("caja_instancia_movimiento",  $campos_valores);
             $id_caja_instancia_movimiento = $this->getLastID();
-            $this->commit();
 
+            if ($this->correlativo_atencion){
+                $this->update("serie_documento", ["numero"=>$this->correlativo_atencion + 1], ["serie"=>$obj["serie_atencion"], "idtipo_comprobante"=>"CA"]);
+            }
+            if ($this->correlativo_ingreso){
+                $this->update("serie_documento", ["numero"=>$this->correlativo_ingreso + 1], ["serie"=>$obj["serie_ingresos"], "idtipo_comprobante"=>"IN"]);
+            }
+            if ($this->correlativo_egreso){
+                $this->update("serie_documento", ["numero"=>$this->correlativo_egreso + 1], ["serie"=>$obj["serie_egresos"], "idtipo_comprobante"=>"EG"]);
+            }
+            
+            $this->commit();
 
             return ["msj"=>"Registro realizado", "id_caja_instancia_movimiento"=>$id_caja_instancia_movimiento];
         } catch (Exception $exc) {
@@ -125,21 +172,25 @@ class CajaMovimiento extends Conexion {
             $this->beginTransaction();
             
             $this->fecha_hora_registrado = date("Y-m-d H:i:s");
-
             $r = ["msj"=>"Ingreso realizado correctamente."];
-            switch ($this->id_tipo_movimiento) {
-                case $this->ID_SALDO:
-                    $r = $this->registrarIngresoSaldo();
-                    break;
-                case $this->ID_OTROS_INGRESOS:
-                    break;
-                default:
-                    throw new Exception("Tipo de ingreso no encontrado.", 1);
-                    break;
+
+            $sql = "SELECT COUNT(id_tipo_movimiento) 
+                    FROM tipo_movimiento 
+                    WHERE tipo = 'I' AND id_tipo_movimiento = :0 AND id_tipo_movimiento <> 1 AND estado_mrcb";
+
+            $existe = $this->consultarValor($sql, [$this->id_tipo_movimiento]);
+
+            if ($existe <= 0){
+                throw new Exception("Tipo de ingreso no encontrado.", 1);
+            }
+
+            $this->tipo_flujo_movimiento = "I";
+
+            if ($this->id_tipo_movimiento == $this->ID_SALDO){
+                $r = $this->registrarIngresoSaldo();
             }
 
             $this->registrarCajaMovimiento();
-
             $this->commit();
 
             return $r;
@@ -205,9 +256,11 @@ class CajaMovimiento extends Conexion {
                 $objAtencionMedica->pago_deposito = $this->monto_deposito;
                 $objAtencionMedica->id_banco = $this->id_banco;
                 $objAtencionMedica->numero_operacion = $this->numero_operacion;
+                $objAtencionMedica->fecha_deposito = $this->fecha_deposito;
                 $objAtencionMedica->pago_tarjeta = $this->monto_tarjeta;
                 $objAtencionMedica->numero_tarjeta = $this->numero_tarjeta;
                 $objAtencionMedica->numero_voucher = $this->numero_voucher;
+                $objAtencionMedica->fecha_transaccion = $this->fecha_transaccion;
                 $objAtencionMedica->pago_credito = $this->monto_credito;
                 $objAtencionMedica->monto_descuento = 0.00;
 
@@ -254,7 +307,6 @@ class CajaMovimiento extends Conexion {
                 $resComprobante = $objAtencionMedica->generarComprobante($objPaciente, $importe_total_atencion);
 
                 $id_documento_electronico_registrado = $resComprobante["id_documento_electronico_registrado"];
-                $r = $resComprobante["r"];
             }
 
             $this->commit();
@@ -351,8 +403,6 @@ class CajaMovimiento extends Conexion {
             }
 
             $id_documento_electronico_registrado = $objComprobante->id_documento_electronico;
-
-
                 
         } catch (Exception $e) {
             throw new Exception($e->getMessage(), 1);
@@ -428,19 +478,19 @@ class CajaMovimiento extends Conexion {
             $this->beginTransaction();
             
             $this->fecha_hora_registrado = date("Y-m-d H:i:s");
-
             $r = ["msj"=>"Egreso realizado correctamente."];
-            switch ($this->id_tipo_movimiento) {
-                case $this->ID_DEVOLUCIONES_PACIENTE:
-                case $this->ID_VUELTOS_PACIENTE:
-                case $this->ID_GASTOS:
-                case $this->ID_OTROS_EGRESOS:
-                    break;
-                default:
-                    throw new Exception("Tipo de egreso no encontrado.", 1);
-                    break;
+
+            $sql = "SELECT COUNT(id_tipo_movimiento) 
+                    FROM tipo_movimiento 
+                    WHERE tipo = 'E' AND id_tipo_movimiento = :0 AND estado_mrcb";
+
+            $existe = $this->consultarValor($sql, [$this->id_tipo_movimiento]);
+
+            if ($existe <= 0){
+                throw new Exception("Tipo de egreso no encontrado.", 1);
             }
 
+            $this->tipo_flujo_movimiento = "E";
             $this->registrarCajaMovimiento();
 
             $this->commit();

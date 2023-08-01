@@ -29,9 +29,11 @@ try {
             $obj->pago_deposito = Funciones::sanitizar($_POST["p_pago_deposito"]);
             $obj->id_banco = Funciones::sanitizar($_POST["p_id_banco"]);
             $obj->numero_operacion = Funciones::sanitizar($_POST["p_numero_operacion"]);
+            $obj->fecha_deposito = Funciones::sanitizar($_POST["p_fecha_deposito"]);
             $obj->pago_tarjeta = Funciones::sanitizar($_POST["p_pago_tarjeta"]);
             $obj->numero_tarjeta = Funciones::sanitizar($_POST["p_numero_tarjeta"]);
             $obj->numero_voucher = Funciones::sanitizar($_POST["p_numero_voucher"]);
+            $obj->fecha_transaccion = Funciones::sanitizar($_POST["p_fecha_transaccion"]);
             $obj->servicios = $_POST["p_servicios"];
             $obj->total = Funciones::sanitizar($_POST["p_total"]);
 

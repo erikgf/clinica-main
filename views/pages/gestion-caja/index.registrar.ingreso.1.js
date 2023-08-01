@@ -18,10 +18,12 @@ var RegistrarIngreso = function() {
         $blkDeposito,
         $txtBanco,
         $txtNumeroOperacion,
+        $txtFechaDeposito,
         $txtPagoTarjeta,
         $blkTarjeta,
         $numeroTarjeta,
         $txtNumeroVoucher,
+        $txtFechaTransaccion,
         $lblCajaEfectivo,
         $lblCajaDeposito,
         $lblCajaTarjeta,
@@ -74,10 +76,12 @@ var RegistrarIngreso = function() {
         $blkDeposito = $("#blk-deposito");
         $txtBanco = $("#txt-banco");
         $txtNumeroOperacion = $("#txt-numerooperacion");
+        $txtFechaDeposito = $("#txt-fechadeposito");
         $txtPagoTarjeta = $("#txt-pagotarjeta");
         $blkTarjeta = $("#blk-tarjeta");
         $numeroTarjeta = $(".numero-tarjeta");
         $txtNumeroVoucher = $("#txt-numerovoucher");
+        $txtFechaTransaccion = $("#txt-fechatransaccion");
         $lblCajaEfectivo = $("#lbl-cajaefectivo");
         $lblCajaDeposito = $("#lbl-cajadeposito");
         $lblCajaTarjeta = $("#lbl-cajatarjeta");
@@ -181,6 +185,7 @@ var RegistrarIngreso = function() {
 
             $txtBanco.prop("required", esMontoValido);
             $txtNumeroOperacion.prop("required", esMontoValido);
+            $txtFechaDeposito.prop("required", esMontoValido);
         });
 
         $txtPagoTarjeta.on("keyup", function (){
@@ -196,6 +201,7 @@ var RegistrarIngreso = function() {
             $blkTarjeta[ esMontoValido ? "show" : "hide"]();
             $numeroTarjeta.prop("required", esMontoValido);
             $txtNumeroVoucher.prop("required", esMontoValido);
+            $txtFechaTransaccion.prop("required", esMontoValido);
         });
 
         $txtPagoEfectivo.on("change",  function () {
@@ -524,7 +530,6 @@ var RegistrarIngreso = function() {
             }     
         }
 
-
         var data_formulario = {
             p_id_atencion_medica : OBJETO_ATENCION_BUSCADO ? OBJETO_ATENCION_BUSCADO.id_atencion_medica : null,
             p_id_tipo_comprobante : idTipoComprobante,
@@ -533,9 +538,11 @@ var RegistrarIngreso = function() {
             p_monto_deposito : $txtPagoDeposito.val(),
             p_id_banco : $txtBanco.val(),
             p_numero_operacion : $txtNumeroOperacion.val(),
+            p_fecha_deposito: $txtFechaDeposito.val(),
             p_monto_tarjeta : $txtPagoTarjeta.val(),
             p_numero_tarjeta : numeroTarjeta.trim(),
             p_numero_voucher : $txtNumeroVoucher.val(),
+            p_fecha_transaccion: $txtFechaTransaccion.val(),
             p_factura_ruc : factura_ruc,
             p_factura_razon_social : factura_razon_social,
             p_factura_direccion : factura_direccion,

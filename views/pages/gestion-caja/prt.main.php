@@ -16,7 +16,6 @@
                         <div class="form-group">
                             <select required class="form-control" id="txt-caja">
                                 <option value='1'>Caja I - DPI I</option>
-                                <option value='2'>Caja II - DPI II</option>
                             </select>
                         </div>
                     </div>

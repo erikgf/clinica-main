@@ -23,44 +23,6 @@ try {
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 
-        case "registrar":
-            $obj->id_paciente = Funciones::sanitizar($_POST["p_id_paciente"]);
-            $obj->id_medico_realizante = Funciones::sanitizar($_POST["p_id_medico_realizante"]);
-            $obj->id_medico_ordenante = Funciones::sanitizar($_POST["p_id_medico_ordenante"]);
-            $obj->fecha_atencion = Funciones::sanitizar($_POST["p_fecha_atencion"]);
-            $obj->hora_atencion = Funciones::sanitizar($_POST["p_hora_atencion"]);
-            $obj->observaciones = Funciones::sanitizar($_POST["p_observaciones"]);
-            $obj->id_tipo_comprobante = Funciones::sanitizar($_POST["p_id_tipo_comprobante"]);
-            $obj->serie = Funciones::sanitizar($_POST["p_serie"]);
-            $obj->id_caja_instancia = Funciones::sanitizar($_POST["p_id_caja_instancia"]);
-            $obj->pago_efectivo = Funciones::sanitizar($_POST["p_pago_efectivo"]);
-            $obj->pago_deposito = Funciones::sanitizar($_POST["p_pago_deposito"]);
-            $obj->id_banco = Funciones::sanitizar($_POST["p_id_banco"]);
-            $obj->numero_operacion = Funciones::sanitizar($_POST["p_numero_operacion"]);
-            $obj->pago_tarjeta = Funciones::sanitizar($_POST["p_pago_tarjeta"]);
-            $obj->numero_tarjeta = Funciones::sanitizar($_POST["p_numero_tarjeta"]);
-            $obj->numero_voucher = Funciones::sanitizar($_POST["p_numero_voucher"]);
-            $obj->servicios = $_POST["p_servicios"];
-            $obj->total = Funciones::sanitizar($_POST["p_total"]);
-
-            $obj->monto_descuento = Funciones::sanitizar($_POST["p_monto_descuento"]);
-            $obj->id_usuario_validador = Funciones::sanitizar($_POST["p_id_usuario_validador"]);
-            $obj->motivo_descuento = Funciones::sanitizar($_POST["p_motivo_descuento"]);
-            $obj->es_gratuito_descuento = Funciones::sanitizar($_POST["p_es_gratuito_descuento"]);
-
-            $obj->id_usuario_validador_descuento_sin_efectivo = Funciones::sanitizar($_POST["p_id_usuario_validador_descuento_sin_efectivo"]);
-            $obj->clave_descuento_sin_efectivo = Funciones::sanitizar($_POST["p_clave_descuento_sin_efectivo"]);
-
-            $obj->factura_ruc = Funciones::sanitizar($_POST["p_factura_ruc"]);
-            $obj->factura_razon_social = Funciones::sanitizar($_POST["p_factura_razon_social"]);
-            $obj->factura_direccion = Funciones::sanitizar($_POST["p_factura_direccion"]);
-
-            $data = $obj->registrar();
-
-            Funciones::imprimeJSON("200", "OK", $data);
-        break;
-
-
         case "registrar_ingreso":
             $obj->id_registro_atencion_relacionada = Funciones::sanitizar($_POST["p_id_atencion_medica"]);
             $obj->id_tipo_comprobante = Funciones::sanitizar($_POST["p_id_tipo_comprobante"]);
@@ -70,9 +32,11 @@ try {
             $obj->monto_deposito = Funciones::sanitizar($_POST["p_monto_deposito"]);
             $obj->id_banco = Funciones::sanitizar($_POST["p_id_banco"]) == "" ? NULL : $_POST["p_id_banco"];
             $obj->numero_operacion = Funciones::sanitizar($_POST["p_numero_operacion"]) == "" ? NULL : $_POST["p_numero_operacion"];
+            $obj->fecha_deposito = Funciones::sanitizar($_POST["p_fecha_deposito"]);
             $obj->monto_tarjeta = Funciones::sanitizar($_POST["p_monto_tarjeta"]);
             $obj->numero_tarjeta = Funciones::sanitizar($_POST["p_numero_tarjeta"]) == "" ? NULL : $_POST["p_numero_tarjeta"];
             $obj->numero_voucher = Funciones::sanitizar($_POST["p_numero_voucher"]) == "" ? NULL : $_POST["p_numero_voucher"];
+            $obj->fecha_transaccion = Funciones::sanitizar($_POST["p_fecha_transaccion"]);
 
             $obj->monto_descuento =  0.00;
             $obj->monto_credito = 0.00;

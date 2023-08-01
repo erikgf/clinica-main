@@ -15,6 +15,18 @@ $obj->id_usuario_registrado = Sesion::obtenerSesionId();
 
 try {
     switch($op){
+        case "crear_caja":
+            $obj->codigo = Funciones::sanitizar($_POST["p_codigo"]);
+            $obj->descripcion = Funciones::sanitizar($_POST["p_descripcion"]);
+            $obj->serie_caja = Funciones::sanitizar($_POST["p_serie_caja"]);
+            $obj->serie_boleta = Funciones::sanitizar($_POST["p_serie_boleta"]);
+            $obj->serie_factura = Funciones::sanitizar($_POST["p_serie_factura"]);
+            $obj->bloquear_efectivo = Funciones::sanitizar($_POST["p_bloquear_efectivo"]);
+            $obj->id_sede = Funciones::sanitizar($_POST["p_id_sede"]);
+
+            $data = $obj->crearCaja();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
         case "obtener_caja_abiertas_validas":
             $data = $obj->obtenerCajasAbiertasValidas();
             Funciones::imprimeJSON("200", "OK", $data);

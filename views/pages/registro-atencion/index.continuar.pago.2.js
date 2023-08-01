@@ -12,10 +12,12 @@ var ContinuarPago = function() {
         $blkDeposito,
         $txtBanco,
         $txtNumeroOperacion,
+        $txtFechaDeposito,
         $txtPagoTarjeta,
         $blkTarjeta,
         $numeroTarjeta,
         $txtNumeroVoucher,
+        $txtFechaTransaccion,
         $lblCajaEfectivo,
         $lblCajaDeposito,
         $lblCajaTarjeta,
@@ -83,9 +85,11 @@ var ContinuarPago = function() {
         $blkDeposito = $("#blk-deposito");
         $txtBanco = $("#txt-banco");
         $txtNumeroOperacion = $("#txt-numerooperacion");
+        $txtFechaDeposito = $("#txt-fechadeposito");
         $txtPagoTarjeta = $("#txt-pagotarjeta");
         $blkTarjeta = $("#blk-tarjeta");
         $numeroTarjeta = $(".numero-tarjeta");
+        $txtFechaTransaccion = $("#txt-fechatransacciontarjeta");
         $txtNumeroVoucher = $("#txt-numerovoucher");
         $lblCajaEfectivo = $("#lbl-cajaefectivo");
         $lblCajaDeposito = $("#lbl-cajadeposito");
@@ -190,6 +194,7 @@ var ContinuarPago = function() {
 
             $txtBanco.prop("required", esMontoValido);
             $txtNumeroOperacion.prop("required", esMontoValido);
+            $txtFechaDeposito.prop("required", esMontoValido);
         });
 
         $txtPagoTarjeta.on("keyup", function (){
@@ -204,6 +209,7 @@ var ContinuarPago = function() {
             $blkTarjeta[ esMontoValido ? "show" : "hide"]();
             $numeroTarjeta.prop("required", esMontoValido);
             $txtNumeroVoucher.prop("required", esMontoValido);
+            $txtFechaTransaccion.prop("required", esMontoValido);
         });
 
         $txtPagoEfectivo.on("change",  function () {
@@ -724,9 +730,11 @@ var ContinuarPago = function() {
             p_pago_deposito : $txtPagoDeposito.val(),
             p_id_banco : $txtBanco.val(),
             p_numero_operacion : $txtNumeroOperacion.val(),
+            p_fecha_deposito: $txtFechaDeposito.val(),
             p_pago_tarjeta : $txtPagoTarjeta.val(),
             p_numero_tarjeta : numeroTarjeta.trim(),
             p_numero_voucher : $txtNumeroVoucher.val(),
+            p_fecha_transaccion: $txtFechaTransaccion.val(),
             p_servicios : JSON.stringify(OBJETO_ATENCION.servicios),
             p_total : OBJETO_ATENCION.total,
             p_es_gratuito_descuento : objDescuento.es_gratuito,

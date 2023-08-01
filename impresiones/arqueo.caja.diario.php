@@ -5,6 +5,8 @@ ob_start();
 date_default_timezone_set('America/Lima');
 require '../datos/datos.empresa.php';
 require "../negocio/Sesion.clase.php";
+require "./arqueo-caja-diario/BloquePagos.php";
+
 require "PDF.clase.php";
 
 if (!Sesion::obtenerSesion()){
@@ -55,7 +57,11 @@ try {
 
   $esta_cerrada = $data["esta_cerrada"];
   $atenciones = $data["atenciones"];
-  $ingresos = $data["ingresos"];
+  $saldos = $data["saldos"];
+  $amortizaciones = $data["amortizaciones"];
+  $notasCredito =  $data["notas_credito"];
+  $ingresos_tickets = $data["ingresos_tickets"];
+
   $egresos = $data["egresos"];
 
 } catch (\Throwable $th) {
@@ -80,8 +86,8 @@ $ANCHO_TICKET_FULL = $pdf->GetPageWidth();
 $ANCHO_TICKET = $ANCHO_TICKET_FULL - ($MARGENES_LATERALES * 2);
 $ANCHO_TICKET_MITAD = $ANCHO_TICKET / 2;
 
-
 $aumento_font = 2;
+
 
 /*Init - Zona superior */
 $pdf->SetFont($FONT,'', 7 + $aumento_font); 
@@ -98,14 +104,14 @@ $pdf->Cell($ANCHO_TICKET_MITAD,$ALTO_LINEA + .5, $telefono,$BORDES,1);
 /*Fin - Zona superior */
 $pdf->Ln($SALTO_LINEA * 1.5);
 
-$pdf->SetFont($FONT,'B', 13.5+ $aumento_font); 
+$pdf->SetFont($FONT,'B', 12 + $aumento_font); 
 $pdf->Cell($ANCHO_TICKET,$ALTO_LINEA + .5, "ARQUEO DE CAJA DIARIO".($esta_cerrada == "0" ? " (PRELIMINAR) ": ""),$BORDES,1,"C");
 
 $pdf->Ln($SALTO_LINEA * 2.5);
 
 /*inicio - cabecera */
 
-$pdf->SetFont($FONT,'B', 7+ $aumento_font); 
+$pdf->SetFont($FONT,'B', 6.5 + $aumento_font); 
 $pdf->Cell($ANCHO_TICKET_MITAD,$ALTO_LINEA + .5, utf8_decode("CAJA: ").$caja_instancia,$BORDES,0);
 $pdf->Cell($ANCHO_TICKET_MITAD,$ALTO_LINEA + .5, utf8_decode("USUARIO APERTURA  :   ").$usuario_apertura,$BORDES,1);
 
@@ -125,16 +131,18 @@ $pdf->Ln($SALTO_LINEA * 2);
 $pdf->Line($pdf->GetX(), $pdf->GetY(), $pdf->GetX()+ $ANCHO_TICKET, $pdf->GetY());
 $pdf->Ln($SALTO_LINEA * 2);
 /*fin - cabecera */
+
 $COLS_DETALLE = [
-    ["rotulo"=>"FECHA", "ancho"=>18.00, "alineacion"=>"C"],
-    ["rotulo"=>"DESCRIPCIÓN", "ancho"=>82.00, "alineacion"=>"C"],
-    ["rotulo"=>"DOCUMENTO", "ancho"=>30.00, "alineacion"=>"C"],
-    ["rotulo"=>"EFECTIVO", "ancho"=>26.5, "alineacion"=>"C"],
-    ["rotulo"=>"DEPÓSITO", "ancho"=>26.5, "alineacion"=>"C"],
-    ["rotulo"=>"TARJETA", "ancho"=>26.5, "alineacion"=>"C"],
-    ["rotulo"=>"DESCUENTO", "ancho"=>26.5, "alineacion"=>"C"],
-    ["rotulo"=>"VUELTO", "ancho"=>26.5, "alineacion"=>"C"],
-    ["rotulo"=>"SALDO", "ancho"=>26.5, "alineacion"=>"C"]
+    ["rotulo"=>"FECHA", "ancho"=>12.50, "alineacion"=>"C"],
+    ["rotulo"=>"DESCRIPCIÓN", "ancho"=>81.00, "alineacion"=>"C"],
+    ["rotulo"=>"DOCUMENTO", "ancho"=>25.00, "alineacion"=>"C"],
+    ["rotulo"=>"COMPROBANTE", "ancho"=>25.00, "alineacion"=>"C"],
+    ["rotulo"=>"EFECTIVO", "ancho"=>25, "alineacion"=>"C"],
+    ["rotulo"=>"DEPÓSITO", "ancho"=>25, "alineacion"=>"C"],
+    ["rotulo"=>"TARJETA", "ancho"=>25, "alineacion"=>"C"],
+    ["rotulo"=>"DESCUENTO", "ancho"=>25, "alineacion"=>"C"],
+    ["rotulo"=>"VUELTO", "ancho"=>25, "alineacion"=>"C"],
+    ["rotulo"=>"SALDO", "ancho"=>25, "alineacion"=>"C"]
 ];
 $NUMERO_COLS = count($COLS_DETALLE);
 
@@ -148,7 +156,10 @@ foreach ($COLS_DETALLE as $key => $value) {
 $COLS_DETALLE[$NUMERO_COLS - 1]["ancho"] = $ANCHO_TICKET - $acumulado_cols_detalle;
 $ALTO_LINEA = 1.00;
 
-$pdf->SetFont($FONT,'B', 7.25 + $aumento_font);
+
+
+
+$pdf->SetFont($FONT,'B', 5.25 + $aumento_font);
 
 foreach ($COLS_DETALLE as $key => $value) {
     if ($key < ($NUMERO_COLS - 1)){
@@ -162,12 +173,9 @@ $pdf->Ln($SALTO_LINEA);
 $pdf->Line($pdf->GetX(), $pdf->GetY(), $pdf->GetX()+ $ANCHO_TICKET, $pdf->GetY());
 $pdf->Ln($SALTO_LINEA);
 
-$pdf->SetFont($FONT,'B', 6.5 + $aumento_font); 
-$pdf->Cell($ANCHO_TICKET, $ALTO_LINEA + .75, utf8_decode("CARGO POR ATENCIONES DIARIAS"), $BORDES,1);    
-$pdf->Ln($SALTO_LINEA);
 $ALTO_LINEA = $ALTO_LINEA + 2;
 
-$pdf->SetFont($FONT,'', 6.5 + $aumento_font); 
+$bloquePagos = new BloquePagos($pdf, $ANCHO_TICKET, $ALTO_LINEA, $SALTO_LINEA, $FONT, $aumento_font, $BORDES, $COLS_DETALLE);
 
 $total_monto_efectivo = 0.00;
 $total_monto_deposito = 0.00;
@@ -176,110 +184,30 @@ $total_monto_descuento = 0.00;
 $total_monto_vuelto = 0.00;
 $total_monto_saldo = 0.00;
 
-foreach ($atenciones as $key => $value) {
-    $i = 0;
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["fecha_registro"], $BORDES,0 ,"C");    
-    $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode($value["cliente"]), $BORDES,0);    
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["tipo_documento"]. ' - '.str_pad($value["numero_documento"],8,'0',STR_PAD_LEFT) , $BORDES,0 ,"C");    
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_efectivo"], $BORDES,0, "C");    
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_deposito"], $BORDES,0, "C");    
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_tarjeta"], $BORDES,0, "C");    
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_descuento"] > 0 ? "-".$value["monto_descuento"] : "0.00", $BORDES,0, "C");    
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_vuelto"], $BORDES,0, "C"); 
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_saldo"], $BORDES, 1, "C");    
+$totalAtenciones = $bloquePagos->imprimir("ATENCIONES", $atenciones);
 
-    $total_monto_efectivo +=$value["monto_efectivo"];
-    $total_monto_deposito +=$value["monto_deposito"];
-    $total_monto_tarjeta +=$value["monto_tarjeta"];
-    $total_monto_descuento +=$value["monto_descuento"];
-    $total_monto_vuelto +=$value["monto_vuelto"];
-    $total_monto_saldo +=$value["monto_saldo"];
+$totalSaldos = $bloquePagos->imprimir("SALDOS", $saldos);
 
-    $pdf->SetFont($FONT,'I', 5.75 + $aumento_font); 
+$totalNotas = $bloquePagos->imprimir("NOTAS DE CRÉDITO", $notasCredito);
 
-    if ($value["monto_tarjeta"] > 0.00){
-      $i = 0;
-      $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0 ,"C");
-      $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode("TARJETA: ".$value["numero_tarjeta"]), $BORDES,0);   
-      $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode("VOUCHER: ".$value["numero_voucher"]), $BORDES,1 ,"L");    
-    }
+$totalAmortizaciones = $bloquePagos->imprimir("AMORTIZACIONES", $amortizaciones);
 
-    if ($value["monto_deposito"] > 0.00){
-      $i = 0;
-      $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0 ,"C");
-      $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode("DEPÓSITO: ".$value["banco"]), $BORDES,0);   
-      $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode("NÚM OP.: ".$value["numero_operacion"]), $BORDES,1 ,"L");    
-    }
+$totalIngresosTickets = $bloquePagos->imprimir("TICKETS Y OTROS", $ingresos_tickets);
 
-    $pdf->SetFont($FONT,'', 6.5 + $aumento_font); 
-}
+$ingresos = [];
 
+$pdf->SetFont($FONT,'B', 5.5 + $aumento_font); 
+$total_monto_efectivo_ingreso = $totalAtenciones["efectivo"] + $totalSaldos["efectivo"] + $totalNotas["efectivo"] + $totalAmortizaciones["efectivo"] + $totalIngresosTickets["efectivo"];
+$total_monto_deposito_ingreso = $totalAtenciones["deposito"] + $totalSaldos["deposito"] + $totalNotas["deposito"] + $totalAmortizaciones["deposito"] + $totalIngresosTickets["deposito"];
+$total_monto_tarjeta_ingreso = $totalAtenciones["tarjeta"] + $totalSaldos["tarjeta"] + $totalNotas["tarjeta"] + $totalAmortizaciones["tarjeta"] + $totalIngresosTickets["tarjeta"];
+$total_monto_vuelto_ingreso = $totalAtenciones["vuelto"] + $totalSaldos["vuelto"] + $totalNotas["vuelto"] + $totalAmortizaciones["vuelto"] + $totalIngresosTickets["vuelto"];
+$total_monto_saldo_ingreso = $totalAtenciones["saldo"] + $totalSaldos["saldo"] + $totalNotas["saldo"] + $totalAmortizaciones["saldo"] + $totalIngresosTickets["saldo"];
 
 $pdf->SetFont($FONT,'B', 6.5 + $aumento_font); 
 $i = 0;
 $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0 ,"C");    
-$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0);    
-$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "TOTAL ATENCIONES" , $BORDES,0 ,"R");
-$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, number_format($total_monto_efectivo,2), $BORDES,0, "C");    
-$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, number_format($total_monto_deposito,2), $BORDES,0, "C");    
-$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, number_format($total_monto_tarjeta,2), $BORDES,0, "C");    
-$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $total_monto_descuento > 0 ? "-".number_format($total_monto_descuento, 2): "0.00", $BORDES,0, "C");    
-$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, number_format($total_monto_vuelto,2), $BORDES,0, "C"); 
-$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, number_format($total_monto_saldo,2), $BORDES, 1, "C"); 
-
-$pdf->Ln($SALTO_LINEA);
-
-$pdf->SetFont($FONT,'B', 6.5 + $aumento_font); 
-$pdf->Cell($ANCHO_TICKET, $ALTO_LINEA + .75, utf8_decode("INGRESOS"), $BORDES,1);  
-
-$total_monto_efectivo_ingreso = 0.00;
-$total_monto_deposito_ingreso = 0.00;
-$total_monto_tarjeta_ingreso = 0.00;
-$total_monto_vuelto_ingreso = 0.00;
-$total_monto_saldo_ingreso = 0.00;
-$pdf->SetFont($FONT,'', 6.5 + $aumento_font); 
-foreach ($ingresos as $key => $value) {
-    $i = 0;
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["fecha_registro"], $BORDES,0 ,"C");    
-    $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode($value["cliente"]), $BORDES,0);    
-    $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["descripcion"], $BORDES,0 ,"C");    
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_efectivo"], $BORDES,0, "C");    
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_deposito"], $BORDES,0, "C");    
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_tarjeta"], $BORDES,0, "C");    
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_descuento"] > 0 ? "-".$value["monto_descuento"] : "0.00", $BORDES,0, "C");    
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_vuelto"], $BORDES,0, "C"); 
-    $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_saldo"], $BORDES, 1, "C");    
-
-    $total_monto_efectivo_ingreso +=$value["monto_efectivo"];
-    $total_monto_deposito_ingreso +=$value["monto_deposito"];
-    $total_monto_tarjeta_ingreso +=$value["monto_tarjeta"];
-    $total_monto_vuelto_ingreso +=$value["monto_vuelto"];
-    $total_monto_saldo_ingreso +=$value["monto_saldo"];
-
-    
-    $pdf->SetFont($FONT,'I', 5.75 + $aumento_font); 
-
-    if ($value["monto_tarjeta"] > 0.00){
-      $i = 0;
-      $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0 ,"C");
-      $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode("TARJETA: ".$value["numero_tarjeta"]), $BORDES,0);   
-      $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode("VOUCHER: ".$value["numero_voucher"]), $BORDES,1 ,"L");    
-    }
-
-    if ($value["monto_deposito"] > 0.00){
-      $i = 0;
-      $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0 ,"C");
-      $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode("DEPÓSITO: ".$value["banco"]), $BORDES,0);   
-      $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode("NÚM OP.: ".$value["numero_operacion"]), $BORDES,1 ,"L");    
-    }
-
-    $pdf->SetFont($FONT,'', 6.5 + $aumento_font); 
-}
-
-$pdf->SetFont($FONT,'B', 6.5 + $aumento_font); 
-$i = 0;
-$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0 ,"C");    
-$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0);    
+$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0);
+$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0);
 $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "TOTAL INGRESOS" , $BORDES,0 ,"R");
 $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, number_format($total_monto_efectivo_ingreso,2), $BORDES,0, "C");    
 $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, number_format($total_monto_deposito_ingreso,2), $BORDES,0, "C");    
@@ -296,8 +224,9 @@ $pdf->SetFont($FONT,'', 6.5 + $aumento_font);
 foreach ($egresos as $key => $value) {
     $i = 0;
     $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["fecha_registro"], $BORDES,0 ,"C");    
-    $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode($value["cliente"]), $BORDES,0);    
-    $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["descripcion"], $BORDES,0 ,"C");    
+    $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode($value["descripcion"]), $BORDES,0);    
+    $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["recibo"], $BORDES,0 ,"C");    
+    $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["comprobante"], $BORDES,0 ,"C");    
     $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, number_format($value["monto_efectivo"] * -1, 2), $BORDES,0, "C");    
     $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_deposito"], $BORDES,0, "C");    
     $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $value["monto_tarjeta"], $BORDES,0, "C");    
@@ -311,7 +240,8 @@ foreach ($egresos as $key => $value) {
 $pdf->SetFont($FONT,'B', 6.5 + $aumento_font); 
 $i = 0;
 $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0 ,"C");    
-$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0);    
+$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0);
+$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0);
 $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "TOTAL EGRESOS" , $BORDES,0 ,"R");
 $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, $total_monto_efectivo_egreso > 0 ? "-".number_format($total_monto_efectivo_egreso, 2): "0.00", $BORDES,0, "C");    
 $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0, "C");    
@@ -329,7 +259,7 @@ $pdf->SetFont($FONT,'B', 8 + $aumento_font);
 
 foreach ($COLS_DETALLE as $key => $value) {
     if ($key < ($NUMERO_COLS - 1)){ 
-        if ($key <= 2){
+        if ($key <= 3){
             $pdf->Cell($value["ancho"], $ALTO_LINEA + .5, "", $BORDES,0, $value["alineacion"]);        
         } else {
             $pdf->Cell($value["ancho"], $ALTO_LINEA + .5, utf8_decode($value["rotulo"]), $BORDES,0, $value["alineacion"]);    
@@ -341,6 +271,7 @@ foreach ($COLS_DETALLE as $key => $value) {
 
 $i = 0;
 $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0 ,"C");    
+$pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0);    
 $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, "", $BORDES,0);    
 $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, utf8_decode("TOTALES"), $BORDES,0 ,"R");
 $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + .5, number_format($total_monto_efectivo + $total_monto_efectivo_ingreso - $total_monto_efectivo_egreso ,2), $BORDES,0, "C");    
