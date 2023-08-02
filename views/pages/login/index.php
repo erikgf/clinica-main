@@ -96,7 +96,7 @@ $ruta_base = "../../../";
           <!-- /.col -->
         </div>
 
-        <p class="text-red"><b>Ha habido una actualización del sistema. Antes de acceder, SE RECOMIENDA actualizar el navegador usando CTRL + F5 (solo por única vez). Gracias.</b></p>
+        <!-- <p class="text-red"><b>Ha habido una actualización del sistema. Antes de acceder, SE RECOMIENDA actualizar el navegador usando CTRL + F5 (solo por única vez). Gracias.</b></p> -->
       </form>
     </div>
     <!-- /.login-card-body -->
