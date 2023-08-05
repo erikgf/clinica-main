@@ -663,7 +663,7 @@ class Caja extends Conexion {
                     LEFT JOIN banco ban ON ban.id_banco = cim.id_banco
                     LEFT JOIN paciente p ON p.id_paciente = cim.id_cliente
                     LEFT JOIN documento_electronico de ON de.id_atencion_medica = cim.id_registro_atencion
-                    WHERE ci.id_caja_instancia = :0 AND tm.tipo = 'I' AND cim.id_tipo_movimiento NOT IN (4) AND de.iddocumento_electronico IS NULL
+                    WHERE ci.id_caja_instancia = :0 AND tm.tipo = 'I' AND cim.id_tipo_movimiento NOT IN (4) AND de.iddocumento_electronico IS NULL AND cim.monto_credito <= 0 AND cim.estado_mrcb
                     ORDER BY cim.fecha_hora_registrado";
             $data["ingresos_tickets"] =  $this->consultarFilas($sql, [$this->id_caja_instancia]);
 
