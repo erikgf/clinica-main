@@ -97,7 +97,8 @@ class CajaReporte extends Conexion {
                     INNER JOIN tipo_movimiento tm ON tm.id_tipo_movimiento = cim.id_tipo_movimiento
                     LEFT JOIN paciente p ON p.id_paciente = cim.id_cliente
                     LEFT JOIN documento_electronico de ON de.id_atencion_medica = cim.id_registro_atencion
-                    WHERE ci.id_caja_instancia = :0 AND tm.tipo = 'I' AND cim.id_tipo_movimiento NOT IN (4) AND de.iddocumento_electronico IS NULL";
+                    WHERE ci.id_caja_instancia = :0 AND tm.tipo = 'I' AND cim.id_tipo_movimiento NOT IN (4) AND de.iddocumento_electronico IS NULL AND cim.monto_credito <= 0
+                           AND cim.estado_mrcb";
             $tickets_e_ingresos = $this->consultarFilas($sql, [$idCajaInstancia]);
             
 
@@ -119,7 +120,7 @@ class CajaReporte extends Conexion {
                     LEFT JOIN banco b ON b.id_banco = cim.id_banco
                     INNER JOIN paciente p ON p.id_paciente = cim.id_cliente
                     LEFT JOIN documento_electronico de ON de.id_atencion_medica = cim.id_registro_atencion
-                    WHERE ci.id_caja_instancia = :0 AND cim.id_tipo_movimiento = 1 AND de.iddocumento_electronico IS NULL AND cim.monto_credito > 0";
+                    WHERE ci.id_caja_instancia = :0 AND cim.id_tipo_movimiento = 1 AND de.iddocumento_electronico IS NULL AND cim.monto_credito > 0 AND cim.estado_mrcb";
             $amortizaciones = $this->consultarFilas($sql, [$idCajaInstancia]);
 
             $sql = "SELECT 
