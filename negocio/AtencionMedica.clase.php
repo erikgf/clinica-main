@@ -980,6 +980,8 @@ class AtencionMedica extends Conexion {
     public function obtenerAtencionMedicaParaSaldos(){
         try {
 
+            $numero_recibo = $this->numero_acto_medico;
+
             $sql  = "SELECT 
                     am.id_atencion_medica,
                     am.nombre_paciente,
@@ -991,8 +993,11 @@ class AtencionMedica extends Conexion {
                                     WHERE cim.id_tipo_movimiento IN (4) 
                                     AND cim.estado_mrcb AND cim.id_registro_atencion_relacionada = am.id_atencion_medica) as monto_pagado  
                     FROM atencion_medica am
-                    WHERE am.estado_mrcb AND am.numero_acto_medico = :0";
-            $data = $this->consultarFila($sql, [$this->numero_acto_medico]);
+                    INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
+                    WHERE am.estado_mrcb AND CONCAT(c.serie_atencion,'-',cim.correlativo_atencion) = :0";
+            $data = $this->consultarFila($sql, [$numero_recibo]);
             return $data;
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
