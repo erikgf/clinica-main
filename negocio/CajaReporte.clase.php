@@ -63,24 +63,24 @@ class CajaReporte extends Conexion {
                     WHERE ci.id_caja_instancia = :0  AND cim.id_tipo_movimiento = 4 AND cim.estado_mrcb";
             $saldos = $this->consultarFilas($sql, [$idCajaInstancia]);
 
-            //corregir
+            //Notas de crédito de comprobantes de esta caja
+            //A pedido
             $sql = "SELECT 
-                    de.fecha_emision as fecha,
+                    DATE(de_r.fecha_hora_registrado) as fecha,
                     CONCAT(c.serie_atencion,'-',cim.correlativo_atencion) as recibo,
-                    CONCAT(de.serie,'-',de.numero_correlativo) as comprobante,
-                    de.descripcion_cliente as cliente
-                    ,CONCAT(p.apellidos_paterno,' ',p.apellidos_materno,' ',p.nombres) as paciente,
-                    cim.monto_efectivo, cim.monto_deposito, cim.monto_tarjeta, monto_credito,
-                    CONCAT(de_r.serie,'-',de_r.numero_correlativo) as detalle,
+                    CONCAT(de_r.serie,'-',de_r.numero_correlativo) as comprobante,
+                    de.descripcion_cliente as cliente,
+                    de.descripcion_cliente as paciente,
+                    cim.monto_efectivo,cim.monto_deposito,cim.monto_tarjeta,cim.monto_credito,
+                    CONCAT(de.serie,'-',de.numero_correlativo) as detalle,
                     'ANULADA' as estado
-                    FROM documento_electronico de
-                    INNER JOIN documento_electronico de_r ON de_r.iddocumento_electronico = de.id_documento_electronico_previo
-                    LEFT JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = de_r.id_atencion_medica
-                    LEFT JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
-                    LEFT JOIN caja c ON c.id_caja = ci.id_caja
-                    LEFT JOIN paciente p ON p.id_paciente = cim.id_cliente
-                    WHERE de.idtipo_comprobante = '07' AND de.fecha_emision = :0 AND de.serie IN (:1, :2)";
-            $notas_credito = $this->consultarFilas($sql, [$caja["fecha"], $caja["serie_boleta"], $caja["serie_factura"]]);
+                    FROM caja_instancia_movimiento cim
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
+                    INNER JOIN documento_electronico de ON de.id_atencion_medica = cim.id_registro_atencion
+                    INNER JOIN documento_electronico de_r ON de_r.serie_documento_modifica = de.serie AND de_r.numero_documento_modifica = de.numero_correlativo
+                    WHERE ci.id_caja_instancia = :0";
+            $notas_credito = $this->consultarFilas($sql, [$idCajaInstancia]);
 
             $sql = "SELECT 
                     ci.fecha_apertura as fecha,

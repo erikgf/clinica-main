@@ -618,10 +618,10 @@ class Caja extends Conexion {
             $data["amortizaciones"] =  $this->consultarFilas($sql, [$this->id_caja_instancia]);
 
             $sql = "SELECT 
-                    DATE_FORMAT(de.fecha_emision, '%d/%m/%Y') as fecha_registro,
+                    DATE_FORMAT(de_r.fecha_emision, '%d/%m/%Y') as fecha_registro,
                     CONCAT(c.serie_atencion,'-',cim.correlativo_atencion) as recibo,
-                    CONCAT(de.serie,'-',de.numero_correlativo,' (',de_r.serie,'-',de_r.numero_correlativo,')') as comprobante,
-                    de.descripcion_cliente as descripcion,
+                    CONCAT(de_r.serie,'-',de_r.numero_correlativo,' (',de.serie,'-',de.numero_correlativo,')') as comprobante,
+                    de_r.descripcion_cliente as descripcion,
                     '0.00' as monto_vuelto, cim.monto_descuento, 
                     cim.monto_efectivo * -1 as monto_efectivo, cim.monto_deposito * -1 as  monto_deposito, cim.monto_tarjeta * -1 as monto_tarjeta, cim.monto_credito * -1 as monto_saldo,
                     (0 + cim.monto_deposito + cim.monto_tarjeta + cim.monto_credito - cim.monto_descuento) * -1 as monto_total,
@@ -631,15 +631,15 @@ class Caja extends Conexion {
                     cim.numero_tarjeta,
                     COALESCE(cim.fecha_deposito, '-') as fecha_deposito,
                     COALESCE(cim.fecha_transaccion, '-') as fecha_transaccion
-                    FROM documento_electronico de
-                    INNER JOIN documento_electronico de_r ON de_r.iddocumento_electronico = de.id_documento_electronico_previo
-                    LEFT JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = de_r.id_atencion_medica
-                    LEFT JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
-                    LEFT JOIN caja c ON c.id_caja = ci.id_caja
+                    FROM caja_instancia_movimiento cim
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
                     LEFT JOIN banco b ON b.id_banco = cim.id_banco
-                    WHERE de.idtipo_comprobante = '07' AND de.fecha_emision = :0 AND de.serie IN (:1, :2)
+                    INNER JOIN documento_electronico de ON de.id_atencion_medica = cim.id_registro_atencion
+                    INNER JOIN documento_electronico de_r ON de_r.serie_documento_modifica = de.serie AND de_r.numero_documento_modifica = de.numero_correlativo
+                    WHERE de_r.idtipo_comprobante = '07' AND ci.id_caja_instancia = :0
                     ORDER BY cim.fecha_hora_registrado";
-            $data["notas_credito"] =  $this->consultarFilas($sql, [$data["raw_fecha_apertura"], $data["serie_boleta"], $data["serie_factura"]]);
+            $data["notas_credito"] =  $this->consultarFilas($sql, [$this->id_caja_instancia]);
 
             $sql = "SELECT 
                     DATE_FORMAT(cim.fecha_hora_registrado, '%d/%m/%Y') as fecha_registro,

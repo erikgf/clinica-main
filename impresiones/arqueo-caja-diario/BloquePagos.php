@@ -68,7 +68,7 @@ class BloquePagos{
             $this->pdf->Cell($this->COLS_DETALLE[$i++]["ancho"], $this->ALTO_LINEA + .5, utf8_decode("NÚM OP.: ".$value["numero_operacion"]), $this->BORDES,1 ,"L");    
             }
 
-            $this->pdf->SetFont($this->FONT,'', 5.5 + $this->aumento_font); 
+            $this->pdf->SetFont($this->FONT,'', 5.25 + $this->aumento_font); 
         }
 
         $this->pdf->SetFont($this->FONT,'B', 5.25 + $this->aumento_font); 
