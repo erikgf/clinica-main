@@ -209,7 +209,6 @@ class Caja extends Conexion {
         }
     }
 
-
     public function obtenerInstanciaValidaFecha($fecha_atencion){
         try {
             $sql = "SELECT 
@@ -702,7 +701,7 @@ class Caja extends Conexion {
 
             $sql = "SELECT 
                     cim.id_caja_instancia_movimiento as id,
-                    COALESCE(am.numero_acto_medico,'-') as numero_acto_medico,
+                    COALESCE(CONCAT(c.serie_atencion,'-',cim.correlativo_atencion),'-') as numero_acto_medico,
                     CONCAT(c.codigo,' ',REPLACE(ci.fecha_apertura,'-',''),LPAD(ci.numero_caja_dia, 4,'0')) as caja_instancia,
                     DATE_FORMAT(cim.fecha_hora_registrado, '%d/%m/%Y %H:%i:%s') as fecha_registro,
                     cim.id_registro_atencion as id_atencion_medica,

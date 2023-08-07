@@ -455,7 +455,7 @@ class AtencionMedica extends Conexion {
             $this->id_atencion_medica = $id_atencion_medica;
 
             $sql  = "SELECT 
-                    am.numero_acto_medico,
+                    CONCAT(c.serie_atencion,'-',cim.correlativo_atencion) as numero_acto_medico,
                     DATE_FORMAT(fecha_atencion, '%d/%m/%Y') as fecha_atencion,
                     hora_atencion,
                     am.nombre_paciente as nombres_completos,
@@ -465,18 +465,21 @@ class AtencionMedica extends Conexion {
                     CONCAT(COALESCE(pa.telefono_fijo,''),COALESCE(CONCAT(' ', pa.celular_uno),''),COALESCE(CONCAT(' ', pa.celular_dos),'')) as telefonos,
                     mo.nombres_apellidos as medico_ordenante,
                     COALESCE(am.observaciones,'') as observaciones,
-                    pago_credito as total_credito,
-                    monto_vuelto as total_vuelto,
-                    monto_descuento as descuento_global,
-                    pago_deposito as total_deposito,
-                    pago_efectivo as total_efectivo,
-                    pago_tarjeta as total_tarjeta,
+                    am.pago_credito as total_credito,
+                    am.monto_vuelto as total_vuelto,
+                    am.monto_descuento as descuento_global,
+                    am.pago_deposito as total_deposito,
+                    am.pago_efectivo as total_efectivo,
+                    am.pago_tarjeta as total_tarjeta,
                     CONCAT(co.nombres,' ',co.apellido_paterno,' ',co.apellido_materno) as usuario_atendido,
                     COALESCE(eco.razon_social,'') as empresa_convenio,
                     COALESCE(eco.mensaje_ticket, '') as empresa_convenio_mensaje_ticket,
                     COALESCE(camp.descripcion,'') as campaña_descripcion,
                     COALESCE(camp.nombre, '') as campaña_nombre
                     FROM atencion_medica am
+                    INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
                     INNER JOIN medico mo ON mo.id_medico = am.id_medico_ordenante
                     INNER JOIN paciente pa ON pa.id_paciente = am.id_paciente
                     INNER JOIN usuario u ON u.id_usuario = am.id_usuario_registrado
@@ -939,7 +942,8 @@ class AtencionMedica extends Conexion {
         try {
             $sql  = "SELECT 
                     am.id_atencion_medica,
-                    COALESCE(am.numero_acto_medico,'-') as numero_acto_medico,
+                    COALESCE(CONCAT(c.serie_atencion,'-',cim.correlativo_atencion), '-') as numero_acto_medico,
+                    -- COALESCE(am.numero_acto_medico,'-') as numero_acto_medico,
                     DATE_FORMAT(COALESCE(de.fecha_emision, am.fecha_atencion), '%d/%m/%Y') as fecha_registro,
                     DATE_FORMAT(COALESCE(de.fecha_emision, am.fecha_atencion), '%d/%m/%Y') as fecha,
                     de.iddocumento_electronico,
@@ -960,6 +964,9 @@ class AtencionMedica extends Conexion {
                     FROM atencion_medica am
                     LEFT JOIN paciente p ON p.id_paciente = am.id_paciente
                     LEFT JOIN documento_electronico de ON de.id_atencion_medica = am.id_atencion_medica AND de.estado_mrcb
+                    INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
                     WHERE (COALESCE(de.fecha_emision, am.fecha_atencion) BETWEEN :0 AND :1)
                     ORDER BY am.id_atencion_medica";
             $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
@@ -997,7 +1004,7 @@ class AtencionMedica extends Conexion {
 
             $sql  = "SELECT 
                     am.id_atencion_medica,
-                    am.numero_acto_medico as numero_recibo,
+                    CONCAT(c.serie_atencion,'-',cim.correlativo_atencion) as numero_recibo,
                     am.id_paciente,
                     am.nombre_paciente,
                     am.importe_total,
@@ -1013,6 +1020,9 @@ class AtencionMedica extends Conexion {
                                     WHERE cim.id_tipo_movimiento IN (8) 
                                     AND cim.estado_mrcb AND cim.id_registro_atencion_relacionada = am.id_atencion_medica) as monto_devuelto
                     FROM atencion_medica am
+                    INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
                     WHERE am.numero_acto_medico = :0";
             $data = $this->consultarFila($sql, [$this->numero_acto_medico]);
             return $data;
@@ -1063,7 +1073,7 @@ class AtencionMedica extends Conexion {
 
             $sql  = "SELECT 
                     am.id_atencion_medica,
-                    COALESCE(am.numero_acto_medico,'-') as numero_recibo,
+                    CONCAT(c.serie_atencion,'-',cim.correlativo_atencion) as numero_recibo,
                     DATE_FORMAT(am.fecha_atencion, '%d/%m/%Y') as fecha_registro,
                     nombre_paciente as paciente,
                     COALESCE(DATE_FORMAT(am.fecha_hora_muestra,'%d/%m/%Y %H:%i:%s'),'-') as fecha_hora_muestra,
@@ -1083,6 +1093,9 @@ class AtencionMedica extends Conexion {
                     TIMESTAMPDIFF(YEAR, p.fecha_nacimiento, CURDATE()) as edad
                     FROM atencion_medica am
                     LEFT JOIN paciente p ON p.id_paciente = am.id_paciente
+                    INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
                     WHERE (am.fecha_atencion BETWEEN :0 AND :1) AND am.estado_mrcb AND $sqlFiltro
                     HAVING servicios_lab > 0 ".$sqlFiltroImpresos."
                     ORDER BY am.numero_acto_medico";
@@ -1097,13 +1110,16 @@ class AtencionMedica extends Conexion {
     public function listarAtencionDetalleLaboratorio(){
         try {
 
-            $sql = "SELECT nombre_paciente as paciente,
-                    numero_acto_medico as numero_recibo,
-                    IF( fecha_hora_muestra IS NULL, '0' ,'1') as ya_fue_registrado_muestra,
-                    IF( fecha_hora_resultado IS NULL, '0' ,'1') as ya_fue_registrado_resultado,
-                    IF( fecha_hora_validado IS NULL, '0' ,'1') as ya_fue_registrado_validado
-                    FROM atencion_medica 
-                    WHERE id_atencion_medica = :0 AND estado_mrcb";
+            $sql = "SELECT am.nombre_paciente as paciente,
+                    CONCAT(c.serie_atencion,'-',cim.correlativo_atencion) as numero_recibo,
+                    IF( am.fecha_hora_muestra IS NULL, '0' ,'1') as ya_fue_registrado_muestra,
+                    IF( am.fecha_hora_resultado IS NULL, '0' ,'1') as ya_fue_registrado_resultado,
+                    IF( am.fecha_hora_validado IS NULL, '0' ,'1') as ya_fue_registrado_validado
+                    FROM atencion_medica am
+                    INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja c ON c.id_caja = ci.id_caja
+                    WHERE am.id_atencion_medica = :0 AND am.estado_mrcb";
 
             $datos = $this->consultarFila($sql, [$this->id_atencion_medica]);
 
@@ -1155,7 +1171,7 @@ class AtencionMedica extends Conexion {
             }
 
             $sql  = "SELECT
-                        numero_acto_medico  as numero_recibo,
+                        CONCAT(c.serie_atencion,'-',cim.correlativo_atencion) as numero_recibo,
                         DATE_FORMAT(am.fecha_hora_registrado ,'%d/%m/%Y') as fecha_orden,
                         am.nombre_paciente as nombre_paciente,
                         TIMESTAMPDIFF(YEAR, p.fecha_nacimiento, CURDATE()) as edad_anios,
@@ -1165,6 +1181,9 @@ class AtencionMedica extends Conexion {
                         'CHICLAYO' as procedencia,
                         COALESCE(DATE_FORMAT(MAX(fecha_hora_muestra),'%d/%m/%Y'),'') as fecha_entrega
                         FROM atencion_medica am
+                        INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
+                        INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                        INNER JOIN caja c ON c.id_caja = ci.id_caja
                         INNER JOIN paciente p ON p.id_paciente = am.id_paciente
                         INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
                         WHERE am.id_atencion_medica = :0";
@@ -1230,7 +1249,7 @@ class AtencionMedica extends Conexion {
 
             $sql  = "SELECT
                         am.id_atencion_medica,
-                        numero_acto_medico  as numero_recibo,
+                        CONCAT(c.serie_atencion,'-',cim.correlativo_atencion) as numero_recibo,
                         am.nombre_paciente as nombre_paciente,
                         TIMESTAMPDIFF(YEAR, p.fecha_nacimiento, CURDATE()) as edad_anios,
                         TIMESTAMPDIFF(MONTH, p.fecha_nacimiento, CURDATE()) as edad_meses,
@@ -1247,6 +1266,9 @@ class AtencionMedica extends Conexion {
                             s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.")
                             AND ams_2.fecha_hora_validado IS NOT NULL) as cantidad_validados
                         FROM atencion_medica am
+                        INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
+                        INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                        INNER JOIN caja c ON c.id_caja = ci.id_caja
                         INNER JOIN paciente p ON p.id_paciente = am.id_paciente
                         WHERE am.estado_mrcb AND  (am.fecha_atencion BETWEEN :0 AND :1)
                         HAVING cantidad_validados > 0";
@@ -1389,7 +1411,7 @@ class AtencionMedica extends Conexion {
                     FROM
                     (SELECT 
                     am.id_atencion_medica,
-                    COALESCE(am.numero_acto_medico,'-') as numero_recibo,
+                    COALESCE(CONCAT(cj.serie_atencion,'-',cm.correlativo_atencion),'-') as numero_recibo,
                     DATE_FORMAT(COALESCE(am.fecha_atencion), '%d/%m/%Y') as fecha_registro,
                     de.iddocumento_electronico as iddocumento_electronico,
                     COALESCE((CASE de.idtipo_comprobante WHEN '01' THEN 'FACTURA' WHEN '03' THEN 'BOLETA DE VENTA' ELSE '' END),'') as tipo_comprobante,
@@ -1431,7 +1453,7 @@ class AtencionMedica extends Conexion {
 
             $sql  = "SELECT  
                         am.id_atencion_medica,
-                        am.numero_acto_medico as numero_ticket,
+                        CONCAT(c.serie_atencion,'-', cim.correlativo_atencion) as numero_ticket,
                         ec.razon_social as empresa_convenio,
                         DATE_FORMAT(am.fecha_atencion, '%d-%m-%Y') as fecha_registro,
                         am.nombre_paciente as paciente,
@@ -1448,6 +1470,9 @@ class AtencionMedica extends Conexion {
                         , de_nc.iddocumento_electronico as id_documento_electronico_notacredito
                         , marcado
                         FROM atencion_medica am
+                        INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
+                        INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                        INNER JOIN caja c ON c.id_caja = ci.id_caja
                         INNER JOIN empresa_convenio ec ON ec.id_empresa_convenio = am.id_empresa_convenio
                         LEFT JOIN documento_electronico de_f ON de_f.idtipo_comprobante = '01' AND de_f.id_atencion_medica_convenio = am.id_atencion_medica AND de_f.estado_mrcb
                         LEFT JOIN documento_electronico de_nc ON de_nc.idtipo_comprobante = '07' AND de_nc.id_atencion_medica_convenio = am.id_atencion_medica AND de_nc.estado_mrcb
@@ -1506,7 +1531,7 @@ class AtencionMedica extends Conexion {
             }
 
             $sql = "SELECT 
-                        id_atencion_medica,
+                        CONCAT(ca.serie_atencion,'-',cim.correlativo_atencion) as id_atencion_medica,
                         fecha_atencion, 
                         am.monto_descuento,  
                         motivo_descuento,

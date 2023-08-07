@@ -13,7 +13,7 @@ class AtencionMedicaServicio extends Conexion {
     public $resultados_examenes_laboratorio;
     public $fue_atendido;
     public $id_usuario_registrado;
-
+    public $arreglo_examenes;
     
     public $ID_TIPO_ACCION_MUESTRA = 1;
     public $ID_TIPO_ACCION_ENTREGA = 2;
@@ -59,7 +59,7 @@ class AtencionMedicaServicio extends Conexion {
             $sql  = "SELECT 
                     amd.id_atencion_medica,
                     amd.id_atencion_medica_servicio,
-                    am.numero_acto_medico as recibo, 
+                    CONCAT(ca.serie_atencion,'-',cim.correlativo_atencion) as recibo, 
                     am.nombre_paciente, 
                     DATE_FORMAT(am.fecha_atencion,'%d-%m-%Y') as fecha_atencion, 
                     amd.nombre_servicio as examen, 
@@ -89,6 +89,9 @@ class AtencionMedicaServicio extends Conexion {
                     INNER JOIN atencion_medica am ON am.id_atencion_medica = amd.id_atencion_medica
                     INNER JOIN servicio s ON s.id_servicio = amd.id_servicio
                     INNER JOIN categoria_servicio cs ON cs.id_categoria_servicio = s.id_categoria_servicio
+                    INNER JOIN caja_instancia_movimiento cim ON am.id_atencion_medica = cim.id_registro_atencion
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja ca oN ca.id_caja = ci.id_caja
                     LEFT JOIN medico m ON m.id_medico = amd.id_medico_atendido
                     LEFT JOIN medico mr ON mr.id_medico = amd.id_medico_realizado
                     LEFT JOIN usuario u ON u.id_usuario = amd.id_usuario_atendido
@@ -112,7 +115,7 @@ class AtencionMedicaServicio extends Conexion {
         try {
             $sql  = "SELECT 
                     amd.id_atencion_medica_servicio, 
-                    am.numero_acto_medico as recibo,
+                    CONCAT(ca.serie_atencion,'-',cim.correlativo_atencion) as recibo, 
                     am.nombre_paciente, 
                     DATE_FORMAT(am.fecha_atencion,'%d-%m-%Y') as fecha_atencion, 
                     amd.nombre_servicio as examen, 
@@ -130,6 +133,9 @@ class AtencionMedicaServicio extends Conexion {
                     INNER JOIN atencion_medica am ON am.id_atencion_medica = amd.id_atencion_medica
                     INNER JOIN servicio s ON s.id_servicio = amd.id_servicio
                     INNER JOIN categoria_servicio cs ON cs.id_categoria_servicio = s.id_categoria_servicio
+                    INNER JOIN caja_instancia_movimiento cim ON am.id_atencion_medica = cim.id_registro_atencion
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja ca oN ca.id_caja = ci.id_caja
                     WHERE am.estado_mrcb AND amd.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND cs.id_categoria_servicio = :2
                     ORDER BY am.numero_acto_medico DESC";
             $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin, $id_area]);
@@ -1057,7 +1063,7 @@ class AtencionMedicaServicio extends Conexion {
                     (CASE id_sede WHEN 1 THEN 'CHICLAYO' ELSE 'LAMBAYEQUE' END) as sede,
                     DATE_FORMAT(am.fecha_atencion,'%d-%m-%Y') as fecha_atencion, 
                     (CASE amd.fue_atendido WHEN '0' THEN 'PENDIENTE' WHEN '1' THEN 'REALIZADO' ELSE 'CANCELADO' END) as estado,
-                    am.numero_acto_medico as recibo,
+                    CONCAT(ca.serie_atencion,'-',cim.correlativo_atencion) as recibo,
                     DE_NUMERO_COMPROBANTE as comprobante,
                     am.nombre_paciente, 
                     amd.nombre_servicio as examen, 
