@@ -1751,6 +1751,7 @@ class DocumentoElectronico extends Conexion {
                     $cdr_observaciones = NULL;
                     $cdr_hash = "";
                     $enviar_a_sunat = 0;
+                    $anular_por_rpta_sunat = false;
                     $estado_anulado = 0;
                     $motivo_anulacion = NULL;
                     $anulado_por_nota = "1";
@@ -1765,6 +1766,7 @@ class DocumentoElectronico extends Conexion {
                             $cdr_observaciones = "ERROR POR NO CONEXION A SUNAT. REENVIAR XML NUEVAMENTE.";
                         } else {  
                             if ($cdr_estado >= 2000){
+                                $anular_por_rpta_sunat = true;
                                 $enviar_a_sunat = 1;          
                                 $estado_anulado = "1";
                                 $anulado_por_nota = "0";
@@ -1782,17 +1784,19 @@ class DocumentoElectronico extends Conexion {
                                 cdr_descripcion = '".str_replace("'",' ', $cdr_descripcion)."',
                                 cdr_observaciones = ".($cdr_observaciones == NULL ? "NULL" : "'".$cdr_observaciones."'") .",
                                 cdr_hash = '".$cdr_hash."',
-                                cdr_estado = '".$cdr_estado."',
-                                estado_anulado = '".$estado_anulado."',
-                                motivo_anulacion = ".($motivo_anulacion == NULL ? "NULL" : "'".$motivo_anulacion."'")."
-                                WHERE  estado_mrcb AND iddocumento_electronico = '".$respuesta->id."'";
+                                cdr_estado = '".$cdr_estado."'";
+
+                        if ($anular_por_rpta_sunat){
+                            $sql .=  ",estado_anulado = '".$estado_anulado."',
+                                      motivo_anulacion = ".($motivo_anulacion == NULL ? "NULL" : "'".$motivo_anulacion."'");
+                        }
+                        $sql .= " WHERE estado_mrcb AND iddocumento_electronico = '".$respuesta->id."'";
 
                         $this->consultaRaw($sql);
                         
-                        $sql  = "UPDATE atencion_medica SET DE_ESTADO_ANULADO = '".$estado_anulado."', DE_CDR_ESTADO = '".$cdr_estado."' WHERE DE_ID = '".$respuesta->id."'";
+                        $sql  = "UPDATE atencion_medica SET ".($anular_por_rpta_sunat ? "DE_ESTADO_ANULADO = '".$estado_anulado."'," : "")." DE_CDR_ESTADO = '".$cdr_estado."' WHERE DE_ID = '".$respuesta->id."'";
                         $this->consultaRaw($sql);
                     }
-
                 }
         
                 $this->commit();
@@ -1806,7 +1810,6 @@ class DocumentoElectronico extends Conexion {
 
     public function canjearComprobante(){
         try {
-
             $this->beginTransaction();
 
             $sql = "SELECT serie_boleta, serie_factura 
