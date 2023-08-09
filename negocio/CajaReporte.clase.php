@@ -35,7 +35,7 @@ class CajaReporte extends Conexion {
                     LEFT JOIN banco b ON b.id_banco = cim.id_banco
                     INNER JOIN documento_electronico de ON de.id_atencion_medica = cim.id_registro_atencion
                     INNER JOIN paciente p ON p.id_paciente = cim.id_cliente
-                    WHERE ci.id_caja_instancia = :0 AND cim.id_tipo_movimiento = 1";
+                    WHERE ci.id_caja_instancia = :0 AND cim.id_tipo_movimiento = 1 AND cim.monto_credito <= 0";
             
             $atenciones = $this->consultarFilas($sql, [$idCajaInstancia]);
 

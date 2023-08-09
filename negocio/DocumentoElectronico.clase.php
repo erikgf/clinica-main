@@ -1687,7 +1687,17 @@ class DocumentoElectronico extends Conexion {
                 "total_deposito"=>$total_deposito
             ];
 
-            
+
+            $sql = "SELECT 
+                    COALESCE(SUM(IF(de.idtipo_comprobante = '07', -1, 1) * de.importe_total), 0)
+                    FROM documento_electronico de 
+                    LEFT JOIN atencion_medica am ON de.id_atencion_medica = am.id_atencion_medica
+                    LEFT JOIN caja c ON c.serie_boleta = de.serie
+                    LEFT JOIN caja c2 ON c2.serie_factura = de.serie
+                    WHERE (de.fecha_emision BETWEEN :0 AND :1) AND am.id_atencion_medica IS NULL and c.id_caja IS NULL AND c2.id_caja is NULL";
+            $valoresComprobantesSinAtenciones = $this->consultarValor($sql, [$fecha_inicio, $fecha_fin]);
+
+            $otros_totales["total_efectivo"] =  $otros_totales["total_efectivo"] + $valoresComprobantesSinAtenciones;
             return ["series"=>$series, "todos_comprobantes"=>$todos_comprobantes, "totales"=>$totales, "otros_totales"=>$otros_totales];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
