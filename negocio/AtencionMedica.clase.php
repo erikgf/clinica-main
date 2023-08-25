@@ -556,11 +556,10 @@ class AtencionMedica extends Conexion {
     }
 
     
-    public function anularComprobanteAtencion($motivo_anulacion, $incluye_atencion = true){
+    public function anularComprobanteAtencion($motivo_anulacion, $incluye_atencion = true, $id_documento_electronico = null){
         try {
 
             $this->beginTransaction();
-
 
             $sql = "SELECT fecha_atencion, ci.estado_caja
                     FROM atencion_medica am
@@ -599,17 +598,39 @@ class AtencionMedica extends Conexion {
             $sql = "SELECT iddocumento_electronico, id_atencion_medica, fecha_emision 
                             FROM documento_electronico 
                             WHERE id_atencion_medica = :0 AND estado_mrcb AND estado_anulado = 0";
-            $existeComprobanteAsociado = $this->consultarFila($sql, [$this->id_atencion_medica]);
+            $existeComprobanteAsociado = $this->consultarFilas($sql, [$this->id_atencion_medica]);
+            $cantidadComprobantesAsociado = count($existeComprobanteAsociado);
 
             $nota_credito_comprobante  = "";
             $objComprobante = null;
-            if ($existeComprobanteAsociado != false){
-                include_once 'DocumentoElectronico.clase.php';
-                $objComprobante = new DocumentoElectronico($this->getDB());  
-                $objComprobante->id_usuario_registrado = $idUsuarioAnulado;
+            $comprobanteAsociado = null;
 
-                $objComprobante->anularComprobanteDesdeAtencionMedica($existeComprobanteAsociado, $motivo_anulacion, $idUsuarioAnulado);                
-                $nota_credito_comprobante = ($objComprobante->serie."-".$objComprobante->numero_correlativo);
+            if ($cantidadComprobantesAsociado > 0){
+                if ($id_documento_electronico != null && $cantidadComprobantesAsociado > 1){
+                    foreach ($existeComprobanteAsociado as $key => $value) {
+                        if ($id_documento_electronico == $value["iddocumento_electronico"]){
+                            $comprobanteAsociado = $value;
+                        }
+                    }
+
+                    if ($comprobanteAsociado === null){
+                        throw new Exception("No se ha recibido id documento electrónico, y la atención tiene más de un documento electrónico.", 1);
+                    }
+                }
+
+                if ($cantidadComprobantesAsociado === 1){
+                    $comprobanteAsociado = $existeComprobanteAsociado[0];
+                }
+
+                if ($comprobanteAsociado != null){
+                    include_once 'DocumentoElectronico.clase.php';
+                    $objComprobante = new DocumentoElectronico($this->getDB());  
+                    $objComprobante->id_usuario_registrado = $idUsuarioAnulado;
+                    $objComprobante->anularComprobanteDesdeAtencionMedica($comprobanteAsociado, $motivo_anulacion, $idUsuarioAnulado);                
+                    $nota_credito_comprobante = ($objComprobante->serie."-".$objComprobante->numero_correlativo);
+                }
+
+                
             }
 
             $this->commit();

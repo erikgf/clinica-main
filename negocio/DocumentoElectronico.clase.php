@@ -1603,6 +1603,16 @@ class DocumentoElectronico extends Conexion {
                         WHERE (de.fecha_emision BETWEEN :0 AND :1) AND de.estado_mrcb
                         GROUP BY de.serie";
             $series = $this->consultarFilas($sqlSeries, [$fecha_inicio, $fecha_fin]);
+            /*
+            $sqlSeries = "SELECT de.serie, 
+                        SUM(IF(de.anulado_por_nota = 1, IF(de.idtipo_comprobante = '07', -1, 1), 0) * de.total_gravadas) as total_gravadas,
+                        SUM(IF(de.anulado_por_nota = 1, IF(de.idtipo_comprobante = '07', -1, 1), 0) * de.total_igv) as total_igv,
+                        SUM(IF(de.anulado_por_nota = 1, IF(de.idtipo_comprobante = '07', -1, 1), 0)  * de.importe_total) as importe_total
+                        FROM documento_electronico de
+                        WHERE (de.fecha_emision BETWEEN :0 AND :1) AND de.estado_mrcb
+                        GROUP BY de.serie";
+            $series = $this->consultarFilas($sqlSeries, [$fecha_inicio, $fecha_fin]);
+            */
 
             $sqlDocumentos  = "SELECT 
                     de.idtipo_comprobante,
@@ -1665,10 +1675,12 @@ class DocumentoElectronico extends Conexion {
                 $importe_total = $importe_total +  $value["importe_total"];
 
                 foreach ($comprobantes as $_k => $_v) {
-                    $total_efectivo = $total_efectivo + $_v["pago_efectivo"];
-                    $total_credito = $total_credito + $_v["pago_credito"];
-                    $total_tarjeta = $total_tarjeta + $_v["pago_tarjeta"];
-                    $total_deposito = $total_deposito + $_v["pago_deposito"];
+                    //if ($_v["estado_anulado"] == "0" && $_v["idtipo_comprobante"] <> '07'){
+                        $total_efectivo = $total_efectivo + $_v["pago_efectivo"];
+                        $total_credito = $total_credito + $_v["pago_credito"];
+                        $total_tarjeta = $total_tarjeta + $_v["pago_tarjeta"];
+                        $total_deposito = $total_deposito + $_v["pago_deposito"];
+                    //}
                 }
 
                 $todos_comprobantes = array_merge($todos_comprobantes, $comprobantes);
@@ -1687,17 +1699,16 @@ class DocumentoElectronico extends Conexion {
                 "total_deposito"=>$total_deposito
             ];
 
-
             $sql = "SELECT 
-                    COALESCE(SUM(IF(de.idtipo_comprobante = '07', -1, 1) * de.importe_total), 0)
+                    COALESCE(SUM(IF(de.anulado_por_nota = 1, IF(de.idtipo_comprobante = '07', -1, 1), 0)  * de.importe_total), 0)
                     FROM documento_electronico de 
                     LEFT JOIN atencion_medica am ON de.id_atencion_medica = am.id_atencion_medica
                     LEFT JOIN caja c ON c.serie_boleta = de.serie
                     LEFT JOIN caja c2 ON c2.serie_factura = de.serie
-                    WHERE (de.fecha_emision BETWEEN :0 AND :1) AND am.id_atencion_medica IS NULL and c.id_caja IS NULL AND c2.id_caja is NULL";
+                    WHERE (de.fecha_emision BETWEEN :0 AND :1) AND am.id_atencion_medica IS NULL and c.id_caja IS NULL AND c2.id_caja is NULL AND de.estado_mrcb";
             $valoresComprobantesSinAtenciones = $this->consultarValor($sql, [$fecha_inicio, $fecha_fin]);
 
-            $otros_totales["total_efectivo"] =  $otros_totales["total_efectivo"] + $valoresComprobantesSinAtenciones;
+            $otros_totales["total_credito"] =  $otros_totales["total_credito"] + $valoresComprobantesSinAtenciones;
             return ["series"=>$series, "todos_comprobantes"=>$todos_comprobantes, "totales"=>$totales, "otros_totales"=>$otros_totales];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
@@ -1796,7 +1807,7 @@ class DocumentoElectronico extends Conexion {
                         
                         $sql  = "UPDATE atencion_medica SET ".($anular_por_rpta_sunat ? "DE_ESTADO_ANULADO = '".$estado_anulado."'," : "")." DE_CDR_ESTADO = '".$cdr_estado."' WHERE DE_ID = '".$respuesta->id."'";
                         $this->consultaRaw($sql);
-                    }
+                    } 
                 }
         
                 $this->commit();

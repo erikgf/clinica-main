@@ -21,7 +21,7 @@ include_once "../gestion-atenciones/prt.modal.canjearcomprobante.php";
 <script type="text/javascript" src="../../componentes/EnviadorSUNAT.componente.js" defer></script>
 <script type="text/javascript" src="../gestion-atenciones/canjear.comprobante.1.js" defer></script>
 <script type="text/javascript" src="index.veratencion_1.js" defer></script>
-<script type="text/javascript" src="index.2.js" defer></script>
+<script type="text/javascript" src="index.3.js" defer></script>
 
 <!--
 <script type="text/javascript" src="index.paciente.js" defer></script>
