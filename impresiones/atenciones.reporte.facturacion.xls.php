@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 $RUTA_SERVER = "http://192.168.1.100/sistema_dpi/controlador/api.documento.electronico.controlador.php";
+//$RUTA_SERVER = "http://localhost/dpi/controlador/api.documento.electronico.controlador.php";
 
 if (!Sesion::obtenerSesion()){
   echo "No tiene permisos suficientes para ver esto.";

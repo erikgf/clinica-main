@@ -138,11 +138,11 @@ try {
         case "anular_solo_comprobante_atencion":
             $obj->id_atencion_medica = Funciones::sanitizar($_POST["p_id_atencion_medica"]);
             $motivo_anulacion = Funciones::sanitizar($_POST["p_motivo_anulacion"]);
+            $id_documento_electronico = Funciones::sanitizar($_POST["p_id_documento_electronico"]);
 
-            $data = $obj->anularComprobanteAtencion($motivo_anulacion, false);
+            $data = $obj->anularComprobanteAtencion($motivo_anulacion, false, $id_documento_electronico);
             Funciones::imprimeJSON("200", "OK", $data);
         break;
-
 
         case "obtener_atencion_medica_para_saldos":
             $obj->numero_acto_medico = Funciones::sanitizar($_POST["p_numero_acto_medico"]);

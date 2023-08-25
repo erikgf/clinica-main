@@ -62,7 +62,7 @@ var GestionAtenciones = function() {
             var $btn = this,
                 dataset = $btn.dataset;
             e.preventDefault();
-            anularComprobante(dataset.id, dataset.cliente);
+            anularComprobante(dataset.id, dataset.cliente, dataset.iddoc);
         });
 
         $tblMovimientos.on("click", ".btn-canjearcomprobante", function (e) {
@@ -139,7 +139,7 @@ var GestionAtenciones = function() {
     }
 
     var anularMovimiento = function(id_atencion_medica,  cliente){
-        var motivo_anulacion = prompt("Ingrese el motivo de la anulación de ATENCIÓN, estoy incluirá el comprobante, del cliente "+cliente);
+        var motivo_anulacion = prompt("Ingrese el motivo de la anulación de ATENCIÓN, esto incluirá el comprobante, del cliente "+cliente);
 
          if (motivo_anulacion == null){
             return;
@@ -181,9 +181,8 @@ var GestionAtenciones = function() {
         window.open("../../../impresiones/atenciones.reporte.xls.php?fi="+$txtFechaInicio.val()+"&ff="+$txtFechaFin.val(),"_blank")
     };
 
-    var anularComprobante = function(id_atencion_medica,  cliente){
+    var anularComprobante = function(id_atencion_medica,  cliente, id_documento_electronico){
         var motivo_anulacion = prompt("Ingrese el motivo de la anulación del COMPROBANTE, la atención seguriá activa y su comprobante será el TICKET. Cliente "+cliente);
-
 
         if (motivo_anulacion == null){
             return;
@@ -200,7 +199,8 @@ var GestionAtenciones = function() {
             dataType: 'json',
             data : {
                 p_id_atencion_medica : id_atencion_medica,
-                p_motivo_anulacion : motivo_anulacion
+                p_motivo_anulacion : motivo_anulacion,
+                p_id_documento_electronico: id_documento_electronico
             },
             delay: 250,
             success: function(datos){
