@@ -54,7 +54,13 @@ try {
             $obj->generar_xml = true;
             $obj->firmar_comprobante = true;
 
-            Funciones::imprimeJSON("200", "OK", $tc == "01" ? $obj->generarFactura() : $obj->generarBoleta());
+            if ($tc == "01" || $tc == "03"){
+                $data = $tc == "01" ? $obj->generarFactura() : $obj->generarBoleta();
+            } else {
+                $data = $obj->generarComprobante($tc);
+            }
+
+            Funciones::imprimeJSON("200", "OK", $data );
         break;
 
         case "consultar_documento_cliente":

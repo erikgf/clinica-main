@@ -172,6 +172,11 @@ class Funciones {
 //------    PHP Version 4.3.1 o mayores (aunque podría funcionar en versiones anteriores, tendrías que probar)
        public static function numtoletras($xcifra, $tipo_moneda = "PEN")
         {
+
+            if ($tipo_moneda == "" || $tipo_moneda == null){
+                $tipo_moneda = "PEN";
+            }
+            
             $xarray = array(0 => "Cero",
                 1 => "UN", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE",
                 "DIEZ", "ONCE", "DOCE", "TRECE", "CATORCE", "QUINCE", "DIECISEIS", "DIECISIETE", "DIECIOCHO", "DIECINUEVE",
@@ -181,7 +186,7 @@ class Funciones {
         //
             $arreglo_monedas = [
                 "PEN"=>"SOLES",
-                "USD"=>"DOLARES"
+                "USD"=>"DOLARES AMERICANOS"
             ];
 
             $cadena_moneda = $arreglo_monedas[$tipo_moneda];

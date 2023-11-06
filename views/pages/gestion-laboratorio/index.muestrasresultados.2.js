@@ -32,6 +32,7 @@ var Atenciones = function() {
         tplExamenes;
 
     var KEY_LS_TIPO_FILTRO = "dmi_filtro_estado_examen_laboratorio";
+    var CONSULTANDO = false;
 
     this.getTemplates = function(){
         var $reqAtenciones =  $.get("template.atenciones.php");
@@ -105,7 +106,7 @@ var Atenciones = function() {
                 Util.setFecha($txtFechaInicio, new Date());
             }
 
-            listarAtenciones();
+            //listarAtenciones();
         });
 
         $txtFechaFin.on("change", function(e){
@@ -113,14 +114,14 @@ var Atenciones = function() {
                 Util.setFecha($txtFechaFin, new Date());
             }
 
-            listarAtenciones();
+            //listarAtenciones();
         }); 
 
 
         $txtTipoFiltro.on("change", function(e){
             e.preventDefault();
             localStorage.setItem(KEY_LS_TIPO_FILTRO, this.value);
-            listarAtenciones();
+           // listarAtenciones();
         }); 
 
         $btnActualizarAtenciones.on("click", function(e) {
@@ -300,6 +301,15 @@ var Atenciones = function() {
     };
 
     var listarAtenciones = function(){
+        if (CONSULTANDO){
+            return;
+        }
+
+        var tmpHtml = $btnActualizarAtenciones.html();
+        $btnActualizarAtenciones.prop("disabled", true);
+        $btnActualizarAtenciones.html("<span class='fa fa-spin fa-spinner'></span>");
+        CONSULTANDO = true;
+
         $.ajax({ 
             url : VARS.URL_CONTROLADOR+"atencion.medica.controlador.php?op=listar_atenciones_laboratorio",
             type: "POST",
@@ -316,6 +326,11 @@ var Atenciones = function() {
             error: function (request) {
                 toastr.error(request.responseText);
                 return;
+            },
+            complete: ()=>{
+                CONSULTANDO = false;
+                $btnActualizarAtenciones.prop("disabled", false);
+                $btnActualizarAtenciones.html(tmpHtml);
             },
             cache: true
             }

@@ -290,6 +290,10 @@ var FacturacionConvenio = function(){
             }
 
         });
+
+        $txtIdTipoMotivo.on("change", function(){
+            recalcularTotal();
+        });
     };
 
     this.nuevoRegistro = function(){
@@ -562,6 +566,13 @@ var FacturacionConvenio = function(){
     var recalcularTotal = function(){
         var $trs = $tbdDetalle.find("tr");
         var total = 0, gravadas = 0;
+
+        if ($txtIdTipoMotivo.val() === '03'){ //CORECCION POR DESCRIPCION
+            $lblTotal.html("0.00");
+            $lblSubtotal.html("0.00");
+            $lblIGV.html("0.00");
+            return;
+        }
 
         $trs.each(function(i,o){
             total += parseFloat(o.children[4].innerHTML);

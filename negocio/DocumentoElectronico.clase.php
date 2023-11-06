@@ -580,7 +580,7 @@ class DocumentoElectronico extends Conexion {
                         precio_venta_unitario as txtPRECIO_DET,
                         valor_venta_unitario as txtPRECIO_SIN_IGV_DET,
                         valor_venta as txtIMPORTE_DET,
-                        -- subtotal as txtIMPORTE_DET,
+                        IF(total_igv = 0, 0, valor_venta) as txtIMPORTE_DET_IGV,
                         total_igv as txtIGV,
                         total_isc as txtISC,
                         idtipo_afectacion as txtCOD_TIPO_OPERACION,
@@ -1056,6 +1056,17 @@ class DocumentoElectronico extends Conexion {
 
             $this->forma_pago = $this->forma_pago == NULL ? "1": $this->forma_pago;
 
+            $esNotaSinModificarTotales = $this->id_tipo_comprobante === '07' && $this->cod_tipo_motivo_nota === '03';
+
+            if ($esNotaSinModificarTotales){
+                $this->descuento_global = "0.00";
+                $this->importe_total = "0.00";
+            }
+
+            if (in_array($this->id_tipo_comprobante, ["07","08"])){
+                $this->tipo_moneda = $this->consultarValor("SELECT idtipo_moneda FROM documento_electronico WHERE iddocumento_electronico = :0 AND estado_mrcb", [$this->id_documento_electronico_previo]);
+            }
+
             $campos_valores = [
                 "idcliente"=>$this->Cliente["id_cliente"],
                 "idtipo_documento_cliente"=>$this->Cliente["id_tipo_documento"],
@@ -1076,7 +1087,7 @@ class DocumentoElectronico extends Conexion {
                 "condicion_pago"=>$this->forma_pago,
                 "importe_credito"=>$this->forma_pago == "1" ? "0.00": $this->importe_total,
                 "importe_total"=>$this->importe_total,
-                "total_letras"=>Funciones::numtoletras($this->importe_total),
+                "total_letras"=>Funciones::numtoletras($this->importe_total, $this->tipo_moneda == NULL ? "PEN" : $this->tipo_moneda),
                 "observaciones"=>$this->observaciones == "" ? NULL : $this->observaciones,
                 "id_atencion_medica"=>$this->id_atencion_medica,
                 "id_usuario_registrado"=>$this->id_usuario_registrado,
@@ -1162,23 +1173,27 @@ class DocumentoElectronico extends Conexion {
                 $o = $this->detalle[$i];
                 $o->cantidad = $o->cantidad == NULL ? "1" : $o->cantidad;
                 $subtotal = $o->precio_unitario * $o->cantidad;
+                $igv = 0.00;
                 
                 if ($o->idtipo_afectacion < 20){
                     $valor_venta_unitario = $o->precio_unitario / (1 + IGV);
                     $valor_venta = $valor_venta_unitario * $o->cantidad;
 
-                    $total_gravadas += $valor_venta;
-                    $igv = $subtotal - $valor_venta;
+                    if (!$esNotaSinModificarTotales){
+                        $total_gravadas += $valor_venta;
+                        $igv = $subtotal - $valor_venta;
+                    }
+                    
                 } else { //Incluye el 20 - 40 sin igv
                     $valor_venta_unitario = $o->precio_unitario;
                     $valor_venta  = $o->precio_unitario * $o->cantidad;
-                    $igv = 0.00;
                     if ($o->idtipo_afectacion < 30){
                         $total_exoneradas += $valor_venta;
                     } else {
                         $total_infafectas += $valor_venta;
                     }
                 }
+                
                 array_push($valores_detalle, [
                     $this->id_documento_electronico,
                     $o->id_servicio,
