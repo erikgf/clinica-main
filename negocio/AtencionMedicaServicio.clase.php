@@ -1089,7 +1089,7 @@ class AtencionMedicaServicio extends Conexion {
                     INNER JOIN caja ca oN ca.id_caja = ci.id_caja
                     WHERE am.estado_mrcb AND amd.estado_mrcb
                             AND DATE(am.fecha_atencion) BETWEEN :0 AND :1
-                            AND cs.es_mostrado_asistentes = 1
+                            AND (cs.es_mostrado_asistentes = 1 OR cs.id_categoria_servicio iN (10))
                             $sqlWhereSede
                             $sqlWhereEstado
                             $sqlWhereAreas

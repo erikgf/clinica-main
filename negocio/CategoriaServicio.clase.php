@@ -41,7 +41,7 @@ class CategoriaServicio extends Conexion {
                             WHERE estado_validez = 'A' AND estado_mrcb AND fecha_fin IS NULL 
                             AND id_categoria_servicio = cs.id_categoria_servicio),'0.00') as porcentaje_comision
                     FROM categoria_servicio cs
-                    WHERE estado_mrcb AND cs.es_mostrado_asistentes = 1
+                    WHERE estado_mrcb AND (cs.es_mostrado_asistentes = 1 OR cs.id_categoria_servicio iN (10))
                     ORDER BY cs.descripcion";
                     
             $data =  $this->consultarFilas($sql);
