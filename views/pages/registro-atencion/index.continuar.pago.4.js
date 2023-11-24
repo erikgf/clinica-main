@@ -59,8 +59,8 @@ var ContinuarPago = function() {
 
     var tplServicioAgregadoContinuar;
     var SERIES = null;
-    var OBJETO_ATENCION;
     var ESTOY_ABRIENDO_MODAL_CONFIRMAR = false;
+    var atencionPorCredito = false;
 
     var getTemplates = function(){
         $.get("template.servicioagregado.continuarpago.php", function(result, state){
@@ -468,6 +468,11 @@ var ContinuarPago = function() {
 
             aplicarDescuentoPorConvenio();
         });
+
+        $modalContinuarPago.on("hidden.bs.modal", (e)=>{
+            OBJETO_ATENCION = null;
+            atencionPorCredito = false;
+        })
     };
 
     var mostrarSerie = function(deboMostrarSerie){
@@ -491,18 +496,28 @@ var ContinuarPago = function() {
 
         let total = parseFloat($lblCajaTotal.html());
         let pagoDe = efectivo + deposito + tarjeta;
+        let credito;
 
         if(pagoDe>total){
             Util.forceTwoDecimals(pagoDe - total, $lblCajaVuelto);
-            Util.forceTwoDecimals("0", $lblCajaCredito);
+            credito = "0";
             $blkCajaVuelto.show();
         } else {
+            credito  = parseFloat(total - pagoDe);
             Util.forceTwoDecimals("0", $lblCajaVuelto);
-            Util.forceTwoDecimals(total - pagoDe, $lblCajaCredito);
             $blkCajaVuelto.hide();
         }
-     
+
+        Util.forceTwoDecimals(credito, $lblCajaCredito);
         Util.forceTwoDecimals(total, $lblCajaTotal);
+
+        const cambioCredito = credito > 0;
+        if (atencionPorCredito == cambioCredito){
+            return;
+        }
+
+        atencionPorCredito = cambioCredito;
+        checkCampañaServicios();
     };
 
     this.obtenerCajas = function(){
@@ -576,7 +591,7 @@ var ContinuarPago = function() {
         );
     };
 
-    var renderServicios = function(data_servicios){        
+    this.renderServicios = function(data_servicios){        
         $tblServicios.html(tplServicioAgregadoContinuar(data_servicios));
 
         $("#lbl-cantidadservicios").html("("+data_servicios.length+")");
@@ -996,8 +1011,6 @@ var ContinuarPago = function() {
         placeholder:"Seleccionar",
     });
 
-    
-
     /*Función que permite activar los protocolos de la interfaz, teniendo como base principal el OBJETO_ATENCION.*/
     this.correr = function(objAtencion){
         if (objAtencion == undefined || objAtencion == null){
@@ -1026,7 +1039,7 @@ var ContinuarPago = function() {
             $txtSerie.val("");
         }
 
-        renderServicios(objAtencion.servicios);
+        this.renderServicios(objAtencion.servicios);
 
         var total = 0;
         if (objAtencion.objDescuento){

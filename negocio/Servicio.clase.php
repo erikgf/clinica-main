@@ -239,6 +239,7 @@ class Servicio extends Conexion {
                     idtipo_afectacion,
                     idunidad_medida,
                     precio_venta_sin_igv as precio_sin_IGV,
+                    id_categoria_servicio,
                     COALESCE(arreglo_perfil,'') as arreglo_perfil
                     FROM servicio se 
                     WHERE se.estado_mrcb AND se.id_servicio IN (".$servicio["arreglo_perfil"].")";

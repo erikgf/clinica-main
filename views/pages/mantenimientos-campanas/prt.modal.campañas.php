@@ -44,6 +44,27 @@
                             </select>
                         </div>
                     </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="txt-campaña-tipopago">Tipo Pago Válido (<span style="color:red">*</span>)</label>
+                            <select class="form-control" id="txt-campaña-tipopago" required>
+                                <option value="0">NO CRÉDITO</option>
+                                <option value="1">INCLUYE CRÉDITO</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="txt-campaña-montominimo">Monto Mínimo</label>
+                            <input type="number" class="form-control " required id="txt-campaña-montominimo"/>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="txt-campaña-montomaximo">Monto Máximo</label>
+                            <input type="number" class="form-control " required id="txt-campaña-montomaximo"/>
+                        </div>
+                    </div>
                 </div>
 
                 <hr>

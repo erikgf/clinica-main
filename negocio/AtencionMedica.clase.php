@@ -109,14 +109,11 @@ class AtencionMedica extends Conexion {
             $resPaciente  = $resPaciente["datos"];
 
             /* Campaña */
-            $sql = "SELECT id_campaña FROM campaña WHERE :0 BETWEEN fecha_inicio and fecha_fin and estado_mrcb LIMIT 1";
+            $sql = "SELECT id_campaña, monto_maximo, monto_minimo, tipo_pago
+                    FROM campaña 
+                    WHERE :0 BETWEEN fecha_inicio and fecha_fin and estado_mrcb LIMIT 1";
             $campaña =  $this->consultarFila($sql, [$fecha_hoy]);
 
-            if ($campaña == false){
-                $id_campaña = NULL;
-            } else {
-                $id_campaña = $campaña["id_campaña"];
-            }
 
             if ($this->servicios == NULL || $this->servicios == ""){
                 throw new Exception("No hay servicios válidos enviados.", 1);
@@ -258,7 +255,23 @@ class AtencionMedica extends Conexion {
             if ($objCreditoValido["r"] == false){
                 throw new Exception("Esta atencion contiene un monto de credito SUPERIOR al ".($this->MAX_CREDITO * 100)."% del total de la venta. Maximo permitido: ".number_format($objCreditoValido["monto_maximo"],2)." soles");
             }
+
+            if ($campaña == false){
+                $id_campaña = NULL;
+            } else {
+
+                if ($campaña["tipo_pago"] == 0){
+                    if ($this->pago_credito <= 0){
+                        $id_campaña = $campaña["id_campaña"];
+                    } else {
+                        $id_campaña = NULL;
+                    }
+                } else {
+                    $id_campaña = $campaña["id_campaña"];
+                }
             
+            }
+
             $this->obtenerNumeroActoMedicoCorrelativo();
 
             $campos_valores = [

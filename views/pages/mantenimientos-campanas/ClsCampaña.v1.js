@@ -15,6 +15,10 @@ var Campaña = function(){
         $btnEliminar,
         $btnGuardar;
 
+    var $txtMontoMinimo,
+        $txtMontoMaximo,
+        $txtTipoPago;
+
     var tplCampañas,
         $tblCampañas,
         $tbdCampañas;
@@ -69,6 +73,10 @@ var Campaña = function(){
 
         $overlayTabla = $("#overlay-tbl-campañas");
         $btnActualizar =  $("#btn-actualizar-campañas");
+
+        $txtMontoMinimo = $("#txt-campaña-montominimo");
+        $txtMontoMaximo  = $("#txt-campaña-montomaximo");
+        $txtTipoPago  = $("#txt-campaña-tipopago");
     };
 
     this.setEventos = function () {
@@ -141,6 +149,7 @@ var Campaña = function(){
 
         $tblDescuentos.empty();
         $txtIdCampaña.val("");
+        $txtTipoPago.val("0");
     };
 
     this.leer = function(id){
@@ -182,6 +191,10 @@ var Campaña = function(){
         $txtFechaInicio.val(data.fecha_inicio);
         $txtFechaFin.val(data.fecha_fin);
         $txtSede.val(data.id_sede);
+
+        $txtTipoPago.val(data.tipo_pago);
+        $txtMontoMinimo.val(data.monto_minimo);
+        $txtMontoMaximo.val(data.monto_maximo);
         
         $btnEliminar.show();
     };
@@ -252,6 +265,9 @@ var Campaña = function(){
                 p_fecha_inicio: $txtFechaInicio.val(),
                 p_fecha_fin: $txtFechaFin.val(),
                 p_id_sede : $txtSede.val(),
+                p_monto_maximo: $txtMontoMaximo.val(),
+                p_monto_minimo: $txtMontoMinimo.val(),
+                p_tipo_pago: $txtTipoPago.val(),
                 p_descuento_categorias_json : JSON.stringify(arregloJSON)
             },
             success: function(result){

@@ -63,6 +63,7 @@ var RegistroAtencion = function() {
             let element = $this.parentElement.parentElement.parentElement;
             element.parentNode.removeChild(element);
 
+            checkCampañaServicios();
             getSubtotalOfEach();
         });
 
@@ -158,6 +159,7 @@ var RegistroAtencion = function() {
                 success: function(xhr){
                     if(xhr.rpt){
                         var objServicio = xhr.datos;
+
                         if (objServicio.servicios_perfil){
                             agregarServicio(objServicio.servicios_perfil);
                         } else {
@@ -173,7 +175,7 @@ var RegistroAtencion = function() {
                 },
                 error: function (request) {
                     toastr["error"](request.responseText);
-                    return
+                    return;
                 },
                 cache: true
             });
@@ -255,9 +257,14 @@ var RegistroAtencion = function() {
                     var dataset = o.dataset;
                     var objServicio = JSON.parse(dataset.serviciojson);
                     var subtotal = $o.find('.lbl-subtotalitem').html();
+                    var $inputPrecios = $o.find('input.precio-unitario');
                     objServicio.subtotal = subtotal;
                     objServicio.cantidad  = 1;
                     objServicio.precio_unitario = subtotal * objServicio.cantidad;
+                    objServicio.cam_precio_unitario = $inputPrecios.data("campana");
+                    objServicio.real_precio_unitario = $inputPrecios.data("real");
+                    objServicio.posible_campaña = $o.data("posiblecam");
+                    objServicio.con_campaña = $o.data("concampana");
                     objServicio.descuento_total  = 0.00;
 
                     total += parseFloat(Math.round10(objServicio.subtotal, -2));
@@ -434,6 +441,11 @@ var RegistroAtencion = function() {
                 data_servicios = data_servicios.map((servicio)=>{
                     let precio_unitario = servicio.precio_unitario,
                         precio_sin_IGV = servicio.precio_sin_IGV,
+                        real_precio_unitario = servicio.precio_unitario,
+                        real_precio_sin_IGV = servicio.precio_sin_IGV,
+                        cam_precio_unitario = servicio.precio_unitario,
+                        cam_precio_sin_IGV = servicio.precio_sin_IGV,
+                        posible_campaña = 0,
                         con_campaña = false;
 
                     for (let index = 0; index < objCampaña.descuento_categorias_json.length; index++) {
@@ -444,7 +456,10 @@ var RegistroAtencion = function() {
                                                     ? parseFloat(servicio.precio_unitario * ( 1 - element.descuento)).toFixed(2)
                                                     : parseFloat(servicio.precio_unitario - element.descuento).toFixed(2);
                                 precio_sin_IGV = parseFloat(precio_unitario * (1 - objCampaña.igv)).toFixed(2);
+                                cam_precio_unitario = precio_unitario;
+                                cam_precio_sin_IGV = precio_sin_IGV;
                                 con_campaña = true;
+                                posible_campaña = 1;
                             }
                         }
 
@@ -454,17 +469,28 @@ var RegistroAtencion = function() {
                                                     ? parseFloat(servicio.precio_unitario * ( 1 - element.descuento)).toFixed(2)
                                                     : parseFloat(servicio.precio_unitario - element.descuento).toFixed(2);
                                 precio_sin_IGV = parseFloat(precio_unitario * (1 - objCampaña.igv)).toFixed(2);
+                                cam_precio_unitario = precio_unitario;
+                                cam_precio_sin_IGV = precio_sin_IGV;
                                 con_campaña = true;
+                                posible_campaña = 1;
                             }
                         }
                     }
 
-                    return {...servicio, precio_unitario, precio_sin_IGV, con_campaña};
+
+                    return {...servicio, 
+                            con_campaña,
+                            precio_unitario, precio_sin_IGV,
+                            real_precio_unitario, real_precio_sin_IGV,
+                            cam_precio_unitario, cam_precio_sin_IGV,
+                            posible_campaña
+                        };
                 });
             }
         }
 
         $blkServicios.append(tplServicioAgregado(data_servicios));
+        checkCampañaServicios();
     };
 
     var getSubtotal = function(){
@@ -681,7 +707,6 @@ var RegistroAtencion = function() {
                 p_idcaja : idCajaCached
             },
             success: function(xhr){
-                console.log(xhr);
                 const $lblNombreCampaña = $("#lbl-nombrecampaña");
                 const $divCampaña = $lblNombreCampaña.parent().parent();
 
@@ -719,6 +744,100 @@ var RegistroAtencion = function() {
     initCampaña();
 
     return this;
+};
+
+var checkCampañaServicios = () => {
+    if (objCampaña){
+        console.log("CHECKUM");
+
+        let deboAplicar = true;
+        let totalReal = 0.00;
+        let $cards =  Array.prototype.slice.call($(".blk-servicioagregado"));
+        $cards.forEach((card)=>{
+            const $precioUnitario = card.querySelector('.precio-unitario');
+            totalReal += parseFloat($precioUnitario.dataset.real);
+        });
+
+        if (objCampaña.monto_minimo){
+            deboAplicar = totalReal >= objCampaña.monto_minimo;
+        }
+
+        if (objCampaña.monto_maximo){
+            deboAplicar = totalReal < objCampaña.monto_maximo;
+        }
+
+        if (OBJETO_ATENCION){
+            if (objCampaña.tipo_pago == 0){
+                deboAplicar = parseFloat($("#lbl-cajacredito").html()) <= 0;
+                console.log({deboAplicar})
+
+            }
+        }
+
+        actualizarCampañaServicios(deboAplicar, $cards)
+    }
+
+};
+
+var actualizarCampañaServicios = (deboAplicar,  $cards) => {
+    //Modificar $html
+    //objContinuarPago actualizarCampañaServicios
+    $cards.forEach((card)=>{
+        const posibleCampaña = card.dataset.posiblecam;
+        if (posibleCampaña == 1){
+            const $precioUnitario = card.querySelector('.precio-unitario');
+            const $nombre = card.querySelector('.nombre');
+
+            card.dataset.concampana = deboAplicar ? "true" : "false";
+            $precioUnitario.value = deboAplicar ? $precioUnitario.dataset.campana : $precioUnitario.dataset.real;
+            if (deboAplicar){
+                $nombre.classList.add("text-primary");
+                $precioUnitario.classList.add("bg-primary");                
+            } else {
+                $nombre.classList.remove("text-primary");
+                $precioUnitario.classList.remove("bg-primary");
+            }
+        }
+    });
+
+    if (OBJETO_ATENCION){
+
+        let montoTotal  = 0.00;
+
+        OBJETO_ATENCION.servicios = OBJETO_ATENCION.servicios.map(servicio=>{
+            if (servicio.posible_campaña == 0){
+                montoTotal += parseFloat(servicio.precio_unitario);
+                return servicio;
+            }
+
+            const precio_unitario = deboAplicar ? servicio.cam_precio_unitario : servicio.real_precio_unitario;
+            montoTotal += parseFloat(precio_unitario);
+            return {
+                ...servicio,
+                con_campaña : deboAplicar,
+                precio_unitario,
+                subtotal: precio_unitario
+            }
+        });
+
+        console.log({
+            serv: OBJETO_ATENCION.servicios,
+            montoTotal
+        });
+
+        objContinuarPago.renderServicios(OBJETO_ATENCION.servicios);
+
+        const actual = parseFloat($("#lbl-cajatotal").html());
+        const nuevo = parseFloat(montoTotal);
+        const diferencia = nuevo - actual;
+        const nuevoEfectivo = parseFloat($("#lbl-cajaefectivo").html()) + parseFloat(diferencia);
+
+        console.log({actual, nuevo, diferencia, nuevoEfectivo})
+
+        $("#lbl-cajatotal").html(parseFloat(nuevo).toFixed(2));
+        $("#lbl-cajaefectivo").html(nuevoEfectivo.toFixed(2));
+        $("#txt-pagoefectivo").val(nuevoEfectivo.toFixed(2));
+    }
 };
 
 

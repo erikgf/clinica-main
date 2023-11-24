@@ -59,8 +59,13 @@ try {
                 throw new Exception("No se ha enviado la sede de la campaña", 1);
             }
 
+            $obj->monto_maximo = (isset($_POST["p_monto_maximo"]) && $_POST["p_monto_maximo"] != "") ? $_POST["p_monto_maximo"] : NULL;
+            $obj->monto_minimo = (isset($_POST["p_monto_minimo"]) && $_POST["p_monto_minimo"] != "") ? $_POST["p_monto_minimo"] : NULL;
+            $obj->tipo_pago = isset($_POST["p_tipo_pago"]) ? $_POST["p_tipo_pago"] : NULL;
+            if ($obj->tipo_pago == NULL || $obj->tipo_pago == ""){
+                throw new Exception("No se ha enviado el tipo de pago válido de la campaña", 1);
+            }
             $obj->descuento_categorias_json = isset($_POST["p_descuento_categorias_json"]) ? $_POST["p_descuento_categorias_json"] : '[]';
-            
             
             $data = $obj->guardar();
             Funciones::imprimeJSON("200", "OK", $data);

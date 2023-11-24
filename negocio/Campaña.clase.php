@@ -8,11 +8,14 @@ class Campaña extends Conexion {
     public $id_campaña;
     public $nombre;
     public $descuento_general;
-    public $desripcion;
+    public $descripcion;
     public $fecha_inicio;
     public $fecha_fin;
     public $descuento_categorias_json;
     public $id_sede;
+    public $monto_maximo;
+    public $monto_minimo;
+    public $tipo_pago;
 
     public $id_usuario_registrado;
 
@@ -21,7 +24,7 @@ class Campaña extends Conexion {
 
             $dia = date("Y-m-d");
 
-            $sql = "SELECT nombre, descuento_general, descuento_categorias_json, :1 as igv
+            $sql = "SELECT nombre, descuento_general, descuento_categorias_json, :1 as igv, monto_minimo, monto_maximo, tipo_pago
                     FROM campaña
                     WHERE :0 BETWEEN fecha_inicio and fecha_fin and estado_mrcb 
                         AND id_sede IN (SELECT id_sede FROM caja WHERE id_caja = :2 AND estado_mrcb)
@@ -42,7 +45,8 @@ class Campaña extends Conexion {
                         c.descripcion,
                         DATE_FORMAT(c.fecha_inicio, '%d-%m-%Y') as fecha_inicio,
                         DATE_FORMAT(c.fecha_fin, '%d-%m-%Y') as fecha_fin,
-                        (CURRENT_DATE BETWEEN c.fecha_inicio AND c.fecha_fin) as estado
+                        (CURRENT_DATE BETWEEN c.fecha_inicio AND c.fecha_fin) as estado,
+                        monto_minimo, monto_maximo, tipo_pago
                     FROM campaña c
                     WHERE c.estado_mrcb
                     ORDER BY fecha_inicio DESC, fecha_fin";
@@ -60,8 +64,6 @@ class Campaña extends Conexion {
 
             $this->beginTransaction();
 
-            $fecha_ahora = date("Y-m-d H:i:s");
-
             $campos_valores = [
                 "nombre"=>mb_strtoupper($this->nombre == "" ? NULL : $this->nombre,'UTF-8'),
                 "descripcion"=>mb_strtoupper($this->descripcion == "" ? NULL : $this->descripcion,'UTF-8'),
@@ -70,7 +72,10 @@ class Campaña extends Conexion {
                 "fecha_inicio"=>$this->fecha_inicio,
                 "id_sede"=>$this->id_sede,
                 "descuento_categorias_json"=>$this->descuento_categorias_json,
-                "id_usuario_registrado"=>$this->id_usuario_registrado
+                "id_usuario_registrado"=>$this->id_usuario_registrado,
+                "monto_minimo"=>$this->monto_minimo,
+                "monto_maximo"=>$this->monto_maximo,
+                "tipo_pago"=>$this->tipo_pago
             ];
 
             if ($this->id_campaña == NULL){
@@ -121,7 +126,8 @@ class Campaña extends Conexion {
                         c.descripcion,
                         c.descuento_categorias_json,
                         c.fecha_fin,
-                        c.fecha_inicio
+                        c.fecha_inicio,
+                        monto_minimo, monto_maximo, tipo_pago
                     FROM campaña c
                     WHERE c.estado_mrcb AND c.id_campaña = :0";
                     
