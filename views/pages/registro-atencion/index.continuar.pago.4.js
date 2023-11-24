@@ -470,8 +470,8 @@ var ContinuarPago = function() {
         });
 
         $modalContinuarPago.on("hidden.bs.modal", (e)=>{
-            OBJETO_ATENCION = null;
-            atencionPorCredito = false;
+            //OBJETO_ATENCION = null;
+            //atencionPorCredito = false;
         })
     };
 
@@ -1017,6 +1017,8 @@ var ContinuarPago = function() {
             toastr.error("Datos de registro da atención no válidos.");
             return;
         }
+
+        atencionPorCredito = false;
         
         $lblPacientePagar.html(objAtencion.numero_documento+ " - "+objAtencion.nombres_completos);
         $txtFechaEmision.val(objAtencion.fecha_atencion);

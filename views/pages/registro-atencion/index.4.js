@@ -748,7 +748,6 @@ var RegistroAtencion = function() {
 
 var checkCampañaServicios = () => {
     if (objCampaña){
-        console.log("CHECKUM");
 
         let deboAplicar = true;
         let totalReal = 0.00;
@@ -818,11 +817,6 @@ var actualizarCampañaServicios = (deboAplicar,  $cards) => {
                 precio_unitario,
                 subtotal: precio_unitario
             }
-        });
-
-        console.log({
-            serv: OBJETO_ATENCION.servicios,
-            montoTotal
         });
 
         objContinuarPago.renderServicios(OBJETO_ATENCION.servicios);
