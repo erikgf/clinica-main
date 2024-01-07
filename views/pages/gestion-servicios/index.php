@@ -35,7 +35,7 @@ include_once 'prt.modal.metodo.php';
 <script type="text/javascript" src="../../componentes/ExportadorCSV.componente.js" defer></script>
 
 <script type="text/javascript" src="ClsServicioGeneral.js" defer></script>
-<script type="text/javascript" src="ClsExamenLaboratorio.js" defer></script>
+<script type="text/javascript" src="ClsExamenLaboratorio.1.js" defer></script>
 <script type="text/javascript" src="index.servicios.js" defer></script>
 
 <!--
