@@ -746,16 +746,19 @@ var RegistroAtencion = function() {
     return this;
 };
 
+
 var checkCampañaServicios = () => {
     if (objCampaña){
 
         let deboAplicar = true;
         let totalReal = 0.00;
         let $cards =  Array.prototype.slice.call($(".blk-servicioagregado"));
+        let $descuento = $("#txt-descuentoenpago");
         $cards.forEach((card)=>{
             const $precioUnitario = card.querySelector('.precio-unitario');
             totalReal += parseFloat($precioUnitario.dataset.real);
         });
+        totalReal = totalReal - parseFloat($descuento.val());
 
         if (objCampaña.monto_minimo){
             deboAplicar = totalReal >= objCampaña.monto_minimo;
@@ -768,8 +771,6 @@ var checkCampañaServicios = () => {
         if (OBJETO_ATENCION){
             if (objCampaña.tipo_pago == 0){
                 deboAplicar = parseFloat($("#lbl-cajacredito").html()) <= 0;
-                console.log({deboAplicar})
-
             }
         }
 
@@ -821,12 +822,11 @@ var actualizarCampañaServicios = (deboAplicar,  $cards) => {
 
         objContinuarPago.renderServicios(OBJETO_ATENCION.servicios);
 
+        const $descuento =  $("#txt-descuentoenpago");
         const actual = parseFloat($("#lbl-cajatotal").html());
-        const nuevo = parseFloat(montoTotal);
+        const nuevo = parseFloat(montoTotal - $descuento.val());
         const diferencia = nuevo - actual;
         const nuevoEfectivo = parseFloat($("#lbl-cajaefectivo").html()) + parseFloat(diferencia);
-
-        console.log({actual, nuevo, diferencia, nuevoEfectivo})
 
         $("#lbl-cajatotal").html(parseFloat(nuevo).toFixed(2));
         $("#lbl-cajaefectivo").html(nuevoEfectivo.toFixed(2));
