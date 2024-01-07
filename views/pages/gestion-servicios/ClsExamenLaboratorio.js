@@ -94,6 +94,8 @@ var ExamenLaboratorio = function(){
 
         $btnEliminar = $("#btn-examenlaboratorio-eliminar");
         $btnGuardar = $("#btn-examenlaboratorio-guardar");
+
+        $btnExportarCSV = $("#btn-exportarcsv");
     };
 
     this.setEventos = function () {
@@ -134,6 +136,74 @@ var ExamenLaboratorio = function(){
             ajustarSegunNivel($(this));
         });
 
+        $btnExportarCSV.on("click", ()=>{
+            const exportadorCSV = new ExportadorCSV({fileName:"data_examenes_lab"});
+            const data = generarDataDesdeTablaParaExportar();
+            exportadorCSV.exportar(data);
+        });
+
+    };
+
+    const generarDataDesdeTablaParaExportar = () => {
+        const $tblBody = $tblExamenes.find("tbody tr").toArray();
+        const mapeoColumnas  = {
+            "tab": 0,
+            "descripcion_examen": 1,
+            "abrev": 2,
+            "unidad": 3,
+            "valores_referenciales": 4,
+            "metodo": 5,
+            "opc": 6
+        };
+
+        const nombreColumnas = [
+            "Examen", "Abrev.", "Unidad", "Valores Referenciales", "Metodo"
+        ];
+
+        const filas = [];
+        $tblBody.forEach(tr=>{
+            let fila = [];
+            [].slice.call(tr.children).forEach((td, j) => {
+                let cadenaBlanco = "";
+                if (j === mapeoColumnas.tab){
+                    const tabVal =  parseInt($(td).find("select option:selected").text());
+                    if (tabVal > 0){
+                        for (let index = 0; index < tabVal - 1; index++) {
+                            cadenaBlanco += "   ";
+                        }    
+                    } else {
+                        cadenaBlanco = "            ";
+                    }
+                    
+                }
+
+                if (j === mapeoColumnas.descripcion_examen){
+                    const valor =  `${cadenaBlanco}${($(td).find("input").val())}`;
+                    fila.push(valor || "");
+                    return;
+                }
+
+                if (j === mapeoColumnas.valores_referenciales){
+                    const valor =  $(td).find("textarea").val();
+                    fila.push(valor || "");
+                    return;
+                }
+
+                if (j === mapeoColumnas.abrev || 
+                    j === mapeoColumnas.unidad || 
+                    j === mapeoColumnas.metodo){
+                    const select2Data =  $(td).find("select").select2('data');
+                    const valor = select2Data.length > 0 ? select2Data[0].text : "";
+                    fila.push(valor);
+                    return;
+                }
+            })
+
+            filas.push(fila);
+        });
+
+
+        return {nombreColumnas, filas};
     };
 
     this.nuevoRegistro = function(){

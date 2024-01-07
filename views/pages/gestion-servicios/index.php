@@ -32,6 +32,8 @@ include_once 'prt.modal.metodo.php';
 
 <script type="text/javascript" src="../../componentes/PrecioVenta.componente.js" defer></script>
 <script type="text/javascript" src="../../componentes/Select.componente.js" defer></script>
+<script type="text/javascript" src="../../componentes/ExportadorCSV.componente.js" defer></script>
+
 <script type="text/javascript" src="ClsServicioGeneral.js" defer></script>
 <script type="text/javascript" src="ClsExamenLaboratorio.js" defer></script>
 <script type="text/javascript" src="index.servicios.js" defer></script>
