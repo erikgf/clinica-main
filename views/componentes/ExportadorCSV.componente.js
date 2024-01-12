@@ -7,13 +7,12 @@ const ExportadorCSV = function(data){
 
     this.exportar = ({nombreColumnas = [], filas = []}) => {
         const fullData = [nombreColumnas].concat(filas);
-        
-        let csvContent = "data:text/csv;charset=utf-8," 
-            + fullData.map(e => e.join(",")).join("\n");
+        const encoding = "data:text/csv;charset=utf-8,";  
+        const csvContent = fullData.map(e => e.join(",")).join("\n");
+       // const encodedUri = encodeURI(csvContent);
 
-        const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
+        link.setAttribute("href", encoding + escape(csvContent));
         link.setAttribute("download", this._fileName);
         document.body.appendChild(link); // Required for FF
 

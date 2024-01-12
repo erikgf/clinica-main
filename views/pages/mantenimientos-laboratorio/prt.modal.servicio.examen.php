@@ -82,7 +82,12 @@
                             </div>
                         </div>
 
-                        <h5>Descripción Examen Laboratorio</h5>
+                        <h5>
+                            Descripción Examen Laboratorio
+                            <div class="pull-right">
+                                <button class="btn btn-sm btn-primary" id="btn-exportarcsv" type="button">Exportar CSV</button>
+                            </div>
+                        </h5>
                         <table class="table table-sm" id="tbl-examenlaboratorio-examenes">
                             <thead>
                                 <th style="width:65px">Tab.</th>
