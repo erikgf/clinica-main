@@ -292,7 +292,7 @@ class DocumentoElectronico extends Conexion {
                         if ($o->idtipo_afectacion < 30){
                             $total_exoneradas += $valor_venta;
                         } else {
-                            $total_infafectas += $valor_venta;
+                            $total_inafectas += $valor_venta;
                         }
                     } 
 
@@ -631,13 +631,6 @@ class DocumentoElectronico extends Conexion {
         }
     }
 
-    private function dateDiffInDays($date1, $date2){
-        // Calculating the difference in timestamps
-        $diff = strtotime($date2) - strtotime($date1);
-        // 1 day = 24 hours
-        // 24 * 60 * 60 = 86400 seconds
-        return round($diff / 86400);
-    }
     
     public function consultarDocumentoCliente($numero_documento){
         $respuesta = [];
@@ -665,47 +658,7 @@ class DocumentoElectronico extends Conexion {
             return $respuesta;
         }
 
-		$token_cliente = F_TOKEN_PROVEEDOR; //KEY para que puedas consumir nuestra api
-		//$data['ruc_proveedor'] = F_RUC_PROVEEDOR; //Tu número de RUC, el cuál será responsable por los datos enviados en todos los json
-		$ruta = "";
-        $HOY = date("d-m-Y");
-
-        $dateDiff = $this->dateDiffInDays($HOY, F_FECHA_TOPE);
-        if ($dateDiff < 0){
-            $respuesta['respuesta'] = 'error';
-			$respuesta['titulo'] = 'Error';
-			$respuesta['data'] = '';
-			$respuesta['encontrado'] = false;
-			$respuesta['mensaje'] = 'El servicio de consulta RENIEC/SUNAT ha vencido. Fecha LIMITE: '.F_FECHA_TOPE;
-			$respuesta['errores_curl'] = "";
-            return $respuesta;
-        }
-
-		$cantidad_digitos = strlen($numero_documento);
-
-		switch($cantidad_digitos){
-			case 8:
-				$ruta = 'https://facturalahoy.com/api/persona/';
-				break;
-			case 11:
-				$ruta = 'https://facturalahoy.com/api/empresa/';
-				break;
-			default:
-			break;
-		}
-
-		if ($ruta == ""){
-			$respuesta['respuesta'] = 'error';
-			$respuesta['titulo'] = 'Error';
-			$respuesta['data'] = '';
-			$respuesta['encontrado'] = false;
-			$respuesta['mensaje'] = 'Tipo de comprobante de consulta no válido.';
-			$respuesta['errores_curl'] = "";
-
-			return $respuesta;
-		}
-
-		$ruta .= $numero_documento.'/'.$token_cliente;
+		$ruta = F_URL_RENIECSUNAT."?nd=".$numero_documento;
 
 		$curl = curl_init();
 		curl_setopt_array($curl, array(
@@ -1190,7 +1143,7 @@ class DocumentoElectronico extends Conexion {
                     if ($o->idtipo_afectacion < 30){
                         $total_exoneradas += $valor_venta;
                     } else {
-                        $total_infafectas += $valor_venta;
+                        $total_inafectas += $valor_venta;
                     }
                 }
                 
@@ -1198,7 +1151,7 @@ class DocumentoElectronico extends Conexion {
                     $this->id_documento_electronico,
                     $o->id_servicio,
                     ($i+1),
-                    $o->idunidad_medida == NULL ? $this->idunidad_medida : "ZZ",
+                    $o->idunidad_medida == NULL ? "ZZ" : $o->idunidad_medida,
                     $o->cantidad,
                     $o->nombre_servicio,
                     $o->precio_unitario,
@@ -1238,240 +1191,6 @@ class DocumentoElectronico extends Conexion {
             return ["id_documento_electronico"=>$this->id_documento_electronico, 
                     "total_exoneradas"=>$total_exoneradas, "total_gravadas"=> $total_gravadas,
                     "total_inafectas"=>$total_inafectas, "total_igv"=>$total_igv];
-        } catch (Exception $exc) {
-            throw new Exception($exc->getMessage(), 1);
-        }
-    }
-
-    public function generarResumenDiario($fecha_inicio, $fecha_fin){
-        try {
-
-            $this->beginTransaction();
-
-            $this->fecha_ahora = date("Y-m-d H:i:s");
-            $fechaGeneracion = date("Y-m-d");
-            $codigo = "RC";
-
-            $sql = "SELECT distinct(de.fecha_emision)  as fecha_emision,
-                        (SELECT  COALESCE(MAX(rd.secuencia) + 1, 1) 
-                        FROM documento_electronico_resumen_diario rd 
-                        WHERE rd.estado_mrcb and rd.fecha_emision = de.fecha_emision) as secuencia
-                        FROM documento_electronico de                     
-                        WHERE de.idtipo_comprobante IN ('03','07','08') AND 
-                            de.estado_mrcb AND (de.fecha_emision BETWEEN :0 and :1)";
-            $objFechas = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
-
-            foreach ($rango_fechas as $key => $objFechas) {
-                $fechaEmision = $objResumen["fecha_emision"];
-                $serie = str_replace("-","",$fechaEmision);
-                $secuencia = $objResumen["secuencia"];
-
-                $sqlComprobantes = "SELECT 
-                                    CONCAT(de.serie,'-', LPAD(de.numero_correlativo,6,'0')) as NRO_COMPROBANTE,
-                                    de.serie as SERIE_COMPROBANTE,
-                                    de.numero_correlativo as CORRELATIVO_COMPROBANTE,
-                                    de.idtipo_comprobante as TIPO_COMPROBANTE,
-                                    de.idtipo_moneda as COD_MONEDA,
-                                    de.numero_documento_cliente as NRO_DOCUMENTO,
-                                    de.idtipo_documento_cliente as TIPO_DOCUMENTO,
-                                    de.idtipo_comprobante_modifica as TIPO_COMPROBANTE_REF,
-                                    COALESCE(CONCAT(de.serie_documento_modifica,'-',de.numero_documento_modifica),'') as NRO_COMPROBANTE_REF,
-                                    COALESCE(de.serie_documento_modifica,'') as SERIE_COMPROBANTE_REF,
-                                    COALESCE(de.numero_documento_modifica,'') as CORRELATIVO_COMPROBANTE_REF,
-                                    '1' as STATUS,
-                                    de.total_igv as IGV,
-                                    de.total_isc as ISC,
-                                    de.total_otro_imp as OTROS,
-                                    de.importe_total as TOTAL,
-                                    de.total_gravadas as GRAVADA,
-                                    de.total_inafectas as INAFECTO,
-                                    de.total_exoneradas as EXONERADO,
-                                    '0.00' as EXPORTACION,
-                                    '0.00' as GRATUITAS
-                                    FROM documento_electronico de 
-                                    WHERE de.fecha_emision = :0 AND de.estado_mrcb 
-                                        AND de.idtipo_comprobante IN ('03','07','08') AND de.serie LIKE 'B%'
-                                        AND cdr_estado IS NULL AND estado_sunat = 0";
-                
-                $comprobantes = $this->consultarFilas($sqlComprobantes, [$fechaEmision]);
-
-                if (count($comprobantes) <= 0 ){
-                    continue;
-                }
-
-                $campos_valores = [
-                    "codigo" => $codigo,
-                    "serie"=>$serie,
-                    "secuencia"=>$secuencia,
-                    "fecha_emision"=>$fechaEmision,
-                    "fecha_generacion"=>$fechaGeneracion
-                ];
-
-                $this->insert("documento_electronico_resumen_diario", $campos_valores);
-                $this->id_documento_electronico_rd = $this->getLastID();
-
-                $campos = [
-                    "id_documento_electronico_resumen_diario",
-                    "idtipo_comprobante",
-                    "serie_comprobante",
-                    "numero_correlativo_comprobante",
-                    "idtipo_documento_cliente",
-                    "numero_documento_cliente",
-                    "serie_comprobante_modificado",
-                    "numero_correlativo_comprobante_modificado",
-                    "idtipo_comprobante_modificado",
-                    "status",
-                    "id_moneda",
-                    "importe_gravadas",
-                    "importe_exoneradas",
-                    "importe_inafectas",
-                    "importe_exportacion",
-                    "importe_gratuitas",
-                    "importe_otros",
-                    "importe_igv",
-                    "importe_isc",
-                    "importe_total"
-                ];
-                $valores = [];
-                foreach ($comprobantes as $key => $value) {
-                    array_push($valores, [
-                        $this->id_documento_electronico_rd,
-                        $value["TIPO_COMPROBANTE"],
-                        $value["SERIE_COMPROBANTE"],
-                        $value["CORRELATIVO_COMPROBANTE"],
-                        $value["TIPO_DOCUMENTO"],
-                        $value["NRO_DOCUMENTO"],
-                        $value["SERIE_COMPROBANTE_REF"],
-                        $value["CORRELATIVO_COMPROBANTE_REF"],
-                        $value["TIPO_COMPROBANTE_REF"],
-                        $value["STATUS"],
-                        $value["GRAVADA"],
-                        $value["EXONERADO"],
-                        $value["INAFECTO"],
-                        $value["EXPORTACION"],
-                        $value["GRATUITAS"],
-                        $value["OTROS"],
-                        $value["IGV"],
-                        $value["ISC"],
-                        $value["TOTAL"]
-                    ]);
-                }
-
-                $this->insertMultiple("documento_electronico_resumen_diario_detalle", $campos, $valores);
-
-                if ($this->generar_xml){
-                    $objXMLComprobante = $this->generarXMLResumenDiario();
-                    $fue_generado = $objXMLComprobante["fue_generado"];
-                    $datosComprobante = $objXMLComprobante["datos_comprobante"];
-                    $respuesta = $objXMLComprobante["respuesta"];
-                }
-    
-                if ($this->firmar_comprobante){
-                    //DEBO FIRMAR EL BENDITO COMPROBANTE ?
-                    $objXMLFirmaComprobante =  $this->firmarXMLComprobante($datosComprobante);
-                    $valor_firma = $objXMLFirmaComprobante["valor_firma"];
-                    $valor_resumen = $objXMLFirmaComprobante["valor_resumen"];
-                    $respuestafirma = $objXMLFirmaComprobante["respuestafirma"];
-                }
-    
-                if ($fue_generado == "1"){
-                    $campos_valores["fue_generado"] = $fue_generado;
-                }
-    
-                if ($valor_firma != NULL){
-                    $campos_valores["fue_firmado"] = "1";
-                    $campos_valores["valor_firma"] = $valor_firma;
-                    $campos_valores["valor_resumen"] = $valor_resumen;
-                }
-    
-                if (count($campos_valores)){
-                    $this->update("documento_electronico", 
-                                $campos_valores,
-                                ["iddocumento_electronico"=>$this->id_documento_electronico]);
-                }
-
-            }
-
-            
-
-            $this->commit();
-            return  $datos;
-        } catch (Exception $exc) {
-            throw new Exception($exc->getMessage(), 1);
-        }
-    }
-
-    public function generarXMLResumenDiario(){
-        try {
-
-            if ($this->id_documento_electronico_rd == NULL || $this->id_documento_electronico_rd == ""){
-                throw new Exception("ID Resumen Diario electrónico no válido.", 1);                    
-            }
-            $datosComprobante = $this->obtenerDatosParaCreacionXMLResumenDiario();
-        
-            $data_json = json_encode($datosComprobante);
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $this->RUTA_SISTEMA_FACTURACION);
-            curl_setopt(
-                $ch, CURLOPT_HTTPHEADER, array(
-                    'Content-Type: application/json',
-                )
-            );
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $respuesta  = curl_exec($ch);
-            curl_close($ch);
-        
-            $respuesta = json_decode($respuesta);
-            
-            $fue_generado = 0;
-            if (isset($respuesta->respuesta) && $respuesta->respuesta == "ok"){
-                $fue_generado = 1;
-            }
-
-            return ["respuesta"=>$respuesta,"fue_generado"=>$fue_generado, "datos_comprobante"=>$datosComprobante];
-        } catch (Exception $exc) {
-            throw new Exception($exc->getMessage(), 1);
-        }
-    }
-
-    public function firmarXMLResumenDiario($datosComprobante){
-        try {
-
-            if ($datosComprobante == NULL){
-                if ($this->id_documento_electronico == NULL || $this->id_documento_electronico == ""){
-                    throw new Exception("ID Comprobante electrónico no válido.", 1);                    
-                }
-                $datosComprobante = $this->obtenerDatosParaFirmaXML();
-            }
-        
-            $data_json = json_encode($datosComprobante);
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $this->RUTA_SISTEMA_FACTURACION_FIRMADO);
-            curl_setopt(
-                $ch, CURLOPT_HTTPHEADER, array(
-                    'Content-Type: application/json',
-                )
-            );
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data_json);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $respuestafirma  = curl_exec($ch);
-            curl_close($ch);
-        
-            $respuestafirma = json_decode($respuestafirma);
-            $valor_firma = "";
-            $valor_resumen = "";
-        
-            if (isset($respuestafirma->respuesta) && $respuestafirma->respuesta == "ok"){
-                $valor_firma = $respuestafirma->signature_cpe;
-                $valor_resumen = $respuestafirma->hash_cpe;
-            }
-
-            return ["respuestafirma"=>$respuestafirma,"valor_firma"=>$valor_firma, "valor_resumen"=>$valor_resumen];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }

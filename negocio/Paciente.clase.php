@@ -136,9 +136,9 @@ class Paciente extends Conexion {
                     LEFT JOIN ubigeo_peru_departments dep ON p.codigo_ubigeo_departamento = dep.id
                     LEFT JOIN ubigeo_peru_provinces prov ON p.codigo_ubigeo_provincia = prov.id
                     LEFT JOIN ubigeo_peru_districts dist ON p.codigo_ubigeo_distrito = dist.id
-                    WHERE estado_mrcb  AND es_paciente AND id_paciente = :0";
+                    WHERE estado_mrcb  AND es_paciente AND numero_documento = :0";
                     
-            $data =  $this->consultarFila($sql, [$idPaciente]);
+            $data =  $this->consultarFila($sql, [$numeroDocumento]);
             return array("rpt"=>true,"datos"=>$data);
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
