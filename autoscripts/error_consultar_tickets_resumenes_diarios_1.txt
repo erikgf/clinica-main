@@ -1,3 +1,1 @@
- <br />
-<b>Warning</b>:  foreach() argument must be of type array|object, null given in <b>C:\xampp\htdocs\sistema_dpi\negocio\ResumenDiario.clase.php</b> on line <b>711</b><br />
-{"respuestas":null}
+SUNAT ESTA FUERA DE SERVICIO / SIN RESPUESTA

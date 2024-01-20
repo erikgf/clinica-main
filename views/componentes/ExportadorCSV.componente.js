@@ -8,7 +8,7 @@ const ExportadorCSV = function(data){
     this.exportar = ({nombreColumnas = [], filas = []}) => {
         const fullData = [nombreColumnas].concat(filas);
         const encoding = "data:text/csv;charset=utf-8,";  
-        const csvContent = fullData.map(e => e.join(",")).join("\n");
+        const csvContent = fullData.map(e => e.join(";")).join("\n");
        // const encodedUri = encodeURI(csvContent);
 
         const link = document.createElement("a");
