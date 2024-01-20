@@ -303,7 +303,7 @@ class Conexion{
         return $this->consulta_x($p_sql, $p_valores,"1");
     }
 
-    protected function consultarFila($p_sql, $p_valores = null) : Object
+    protected function consultarFila($p_sql, $p_valores = null)
     {
         return $this->consulta_x($p_sql, $p_valores,"1*");
     }
