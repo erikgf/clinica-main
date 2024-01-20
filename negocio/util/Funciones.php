@@ -459,5 +459,9 @@ class Funciones {
         $data_input = htmlspecialchars($data_input);
         return $data_input;
    }
+    
+    public static function checkValidDate($stringDate) {
+        return (date('Y-m-d', strtotime($stringDate)) == $stringDate);
+    }
 
 }      
