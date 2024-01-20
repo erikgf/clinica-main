@@ -2279,7 +2279,6 @@ class DocumentoElectronico extends Conexion {
         }
     }
 
-
     public function obtenerDatosParaExportarCONCAR(string $fechaInicio, string $fechaFin, int $correlativo_inicio = 1) : array{
         try {
 
