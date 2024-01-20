@@ -1570,8 +1570,10 @@ class AtencionMedica extends Conexion {
             }
 
             $sql = "SELECT 
+                        ca.descripcion as caja_atencion,
                         CONCAT(ca.serie_atencion,'-',cim.correlativo_atencion) as id_atencion_medica,
                         fecha_atencion, 
+                        hora_atencion,
                         am.monto_descuento,  
                         motivo_descuento,
                         importe_total + am.monto_descuento as importe_total,

@@ -65,18 +65,20 @@
                             <table class="table table-sm nowrap display" id="tbl-atenciones" style="width:100%">
                                 <thead style="font-size:small">
                                     <tr>
+                                        <th>CAJA</th>
                                         <th>ID RECIBO</th>
                                         <th>FECHA</th>
+                                        <th>HORA</th>
                                         <th>PACIENTE</th>
-                                        <th>SERVICIO</th>
+                                        <th>USU. REGISTRO</th>
+                                        <th>USU. VALIDADOR</th>
                                         <th>MOTIVO DESCUENTO</th>
+                                        <th>SERVICIO</th>
                                         <th>IMPORTE TOTAL</th>
                                         <th>MONTO DESCUENTO</th>
                                         <th>MONTO CANCELADO</th>
                                         <th>MONTO DEUDA</th>
                                         <th>SEDE</th>
-                                        <th>U. REGISTRO</th>
-                                        <th>U. VALIDADOR</th>
                                     </tr>
                                 </thead>
                                 <tbody style="font-size:.9em;">

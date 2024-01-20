@@ -65,18 +65,20 @@ try {
     $actualFila++;
     
     $arregloCabecera = [
+                        ["ancho"=>14,"rotulo"=>"CAJA"],
                         ["ancho"=>10,"rotulo"=>"ID RECIBO"],
                         ["ancho"=>12,"rotulo"=>"FECHA"],
+                        ["ancho"=>12,"rotulo"=>"HORA"],
                         ["ancho"=>45,"rotulo"=>"PACIENTE"],
-                        ["ancho"=>50,"rotulo"=>"SERVICIO"],
+                        ["ancho"=>30,"rotulo"=>"U. REGISTRO"],
+                        ["ancho"=>30,"rotulo"=>"U. VALIDADOR"],
                         ["ancho"=>45,"rotulo"=>"MOTIVO DESCUENTO"],
+                        ["ancho"=>50,"rotulo"=>"SERVICIO"],
                         ["ancho"=>18,"rotulo"=>"IMPORTE TOTAL"],
                         ["ancho"=>18,"rotulo"=>"MONTO DESCUENTO"],
                         ["ancho"=>18,"rotulo"=>"MONTO CANCELADO"],
                         ["ancho"=>18,"rotulo"=>"MONTO DEUDA"],
                         ["ancho"=>15,"rotulo"=>"SEDE"],
-                        ["ancho"=>30,"rotulo"=>"U. REGISTRO"],
-                        ["ancho"=>30,"rotulo"=>"U. VALIDADOR"],
                     ];
 
     foreach ($arregloCabecera as $key => $value) {
@@ -96,18 +98,21 @@ try {
 
     foreach ($data as $key => $registro) {
         $i = 0;
+        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["caja_atencion"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["id_atencion_medica"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["fecha_atencion"]);
+        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["hora_atencion"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["paciente"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["servicio_atendido"]);
+        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["usuario_registro"]);
+        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["usuario_validador"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["motivo_descuento"]);
+        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["servicio_atendido"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["importe_total"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["monto_descuento"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["importe_total"] - $registro["monto_descuento"] - $registro["monto_adeuda"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["monto_adeuda"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["sede"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["usuario_registro"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["usuario_validador"]);
+        
 
         $actualFila++;
     }
@@ -116,7 +121,7 @@ try {
 
     $writer = new Xlsx($spreadsheet);
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment; filename="'. urlencode($titulo_xls.".xlsx").'"');
+    header('Content-Disposition: attachment; filename="'. urlencode("descuentos_".$titulo_xls.".xlsx").'"');
     $writer->save('php://output');
 
 } catch (Exception $exc) {
