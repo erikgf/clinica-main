@@ -303,12 +303,12 @@ class Conexion{
         return $this->consulta_x($p_sql, $p_valores,"1");
     }
 
-    protected function consultarFila($p_sql, $p_valores = null)
+    protected function consultarFila($p_sql, $p_valores = null) : Object
     {
         return $this->consulta_x($p_sql, $p_valores,"1*");
     }
 
-    protected function consultarFilas($p_sql, $p_valores = null)
+    protected function consultarFilas($p_sql, $p_valores = null) : array
     {
         return $this->consulta_x($p_sql, $p_valores,"*");
     }

@@ -2278,5 +2278,135 @@ class DocumentoElectronico extends Conexion {
             throw new Exception($exc->getMessage());
         }
     }
+
+
+    public function obtenerDatosParaExportarCONCAR(string $fechaInicio, string $fechaFin, int $correlativo_inicio = 1) : array{
+        try {
+
+            $sql = "SELECT      
+                        de.fecha_vencimiento,
+                        de.fecha_emision,
+                        de.idtipo_moneda,
+                        de.total_gravadas,
+                        de.total_igv,
+                        de.importe_total,
+                        CONCAT(de.serie,'-',de.numero_correlativo) as serie_numero_comprobante,
+                        (CASE de.idtipo_comprobante 
+                            WHEN '01' THEN 'FT'
+                            WHEN '03' THEN 'BV'
+                            WHEN '07' THEN 'NA'
+                            ELSE ''
+                            END) as tipo_comprobante,
+                        de.numero_documento_cliente as codigo_anexo,
+                        SUBSTR(de.descripcion_cliente,  LENGTH(de.descripcion_cliente) * -1, 8) as cliente,
+                        (CASE de.idtipo_comprobante_modifica 
+                            WHEN '01' THEN 'FT'
+                            WHEN '03' THEN 'BV'
+                            ELSE ''
+                            END) as referencia_tipo_comprobante,
+                        COALESCE(CONCAT(de.serie_documento_modifica,'-',de.numero_documento_modifica),'') as referencia_serie_numero_comprobante,
+                        COALESCE(de_referencia.fecha_emision,'') as referencia_fecha,
+                        COALESCE(de_referencia.total_gravadas,'') as referencia_total_gravadas,
+                        COALESCE(de_referencia.total_igv,'') as referencia_total_igv,
+                        de.estado_anulado,
+                        de.anulado_por_nota
+                        FROM documento_electronico de
+                        LEFT JOIN documento_electronico de_referencia ON 
+                            de.idtipo_comprobante_modifica = de_referencia.idtipo_comprobante AND
+                            de.serie_documento_modifica = de_referencia.serie AND
+                            de.numero_documento_modifica = de_referencia.numero_correlativo
+                        where de.fecha_emision >= :0 AND de.fecha_emision <= :1 
+                            AND de.estado_mrcb";
+            $comprobantes = $this->consultarFilas($sql, [$fechaInicio, $fechaFin]);
+            $registros = [];
+
+            //Varaibles Contantes en la exportacion
+            $_campo = "";
+            $_subdiario = "05";
+            $_codigoMoneda = "MN";
+            $_tipoCambio = "0";
+            $_tipoConversion = "V";
+            $_flagConversionMoneda = "S";
+            $_fechaTipoCambio = "";
+            $_codigoCentroCosto = "";
+            $_importeDolares = "";
+            $_importeSoles = "";
+            $_codigoArea = "";
+            $_codigoAnexoAuxiliar = "";
+            $_medioPago = "";
+            $_nroMaqRegistradorTipoDocRef = "";
+
+            $_cuentasContables = [
+                ["cc"=>"121201", "key"=>"importe_total"],
+                ["cc"=>"401111", "key"=>"total_igv"],
+                ["cc"=>"703211", "key"=>"total_gravadas"],
+            ];
+
+            $mesTrabajo = date("m",strtotime($fechaInicio));
+
+            foreach ($comprobantes as $i => $comprobante) {
+                $glosa = $comprobante["cliente"]." ".$comprobante["tipo_comprobante"]." ".$comprobante["serie_numero_comprobante"];
+                $numeroComprobante = $mesTrabajo.str_pad(($i + $correlativo_inicio), 4, "0", STR_PAD_LEFT);
+                $esNota = !in_array($comprobante["tipo_comprobante"],["BV","FT"]);
+
+                if ($comprobante["estado_anulado"] == 1 && $comprobante["anulado_por_nota"] == 0){
+                    $comprobante["importe_total"] = "0.00";
+                    $comprobante["total_gravadas"] = "0.00";
+                    $comprobante["total_igv"] = "0.00";
+
+                    if ($esNota){
+                        $comprobante["referencia_total_gravadas"] = "0.00";
+                        $comprobante["referencia_total_igv"] = "0.00";
+                    }
+                }
+
+                foreach ($_cuentasContables as $j => $cuentaContable) {
+                    if ($esNota){
+                        $debeHaber = $cuentaContable["key"] == "importe_total"  ? "H" : "D";
+                    } else {
+                        $debeHaber = $cuentaContable["key"] == "importe_total"  ? "D" : "H";
+                    }
+
+                    array_push($registros, [
+                        "campo"=>$_campo,
+                        "subdiario"=>$_subdiario,
+                        "numero_comprobante"=>$numeroComprobante,
+                        "fecha_comprobante"=>$comprobante["fecha_emision"],
+                        "codigo_moneda"=>$_codigoMoneda,
+                        "glosa_principal"=>$glosa,
+                        "tipo_cambio"=>$_tipoCambio,
+                        "tipo_conversion"=>$_tipoConversion,
+                        "flag_conversion_moneda"=>$_flagConversionMoneda,
+                        "fecha_tipo_cambio"=>$_fechaTipoCambio,
+                        "cuenta_contable"=>$cuentaContable["cc"],
+                        "codigo_anexo"=>$comprobante["codigo_anexo"],
+                        "codigo_centro_costo"=>$_codigoCentroCosto,
+                        "debe_haber"=>$debeHaber,
+                        "importe_original"=>$comprobante[$cuentaContable["key"]],
+                        "importe_dolares"=>$_importeDolares,
+                        "importe_soles"=>$_importeSoles,
+                        "tipo_documento"=>$comprobante["tipo_comprobante"],
+                        "numero_documento"=>$comprobante["serie_numero_comprobante"],
+                        "fecha_documento"=>$comprobante["fecha_emision"],
+                        "fecha_vencimiento"=>$comprobante["fecha_vencimiento"],
+                        "codigo_area"=>$_codigoArea,
+                        "glosa_detalle"=>$glosa,
+                        "codigo_anexo_auxiliar"=>$_codigoAnexoAuxiliar,
+                        "medio_pago"=>$_medioPago,
+                        "tipo_documento_referencia"=>$comprobante["referencia_tipo_comprobante"],
+                        "numero_documento_referencia"=>$comprobante["referencia_serie_numero_comprobante"],
+                        "fecha_documento_referencia"=>$comprobante["referencia_fecha"],
+                        "nro_maq_registrado_tipo_doc_ref"=>$_nroMaqRegistradorTipoDocRef,
+                        "base_imponible_documento_referencia"=>$comprobante["referencia_total_gravadas"],
+                        "igv_documento_provision"=>$comprobante["referencia_total_igv"]
+                    ]);
+                }
+            }
+
+            return $registros;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
+        }
+    }
     
 }
