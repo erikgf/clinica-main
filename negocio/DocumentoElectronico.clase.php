@@ -2284,7 +2284,7 @@ class DocumentoElectronico extends Conexion {
 
             $sql = "SELECT      
                         de.fecha_vencimiento,
-                        de.fecha_emision,
+                        DATE_FORMAT(de.fecha_emision, '%d/%m/%Y') as fecha_emision,
                         de.idtipo_moneda,
                         de.total_gravadas,
                         de.total_igv,
@@ -2304,7 +2304,7 @@ class DocumentoElectronico extends Conexion {
                             ELSE ''
                             END) as referencia_tipo_comprobante,
                         COALESCE(CONCAT(de.serie_documento_modifica,'-',de.numero_documento_modifica),'') as referencia_serie_numero_comprobante,
-                        COALESCE(de_referencia.fecha_emision,'') as referencia_fecha,
+                        COALESCE(DATE_FORMAT(de_referencia.fecha_emision, '%d/%m/%Y'),'') as referencia_fecha,
                         COALESCE(de_referencia.total_gravadas,'') as referencia_total_gravadas,
                         COALESCE(de_referencia.total_igv,'') as referencia_total_igv,
                         de.estado_anulado,
