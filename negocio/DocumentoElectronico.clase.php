@@ -2283,7 +2283,7 @@ class DocumentoElectronico extends Conexion {
         try {
 
             $sql = "SELECT      
-                        de.fecha_vencimiento,
+                        DATE_FORMAT(de.fecha_vencimiento, '%d/%m/%Y') as fecha_vencimiento,
                         DATE_FORMAT(de.fecha_emision, '%d/%m/%Y') as fecha_emision,
                         de.idtipo_moneda,
                         de.total_gravadas,
