@@ -547,7 +547,7 @@ class DocumentoElectronico extends Conexion {
                     LEFT JOIN ubigeo_peru_districts upd ON upd.id = de.codigo_ubigeo_cliente
                     LEFT JOIN ubigeo_peru_provinces upp ON upp.id = upd.province_id
                     LEFT JOIN ubigeo_peru_departments updep ON updep.id = upp.department_id
-                    LEFT JOIN motivo_nota mn ON mn.idtipo_nota = de.idtipo_comprobante AND mn.idtipo_motivo_nota = de.idtipo_comprobante_modifica
+                    LEFT JOIN motivo_nota mn ON mn.idtipo_nota = de.idtipo_comprobante AND mn.idtipo_motivo_nota = de.idcod_tipo_motivo_nota
                     WHERE de.iddocumento_electronico = :0 AND de.estado_mrcb";
 
             $datos = $this->consultarFila($sql, [$this->id_documento_electronico]);
