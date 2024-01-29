@@ -2338,7 +2338,7 @@ class DocumentoElectronico extends Conexion {
             $_cuentasContables = [
                 ["cc"=>"121201", "key"=>"importe_total"],
                 ["cc"=>"401111", "key"=>"total_igv"],
-                ["cc"=>"703211", "key"=>"total_gravadas"],
+                ["cc"=>["703211","709711"], "key"=>"total_gravadas"],
             ];
 
             $mesTrabajo = date("m",strtotime($fechaInicio));
@@ -2368,6 +2368,10 @@ class DocumentoElectronico extends Conexion {
                         $debeHaber = $cuentaContable["key"] == "importe_total"  ? "H" : "D";
                     } else {
                         $debeHaber = $cuentaContable["key"] == "importe_total"  ? "D" : "H";
+                    }
+
+                    if ($cuentaContable["key"] === "total_gravadas"){
+                        $cuentaContable["cc"] = $cuentaContable["cc"][$esNota ? 1 : 0];
                     }
 
                     array_push($registros, [
