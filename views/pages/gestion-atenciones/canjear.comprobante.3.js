@@ -154,7 +154,7 @@ var CanjearComprobante = function() {
                 p_boleta_apellido_materno : $txtBoletaApellidoMaterno.val(),
                 p_boleta_direccion : $txtBoletaDireccion.val(),
                 p_boleta_fecha_nacimiento : $txtBoletaFechaNacimiento.val(),
-                p_boleta_sexo : $txtBoletaSexo.val(),
+                p_boleta_sexo : $txtBoletaSexo.val() ?? "M",
                 p_factura_razon_social: $txtFacturaRazonSocial.val(),
                 p_factura_direccion : $txtFacturaDireccion.val()
             },
@@ -183,8 +183,6 @@ var CanjearComprobante = function() {
             $txtBoletaApellidoMaterno.prop("required", false).removeClass("is-invalid").val("");
             $txtBoletaApellidoPaterno.prop("required", false).removeClass("is-invalid").val("");
             $txtBoletaDireccion.prop("required", false).removeClass("is-invalid").val("");
-            $txtBoletaFechaNacimiento.prop("required", false).removeClass("is-invalid").val("");
-            $txtBoletaSexo.prop("required", false).removeClass("is-invalid").val("");
 
             $txtNumeroDocumento.prop("maxlength", 11);
             $txtNumeroDocumento.val($txtNumeroDocumento.val().substr(0,11));
@@ -209,8 +207,6 @@ var CanjearComprobante = function() {
             $txtBoletaApellidoMaterno.prop("required", true).removeClass("is-invalid").val("");
             $txtBoletaApellidoPaterno.prop("required", true).removeClass("is-invalid").val("");
             $txtBoletaDireccion.prop("required", true).removeClass("is-invalid").val("");
-            $txtBoletaFechaNacimiento.prop("required", true).removeClass("is-invalid").val("");
-            $txtBoletaSexo.prop("required", true).removeClass("is-invalid").val("");
         }
     };
 
@@ -248,15 +244,23 @@ var CanjearComprobante = function() {
                 success: function(res){
                     buscandoNumeroDocumentoCliente = false;
 
+                    if (!Boolean(res)){
+                        fnError("No encontrado.");
+                        return;
+                    }
+
                     if (res.respuesta == "error"){
                         fnError(res.mensaje);
                         return;
                     }
+
+                    
                     $spinner.removeClass("fa-spin fa-spinner").addClass("fa-check text-green");
                     setTimeout(function(){
                         $spinner.removeClass("fa-check text-green").addClass("fa-spin fa-spinner");
                         $spinner.hide();
                     },1500);
+
 
                     if (res.respuesta == "ok"){
                         if (idTipoDocumento == "6"){

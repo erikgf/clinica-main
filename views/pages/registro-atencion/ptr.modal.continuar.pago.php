@@ -299,16 +299,16 @@
                                                 <label class="form-check-label">Número de Tarjeta</label>
                                                 <div class="row">
                                                     <div class="col-sm-3">
-                                                        <input type="text" data-ntarjeta="1" class="numero-tarjeta form-control text-center" maxlength="4">
+                                                        <input type="text" data-ntarjeta="1" value="****" readonly class="numero-tarjeta form-control text-center" maxlength="4">
                                                     </div>
                                                     <div class="col-sm-3">
-                                                        <input type="text" data-ntarjeta="2" class="numero-tarjeta form-control text-center" maxlength="4">
+                                                        <input type="text" data-ntarjeta="2" value="****" readonly class="numero-tarjeta form-control text-center" maxlength="4">
                                                     </div>
                                                     <div class="col-sm-3">
-                                                        <input type="text" data-ntarjeta="3" class="numero-tarjeta form-control text-center" maxlength="4">
+                                                        <input type="text" data-ntarjeta="3" value="****" readonly class="numero-tarjeta form-control text-center" maxlength="4">
                                                     </div>
                                                     <div class="col-sm-3">
-                                                        <input type="text" data-ntarjeta="4" class="numero-tarjeta form-control text-center" maxlength="4">
+                                                        <input type="text" data-ntarjeta="4" id="numero-tarjeta" class="numero-tarjeta form-control text-center" maxlength="4">
                                                     </div>
                                                 </div>
                                             </div>

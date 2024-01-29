@@ -51,7 +51,7 @@
                 </div>
             </div>
             <div class="card-body">
-                <table class="table table-sm" id="tbl-cajamovimientos">
+                <table class="table table-sm display nowrap" id="tbl-cajamovimientos" cellspacing="0" >
                     <thead>
                         <tr>
                             <th>ID</th>

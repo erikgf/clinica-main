@@ -86,15 +86,14 @@
                         <div class="row">
                             <div class="col-md-3 col-sm-12">
                                 <div class="form-group">
-                                    <label for="txt-boletafechanacimiento">F. Nacimiento (<span style="color:red">*</span>)</label>
-                                    <input required type="date" class="form-control uppercase"  id="txt-boletafechanacimiento">
+                                    <label for="txt-boletafechanacimiento">F. Nacimiento</label>
+                                    <input  type="date" class="form-control uppercase"  id="txt-boletafechanacimiento">
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-12">
                                 <div class="form-group">
-                                    <label for="txt-boletasexo">Sexo (<span style="color:red">*</span>)</label>
-                                    <select required class="form-control uppercase"  id="txt-boletasexo">
-                                        <option value="">Seleccionar</option>
+                                    <label for="txt-boletasexo">Sexo </label>
+                                    <select  class="form-control uppercase"  id="txt-boletasexo">
                                         <option value="M">Masculino</option>
                                         <option value="F">Femenino</option>
                                     </select>

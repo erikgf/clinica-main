@@ -25,7 +25,8 @@ const ExportarConcar = function() {
             ff = $txtFechaFin.val(),
             correlativo = $txtCorrelativoInicio.val();
 
-        window.open(`../../../impresiones/exportar.concar.xls.php?fi=${fi}&ff=${ff}&c=${correlativo}`);
+        //window.open(`../../../impresiones/exportar.concar.xls.php?fi=${fi}&ff=${ff}&c=${correlativo}`, 0);
+        window.open(`../../../impresiones/exportar.concar.anexos.xls.php?fi=${fi}&ff=${ff}`, 1);
     };
 
     this.setDOM();

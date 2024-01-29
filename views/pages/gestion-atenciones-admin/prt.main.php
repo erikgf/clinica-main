@@ -49,7 +49,7 @@
                 </div>
             </div>
             <div class="card-body">
-                <table class="table table-sm" id="tbl-cajamovimientos">
+                <table class="table table-sm display nowrap" style="width:100%" id="tbl-cajamovimientos">
                     <thead>
                         <tr>
                             <th>ID</th>

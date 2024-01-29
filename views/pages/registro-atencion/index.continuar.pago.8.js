@@ -88,7 +88,7 @@ var ContinuarPago = function() {
         $txtFechaDeposito = $("#txt-fechadeposito");
         $txtPagoTarjeta = $("#txt-pagotarjeta");
         $blkTarjeta = $("#blk-tarjeta");
-        $numeroTarjeta = $(".numero-tarjeta");
+        $numeroTarjeta = $("#numero-tarjeta");
         $txtFechaTransaccion = $("#txt-fechatransacciontarjeta");
         $txtNumeroVoucher = $("#txt-numerovoucher");
         $lblCajaEfectivo = $("#lbl-cajaefectivo");
@@ -626,10 +626,7 @@ var ContinuarPago = function() {
             return;
         }
 
-        var numeroTarjeta = "";
-        $(".numero-tarjeta").each(function(i,o){
-            numeroTarjeta += o.value+" ";
-        });
+        const numeroTarjeta = "**** **** **** "+$numeroTarjeta.val();
 
         var idTipoComprobante = $("[name='rad-tipocomprobantepago']:checked").val();
         var objDescuento = OBJETO_ATENCION.objDescuento;
@@ -1063,6 +1060,7 @@ var ContinuarPago = function() {
         $txtNumeroOperacion.val("");
         $txtPagoTarjeta.val("0.00").trigger("keyup");
         $txtNumeroVoucher.val("");
+
         $numeroTarjeta.val("");        
 
         $lblCajaEfectivo.html(total);

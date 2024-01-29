@@ -25,7 +25,7 @@ include_once "prt.modal.canjearcomprobante.php";
     var _ES_ID_ROL_SUPERVISOR = <?php echo $esRolSupervisor;?>;
 </script>
 
-<script type="text/javascript" src="canjear.comprobante.1.js" defer></script>
+<script type="text/javascript" src="canjear.comprobante.3.js" defer></script>
 <script type="text/javascript" src="index.1.js" defer></script>
 <!--
 <script type="text/javascript" src="index.paciente.js" defer></script>

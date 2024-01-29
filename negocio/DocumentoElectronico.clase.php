@@ -2408,4 +2408,139 @@ class DocumentoElectronico extends Conexion {
         }
     }
     
+    public function obtenerDatosParaExportarAnexosCONCAR(string $fechaInicio, string $fechaFin) : array{
+        try {
+            $sql = "SELECT      
+                        p.id_tipo_documento as tipo_documento,
+                        p.numero_documento,
+                        p.nombres, p.apellidos_paterno, p.apellidos_materno,
+                        p.razon_social,
+                        p.domicilio as direccion
+                        FROM documento_electronico de
+                        INNER JOIN paciente p ON p.id_paciente = de.idcliente
+                        where de.fecha_emision >= :0 AND de.fecha_emision <= :1 AND de.estado_mrcb
+                        GROUP BY de.idcliente";
+            $registros_anexos = $this->consultarFilas($sql, [$fechaInicio, $fechaFin]);
+
+            //Varaibles Contantes en la exportacion
+            $_campo = "";
+            $_tipoAnexo = "C";
+            $_codigoMoneda = "MN";
+            $_tasaDetraccion = "";
+            $_tasaPercepcion = "";
+            $_nacionalExtranjero = "N";
+            $_representante = "";
+            $_cargo = "";
+            $_provincia = "";
+            $_departamento = "";
+            $_zonaPostal = "";
+            $_pais = "";
+            $_telefonoFax = "";
+            $_entidadFinanciera = "";
+            $_email = "";
+            $_host = "";
+            $_observacion = "";
+            $_sexo = "";
+            $_fechaNacimiento = "";
+            $_nacionalidad = "9589";
+            $_essaludVida = "";
+            $_domiciliado = "SI";
+            $_tipoVia = "";
+            $_nombreVia = "";
+            $_numero = "";
+            $_interior = "";
+            $_tipoZona = "";
+            $_nombreZona = "";
+            $_referencia = "";
+            $_ubigeo = "";
+            $_situacion = "01";
+            $_aplicaConvenioEvitarDoble = "";
+
+            $registros = [];
+
+            foreach ($registros_anexos as $i => $registro) {
+                $numeroDocumento = $registro["numero_documento"];
+                $tipoPersona = "N";
+                $validarRuc = "0";
+                $ruc = "";
+                $tipoDocumento = $registro["tipo_documento"];
+                $razonSocial = "";
+
+                if ($tipoDocumento == "6"){
+                    $ruc = $numeroDocumento;
+                    $validarRuc = "1";
+                    $tipoPersona = "J";
+                    $razonSocial = $registro["razon_social"];
+                    $apellidoPat = "";
+                    $apellidoMat = "";
+                    $nombres = "";
+                } else {
+
+                    if ($tipoDocumento == "0"){
+                        $tipoDocumento = "9";
+                        $numeroDocumento = "";
+                    }
+
+                    if ($tipoDocumento > 7 && $tipoDocumento != "9"){
+                        $tipoDocumento = "0";
+                    }
+
+                    $apellidoPat = $registro["apellidos_paterno"];
+                    $apellidoMat =  $registro["apellidos_materno"];
+                    $nombres = $registro["nombres"];
+                    $razonSocial = $apellidoPat." ".$apellidoMat." ".$nombres;
+                }
+
+                array_push($registros, [
+                    "campo"=>$_campo,
+                    "tipo_anexo"=>$_tipoAnexo,
+                    "codigo_anexo"=>$numeroDocumento,
+                    "tipo_persona"=>$tipoPersona,
+                    "apellido_paterno"=>$apellidoPat,
+                    "apellido_materno"=>$apellidoMat,
+                    "nombre"=>$nombres,
+                    "razon_social_descripcion"=>$razonSocial,
+                    "direccion_referencia"=>$registro["direccion"],
+                    "validar_ruc"=>$validarRuc,
+                    "ruc"=>$ruc,
+                    "tipo_documento"=>$tipoDocumento,
+                    "numero_documento"=>$numeroDocumento,
+                    "moneda"=>$_codigoMoneda,
+                    "tasa_detraccion"=>$_tasaDetraccion,
+                    "tasa_percepcion"=>$_tasaPercepcion,
+                    "nacional_extranjero"=>$_nacionalExtranjero,
+                    "representante"=>$_representante,
+                    "cargo"=>$_cargo,
+                    "provincia"=>$_provincia,
+                    "departamento"=>$_departamento,
+                    "zona_postal"=>$_zonaPostal,
+                    "pais"=>$_pais,
+                    "telefono_fax"=>$_telefonoFax,
+                    "entidad_financiera"=>$_entidadFinanciera,
+                    "email"=>$_email,
+                    "host"=>$_host,
+                    "observacion"=>$_observacion,
+                    "sexo"=>$_sexo,
+                    "fecha_nacimiento"=>$_fechaNacimiento,
+                    "nacionalidad"=>$_nacionalidad,
+                    "essalud_vida"=>$_essaludVida,
+                    "domiciliado"=>$_domiciliado,
+                    "tipo_via"=>$_tipoVia,
+                    "nombre_via"=>$_nombreVia,
+                    "numero"=>$_numero,
+                    "interior"=>$_interior,
+                    "tipo_zona"=>$_tipoZona,
+                    "nombre_zona"=>$_nombreZona,
+                    "referencia"=>$_referencia,
+                    "ubigeo"=>$_ubigeo,
+                    "situacion"=>$_situacion,
+                    "aplica_convenio_evitar_doble"=>$_aplicaConvenioEvitarDoble
+                ]);
+            }
+
+            return $registros;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
+        }
+    }
 }
