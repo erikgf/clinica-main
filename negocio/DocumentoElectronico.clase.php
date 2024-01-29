@@ -2359,6 +2359,10 @@ class DocumentoElectronico extends Conexion {
                     }
                 }
 
+                if ($comprobante["codigo_anexo"] == ""){
+                    $comprobante["codigo_anexo"] = "0000";
+                }
+
                 foreach ($_cuentasContables as $j => $cuentaContable) {
                     if ($esNota){
                         $debeHaber = $cuentaContable["key"] == "importe_total"  ? "H" : "D";
@@ -2413,9 +2417,11 @@ class DocumentoElectronico extends Conexion {
             $sql = "SELECT      
                         p.id_tipo_documento as tipo_documento,
                         p.numero_documento,
-                        p.nombres, p.apellidos_paterno, p.apellidos_materno,
-                        p.razon_social,
-                        p.domicilio as direccion
+                        LEFT(p.nombres, 20) as nombres, 
+                        LEFT(p.apellidos_paterno, 20) as apellidos_paterno, 
+                        LEFT(p.apellidos_materno, 20) as apellidos_materno,
+                        LEFT(p.razon_social, 40) as razon_social,
+                        LEFT(p.domicilio, 50)  as direccion
                         FROM documento_electronico de
                         INNER JOIN paciente p ON p.id_paciente = de.idcliente
                         where de.fecha_emision >= :0 AND de.fecha_emision <= :1 AND de.estado_mrcb
