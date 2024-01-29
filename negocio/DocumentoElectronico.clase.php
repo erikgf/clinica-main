@@ -2494,7 +2494,7 @@ class DocumentoElectronico extends Conexion {
                     $apellidoPat = $registro["apellidos_paterno"];
                     $apellidoMat =  $registro["apellidos_materno"];
                     $nombres = $registro["nombres"];
-                    $razonSocial = $apellidoPat." ".$apellidoMat." ".$nombres;
+                    $razonSocial = substr($apellidoPat." ".$apellidoMat." ".$nombres, 0, 40);
                 }
 
                 array_push($registros, [
