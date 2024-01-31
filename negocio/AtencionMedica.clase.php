@@ -660,7 +660,7 @@ class AtencionMedica extends Conexion {
 
             $sql = "SELECT fecha_atencion, ci.estado_caja
                     FROM atencion_medica am
-                    INNER JOIN caja_instancia_movimiento cim ON cim.id_caja_instancia = am.id_caja_instancia AND cim.estado_mrcb
+                    INNER JOIN caja_instancia_movimiento cim ON cim.id_caja_instancia_movimiento  = am.id_caja_instancia_movimiento  AND cim.estado_mrcb
                     INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia AND ci.estado_mrcb
                     WHERE am.id_atencion_medica = :0 AND am.estado_mrcb";
             $obj = $this->consultarFila($sql, [$this->id_atencion_medica]);
