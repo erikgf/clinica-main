@@ -104,6 +104,7 @@ var GestionAtenciones = function() {
                         "ordering": true,
                         scrollX: true
                     });
+                    $('.dataTables_scrollBody').css('min-height', '400px');
                 }
             },
             error: function (request) {

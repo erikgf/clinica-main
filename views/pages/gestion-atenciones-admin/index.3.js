@@ -119,8 +119,9 @@ var GestionAtenciones = function() {
                 if (result.length){
                     TABLA_MOVIMIENTOS = $tblMovimientos.DataTable({
                         "ordering": true,
-                        scrollX: true
+                        scrollX: true,
                     });
+                    $('.dataTables_scrollBody').css('min-height', '400px');
                 }
             },
             error: function (request) {
