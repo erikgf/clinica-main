@@ -53,6 +53,7 @@ try {
             $obj->es_informante = isset($_POST["p_es_informante"]) ? $_POST["p_es_informante"] : "0";
             $obj->tipo_personal_medico = isset($_POST["p_tipo_personal_medico"]) ? $_POST["p_tipo_personal_medico"] : "0";
             $obj->es_realizante = isset($_POST["p_es_realizante"]) ? $_POST["p_es_realizante"] : "0";
+            $obj->id_sede = isset($_POST["p_id_sede"]) ? $_POST["p_id_sede"] : NULL;
 
             $id_medico = isset($_POST["p_id_medico"]) ? $_POST["p_id_medico"] : NULL;
             $obj->id_medico = $id_medico;
@@ -98,8 +99,9 @@ try {
             $fecha_inicio = isset($_POST["p_fecha_inicio"]) ? $_POST["p_fecha_inicio"] : $hoy;
             $fecha_fin = isset($_POST["p_fecha_fin"]) ? $_POST["p_fecha_fin"] : $hoy;
             $totales_mayores_a = isset($_POST["p_totales_mayores"]) ? $_POST["p_totales_mayores"] : "100";
+            $id_sede = isset($_POST["p_id_sede"]) ? $_POST["p_id_sede"] : "";
 
-            $data = $obj->listarMedicosParaLiquidaciones($fecha_inicio, $fecha_fin, $totales_mayores_a);
+            $data = $obj->listarMedicosParaLiquidaciones($fecha_inicio, $fecha_fin, $totales_mayores_a, $id_sede);
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 
@@ -132,8 +134,9 @@ try {
             $fecha_inicio = isset($_POST["p_fecha_inicio"]) ? $_POST["p_fecha_inicio"] : $hoy;
             $fecha_fin = isset($_POST["p_fecha_fin"]) ? $_POST["p_fecha_fin"] : $hoy;
             $totales_mayores_a = isset($_POST["p_totales_mayores"]) ? $_POST["p_totales_mayores"] : "0";
+            $id_sede = isset($_POST["p_id_sede"]) ? $_POST["p_id_sede"] : "";
 
-            $data = $obj->listarLiquidacionesMedicos($fecha_inicio, $fecha_fin, $totales_mayores_a);
+            $data = $obj->listarLiquidacionesMedicos($fecha_inicio, $fecha_fin, $totales_mayores_a, $id_sede);
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 

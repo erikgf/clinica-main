@@ -26,13 +26,13 @@ include_once 'prt.modal.areas.php';
 
 ?>
 
-<script type="text/javascript" src="ClsMedico.js" defer></script>
+<script type="text/javascript" src="ClsMedico.1.js" defer></script>
 <script type="text/javascript" src="ClsArea.js" defer></script>
 <script type="text/javascript" src="ClsPromotora.js" defer></script>
-<script type="text/javascript" src="index.liquidaciones.individual.medicos.js" defer></script>
-<script type="text/javascript" src="index.liquidaciones.medicos.js" defer></script>
-<script type="text/javascript" src="index.medicos.asignar.promotora.js" defer></script>
-<script type="text/javascript" src="index.promotoras.medicos.js" defer></script>
+<script type="text/javascript" src="index.liquidaciones.individual.medicos.1.js" defer></script>
+<script type="text/javascript" src="index.liquidaciones.medicos.1.js" defer></script>
+<script type="text/javascript" src="index.medicos.asignar.promotora.1.js" defer></script>
+<script type="text/javascript" src="index.promotoras.medicos.1.js" defer></script>
 <!--
 <script type="text/javascript" src="index.paciente.js" defer></script>
 <script type="text/javascript" src="index.continuar.pago.js" defer></script>

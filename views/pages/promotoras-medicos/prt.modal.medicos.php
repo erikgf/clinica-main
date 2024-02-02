@@ -72,6 +72,13 @@
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
+                                    <label for="txt-medico-sede">Sede (<span style="color:red">*</span>)</label>
+                                    <select type="text" class="form-control" required id="txt-medico-sede">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
                                     <label for="txt-medico-especialidad">Especialidad</label>
                                     <select type="text" class="form-control uppercase" id="txt-medico-especialidad">
                                         <option value="1">GENÉRICA</option>

@@ -1,9 +1,11 @@
 var LiquidacionesMedicos = function() {
     var $txtFechaInicio,
         $txtFechaFin,
+        $txtSede,
         $txtMedicos,
         $tblMedicos,
         $tbdMedicos,
+        $btnVerResultados,
         $btnImprimirPDF,
         $btnImprimirEXCEL;
 
@@ -29,8 +31,10 @@ var LiquidacionesMedicos = function() {
         $txtFechaInicio = $DOM.find(".txt-fechainicio-liquidaciontotal");
         $txtFechaFin  = $DOM.find(".txt-fechafin-liquidaciontotal");
         $txtTotalesMayoresA  =  $DOM.find("#txt-totalesmayores-liquidaciontotal");
+        $txtSede = $DOM.find("#txt-sede-liquidaciontotal");
         $tblMedicos =  $DOM.find("#tbl-medicos-liquidaciontotal");
         $tbdMedicos =  $DOM.find("#tbd-medicos-liquidaciontotal");
+        $btnVerResultados = $DOM.find(".btn-verresultados-liquidaciontotal");
         $btnImprimirPDF = $DOM.find(".btn-imprimir-liquidaciontotal-pdf");
         $btnImprimirEXCEL = $DOM.find(".btn-imprimir-liquidaciontotal-excel");
 
@@ -43,8 +47,8 @@ var LiquidacionesMedicos = function() {
                 Util.setFecha($txtFechaInicio, new Date());
             }
 
-            cargarMedicos();
-            renderMedicos([]);
+            //cargarMedicos();
+            //renderMedicos([]);
         });
 
         $txtFechaFin.on("change", function(e){
@@ -52,8 +56,8 @@ var LiquidacionesMedicos = function() {
                 Util.setFecha($txtFechaFin, new Date());
             }
 
-            cargarMedicos();
-            renderMedicos([]);
+            //cargarMedicos();
+            //renderMedicos([]);
         }); 
 
 
@@ -62,9 +66,15 @@ var LiquidacionesMedicos = function() {
                 $txtTotalesMayoresA = "0.00";
             }
 
-            cargarMedicos();
+            //cargarMedicos();
+            //renderMedicos([]);
+        });
+
+        $btnVerResultados.on("click", function(e){
+            e.preventDefault();
             renderMedicos([]);
-        }); 
+            cargarMedicos();
+        });
 
         $btnImprimirPDF.on("click", function(e){
             e.preventDefault();
@@ -86,7 +96,8 @@ var LiquidacionesMedicos = function() {
             data: {
                 p_fecha_inicio: $txtFechaInicio.val(),
                 p_fecha_fin : $txtFechaFin.val(),
-                p_totales_mayores : $txtTotalesMayoresA.val()
+                p_totales_mayores : $txtTotalesMayoresA.val(),
+                p_id_sede : $txtSede.val()
             },
             success: function(result){
                 renderMedicos(result);
@@ -118,6 +129,31 @@ var LiquidacionesMedicos = function() {
         $("#txt-total-comision-liquidaciontotal").html("S/ "+Math.round10(totalComision, -2).toFixed(2));
     };
 
+    const cargarSedes = function(){
+        $.ajax({ 
+            url : VARS.URL_CONTROLADOR+"sede.controlador.php?op=listar",
+            type: "POST",
+            dataType: 'json',
+            delay: 250,
+            success: function(result){
+                let html = ``;
+
+                html += `<option value="">Todas</option>`;
+                result.forEach(sede => {
+                    html += `<option value="${sede.id}">${sede.descripcion}</option>`;
+                });
+
+                $txtSede.html(html);
+            },
+            error: function (request) {
+                toastr.error(request.responseText);
+                return;
+            },
+            cache: true
+            }
+        );
+    };
+
     this.getTemplates();
     this.setDOM();
     this.setEventos();
@@ -126,6 +162,8 @@ var LiquidacionesMedicos = function() {
     Util.setFecha($txtFechaInicio, hoy);
     Util.setFecha($txtFechaFin, hoy);
     hoy = null;
+
+    cargarSedes();
 
     return this;
 };

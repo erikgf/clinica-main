@@ -27,7 +27,7 @@
     <div class="tab-content" id="tabs-content">
         <div class="tab-pane fade show active" id="blk-tabs-liquidacionindividualmedico" role="tabpanel" aria-labelledby="tabs-liquidacionindividualmedico">
             <div class="row">
-                <div class="col-md-8 col-sm-12">
+                <div class="col-sm-12">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Filtrar</h3>
@@ -45,21 +45,26 @@
                                     <input type="date" class="txt-fechafin form-control"/>
                                 </div>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-sm-2">
                                 <div class="form-group">
-                                    <label for="">Totales Mayor a:</label>
+                                    <label for="">Mayor a:</label>
                                     <input class="form-control" value="100.00" id="txt-totalesmayores-liquidacion"/>
                                 </div>    
+                            </div>
+                            <div class="col-sm-2">
+                                <div class="form-group">
+                                    <label for="">Sede</label>
+                                    <select class="form-control" id="txt-sede-liquidacion"></select>
+                                </div>
                             </div>
                             <div class="col-md-4 col-sm-12">
                                 <div class="form-group">
                                     <label for="">Seleccionar Médico(s)</label>
-                                    <select class="form-control" id="txt-medicos-liquidacion">
-                                    </select>
+                                    <select class="form-control" id="txt-medicos-liquidacion"></select>
                                 </div>
                             </div>
-                            <div class="col-md-2">
-                                <br>
+                            <div class="col-md-3">
+                                <button class="btn btn-primary btn-verresultados"><span class="fa fa-search"></span> VER RESULTADOS</button>
                                 <button class="btn btn-info btn-imprimir"><span class="fa fa-print"></span> IMPRIMIR</button>
                             </div>
                         </div>
@@ -104,7 +109,7 @@
 
         <div class="tab-pane fade show" id="blk-tabs-liquidacionmedicos" role="tabpanel" aria-labelledby="tabs-liquidacionmedicos">
             <div class="row">
-                <div class="col-md-8 col-sm-12">
+                <div class="col-md-9 col-sm-12">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Filtrar</h3>
@@ -129,7 +134,14 @@
                                 </div>    
                             </div>
                             <div class="col-md-2">
-                                <br>
+                                <div class="form-group">
+                                    <label for="">Sede</label>
+                                    <select class="form-control" id="txt-sede-liquidaciontotal"></select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary btn-verresultados-liquidaciontotal"><span class="fa fa-search"></span> VER RESULTADOS</button>
+                                <p></p>
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-info  dropdown-toggle dropdown-icon"  data-toggle="dropdown"><span class="fa fa-print"></span> IMPRIMIR</button>
                                         <span class="sr-only">Toggle Dropdown</span>
@@ -156,6 +168,7 @@
                                 <thead>
                                     <tr>
                                         <th style="width:135px">Código</th>
+                                        <th style="width:160px">Sede</th>
                                         <th>Apellidos y Nombres</th>
                                         <th style="width:135px" class="text-right">S/ Total</th>
                                     </tr>
@@ -165,7 +178,7 @@
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <th class="text-right" colspan="2">Total</th>
+                                        <th class="text-right" colspan="3">Total</th>
                                         <th style="width:135px" id="txt-total-comision-liquidaciontotal" class="text-right">0.00</th>
                                     </tr>
                                 </tfoot>
@@ -283,7 +296,6 @@
             
         </div>
 
-        
         <div class="tab-pane fade" id="blk-tab-promotoras-medicos" role="tabpanel" aria-labelledby="tab-promotoras-medicos">
              <div class="row">
                 <div class="col-md-8">
@@ -296,15 +308,15 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <table class="table table-sm" style="font-size: .85em;" id="tbl-medicos">
+                            <table class="table table-sm" style="font-size: .85em;" id="tbl-medicos" cellspacing="0" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th style="width: 75px">Opc.</th>
+                                        <th>Sede</th>
                                         <th>Médico</th>
                                         <th>Colegiatura</th>
                                         <th>RNE</th>
                                         <th>Teléfonos</th>
-                                        <th>Correo</th>
                                         <th>Domicilio</th>
                                         <th>Promotora</th>
                                         <th>Especialidad</th>

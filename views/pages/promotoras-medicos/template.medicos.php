@@ -11,11 +11,11 @@
                 </div>
             </div>
         </td>
+        <td>{{sede}}</td>
         <td>{{medico}}</td>
         <td>{{colegiatura}}</td>
         <td>{{rne}}</td>
         <td>{{telefonos}}</td>
-        <td>{{correo}}</td>
         <td>{{domicilio}}</td>
         <td>{{promotora}}</td>
         <td>{{especialidad}}</td>

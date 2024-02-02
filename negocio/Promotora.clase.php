@@ -160,6 +160,7 @@ class Promotora extends Conexion {
 
             $sql = "UPDATE atencion_medica 
                     SET id_promotora_ordenante = :2, 
+                        id_sede_ordenante = (SELECT id_sede FROM medico WHERE id_medico = id_medico_ordenante),
                         comision_promotora_ordenante = (SELECT porcentaje_comision 
                             FROM promotora_porcentaje_comision
                             WHERE estado_validez = 'A' AND estado_mrcb AND fecha_fin IS NULL AND id_promotora = :2)

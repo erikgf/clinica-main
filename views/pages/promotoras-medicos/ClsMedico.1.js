@@ -10,6 +10,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtCorreo,
         $txtDomicilio,
         $txtArea,
+        $txtSede,
         $txtPromotora,
         $txtObservaciones,
         $btnEliminar,
@@ -32,7 +33,8 @@ var Medico = function(_template, _$tabla, _$tbody){
 
         this.setDOM();
         this.setEventos();
-
+        
+        this.cargarSedes();
         this.cargar();
         return this;
     };
@@ -49,6 +51,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtCorreo = $("#txt-medico-correo");
         $txtDomicilio = $("#txt-medico-domicilio");
         $txtEspecialidadMedico = $("#txt-medico-especialidad");
+        $txtSede = $("#txt-medico-sede");
         $txtPromotora = $("#txt-medico-promotora");
         $txtObservaciones = $("#txt-medico-observaciones");
         $btnEliminar = $("#btn-medico-eliminar");
@@ -129,6 +132,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtEsInformante.val(dataMedico.es_informante);
         $txtTipoPersonalMedico.val(dataMedico.tipo_personal_medico);
         $txtEsRealizante.val(dataMedico.es_realizante);
+        $txtSede.val(dataMedico.id_sede);
         
         $btnEliminar.show();
     };
@@ -191,7 +195,8 @@ var Medico = function(_template, _$tabla, _$tbody){
                 p_observaciones : $txtObservaciones.val(),
                 p_es_informante: $txtEsInformante.val(),
                 p_tipo_personal_medico: $txtTipoPersonalMedico.val(),
-                p_es_realizante: $txtEsRealizante.val()
+                p_es_realizante: $txtEsRealizante.val(),
+                p_id_sede : $txtSede.val()
             },
             success: function(result){
                 toastr.success(result.msj);
@@ -239,9 +244,9 @@ var Medico = function(_template, _$tabla, _$tbody){
 
                 $tbbMedicos.html(tplMedicos(result));
 
-
                 //console.log(find("tr").eq(0).find("td").length;)
                 TABLA_MEDICOS = $tblMedicos.DataTable({
+                    scrollX: true,
                     dom: 'Bfrtip',
                     buttons: [
                         'copy',
@@ -257,6 +262,28 @@ var Medico = function(_template, _$tabla, _$tbody){
                     "ordering": false
                 });
                 
+            },
+            error: function (request) {
+                toastr.error(request.responseText);
+                return;
+            },
+            cache: true
+            }
+        );
+    };
+
+    this.cargarSedes = function(){
+        $.ajax({ 
+            url : VARS.URL_CONTROLADOR+"sede.controlador.php?op=listar",
+            type: "POST",
+            dataType: 'json',
+            delay: 250,
+            success: function(result){
+                let $html = `<option value="">Seleccionar</option>`;
+                result.forEach(item => {
+                    $html += `<option value="${item.id}">${item.descripcion}</option>`
+                });
+                $txtSede.html($html);
             },
             error: function (request) {
                 toastr.error(request.responseText);

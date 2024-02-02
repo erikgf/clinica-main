@@ -151,8 +151,12 @@ class AtencionMedica extends Conexion {
             require "Comision.clase.php";
             $objComision = new Comision();
             $objPromotoraComision = $objComision->obtenerComisionPromotoraXMedico($this->id_medico_ordenante);
-            $sql = "SELECT id_promotora FROM medico WHERE id_medico = :0 AND estado_mrcb";
-            $id_promotora_realizante = $this->consultarValor($sql, [$this->id_medico_realizante]);
+            $sql = "SELECT id_sede FROM medico WHERE id_medico = :0 AND estado_mrcb";
+            $id_sede_ordenante = $this->consultarValor($sql, [$this->id_medico_ordenante]);
+            $sql = "SELECT id_promotora, id_sede FROM medico WHERE id_medico = :0 AND estado_mrcb";
+            $medicoRealizante = $this->consultarFila($sql, [$this->id_medico_realizante]);
+            $id_promotora_realizante = $medicoRealizante["id_promotora"];
+            $id_sede_realizante = $medicoRealizante["id_sede"];
 
             require "Caja.clase.php";
             $objCaja = new Caja();
@@ -281,11 +285,13 @@ class AtencionMedica extends Conexion {
                 "numero_acto_medico"=>$this->numero_acto_medico,
                 "id_medico_realizante"=>$this->id_medico_realizante,
                 "id_promotora_realizante"=>$id_promotora_realizante,
+                "id_sede_realizante"=>$id_sede_realizante,
                 "id_medico_ordenante"=>$this->id_medico_ordenante,
                 //"id_especialidad_medico_ordenante"=>$objEspecialidadComision["id_especialidad_medico"],
                 //"comision_especialidad_medico_ordenante"=>$objEspecialidadComision["porcentaje_comision"],
                 "id_promotora_ordenante"=>$objPromotoraComision["id_promotora"],
                 "comision_promotora_ordenante"=>$objPromotoraComision["porcentaje_comision"],
+                "id_sede_ordenante"=>$id_sede_ordenante,
                 "fecha_atencion"=>$this->fecha_atencion,
                 "hora_atencion"=>$this->hora_atencion,
                 "observaciones"=>$this->observaciones,
@@ -948,15 +954,22 @@ class AtencionMedica extends Conexion {
             $objComision = new Comision();
             $objPromotoraComision = $objComision->obtenerComisionPromotoraXMedico($this->id_medico_ordenante);
 
-            $sql = "SELECT id_promotora FROM medico WHERE id_medico = :0 AND estado_mrcb";
-            $id_promotora_realizante = $this->consultarValor($sql, [$this->id_medico_realizante]);
+            $sql = "SELECT id_promotora, id_sede FROM medico WHERE id_medico = :0 AND estado_mrcb";
+            $medicoRealizante = $this->consultarFila($sql, [$this->id_medico_realizante]);
+            $id_promotora_realizante  = $medicoRealizante["id_promotora"];
+            $id_sede_realizante  = $medicoRealizante["id_sede"];
+
+            $sql = "SELECT id_sede FROM medico WHERE id_medico = :0 AND estado_mrcb";
+            $id_sede_ordenante = $this->consultarValor($sql, [$this->id_medico_ordenante]);
 
             $campos_valores = [
                 "id_medico_realizante"=>$this->id_medico_realizante,
                 "id_promotora_realizante"=>$id_promotora_realizante,
+                "id_sede_realizante"=>$id_sede_realizante,
                 "id_medico_ordenante"=>$this->id_medico_ordenante,
                 "id_promotora_ordenante"=>$objPromotoraComision["id_promotora"],
-                "comision_promotora_ordenante"=>$objPromotoraComision["porcentaje_comision"]
+                "comision_promotora_ordenante"=>$objPromotoraComision["porcentaje_comision"],
+                "id_sede_ordenante"=>$id_sede_ordenante
             ];
 
             $campos_valores_where = [

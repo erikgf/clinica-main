@@ -19,6 +19,7 @@ class Medico extends Conexion {
     public $es_informante;
     public $tipo_personal_medico;
     public $es_realizante;
+    public $id_sede;
 
     public function buscar($cadenaBuscar){
         try {
@@ -57,7 +58,8 @@ class Medico extends Conexion {
                 "observaciones"=>$this->observaciones == "" ? NULL : $this->observaciones,
                 "es_informante"=>$this->es_informante,
                 "tipo_personal_medico"=>$this->tipo_personal_medico,
-                "es_realizante"=>$this->es_realizante
+                "es_realizante"=>$this->es_realizante,
+                "id_sede"=>$this->id_sede
             ];
 
             if ($this->id_medico == NULL){
@@ -87,6 +89,7 @@ class Medico extends Conexion {
                     tipo_personal_medico,
                     es_informante,
                     es_realizante,
+                    id_sede,
                     id_usuario_registrado,
                     fecha_hora_registrado)
                     SELECT  id_medico, 
@@ -104,6 +107,7 @@ class Medico extends Conexion {
                             tipo_personal_medico,
                             es_informante,
                             es_realizante,
+                            id_sede,
                             :0,
                             CURRENT_TIMESTAMP
                             FROM medico WHERE id_medico = :1 AND estado_mrcb";
@@ -121,10 +125,12 @@ class Medico extends Conexion {
                         m.correo,
                         m.domicilio,
                         pr.descripcion as promotora,
-                        esp.descripcion as especialidad
+                        esp.descripcion as especialidad,
+                        sede.nombre as sede
                 FROM medico m 
                 LEFT JOIN promotora pr ON pr.id_promotora = m.id_promotora
                 LEFT JOIN especialidad_medico esp ON esp.id_especialidad_medico = m.id_especialidad_medico
+                LEFT JOIN sede ON sede.id_sede = m.id_sede
                 WHERE m.estado_mrcb AND m.id_medico = :0";
             $registro = $this->consultarFila($sql, [$this->id_medico]);
             
@@ -168,10 +174,12 @@ class Medico extends Conexion {
                         m.correo,
                         m.domicilio,
                         pr.descripcion as promotora,
-                        esp.descripcion as especialidad
+                        esp.descripcion as especialidad,
+                        sede.nombre as sede
                     FROM medico m 
                     LEFT JOIN promotora pr ON pr.id_promotora = m.id_promotora
                     LEFT JOIN especialidad_medico esp ON esp.id_especialidad_medico = m.id_especialidad_medico
+                    LEFT JOIN sede ON sede.id_sede = m.id_sede
                     WHERE m.estado_mrcb AND m.id_medico NOT IN (1,2)";
                     
             $data =  $this->consultarFilas($sql);
@@ -198,7 +206,8 @@ class Medico extends Conexion {
                         observaciones,
                         es_informante,
                         tipo_personal_medico,
-                        es_realizante
+                        es_realizante,
+                        id_sede
                     FROM medico
                     WHERE estado_mrcb AND id_medico = :0";
                     
@@ -272,18 +281,23 @@ class Medico extends Conexion {
         }
     }
 
-    public function listarMedicosParaLiquidaciones($fecha_inicio, $fecha_fin, $totales_mayores_a){
+    public function listarMedicosParaLiquidaciones($fecha_inicio, $fecha_fin, $totales_mayores_a, $id_sede = ""){
         try {
 
+            $sqlSede = "";
+            if ($id_sede != ""){
+                $sqlSede = " AND am.id_sede_ordenante = $id_sede ";
+            }
             //coger todos los servicios realizados y hacer un distinct con el médico en cuestión, tomar en cujenta lols medicos 
             //realizantes.
             $sql = "SELECT 
-                    am.id_medico_ordenante as id_medico, me.nombres_apellidos as descripcion, 
-                        SUM(ams.monto_comision_categoria_sin_igv) as sin_igv
+                    am.id_medico_ordenante as id_medico, 
+                    me.nombres_apellidos as descripcion, 
+                    SUM(ams.monto_comision_categoria_sin_igv) as sin_igv
                     FROM atencion_medica am 
                     INNER JOIN medico me ON me.id_medico = am.id_medico_ordenante
                     INNER JOIN atencion_medica_servicio ams  ON am.id_atencion_medica = ams.id_atencion_medica
-                    WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1)
+                    WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) $sqlSede
                     GROUP BY am.id_medico_ordenante, me.nombres_apellidos
                     HAVING sin_igv >= :2
                     ORDER BY me.nombres_apellidos";
@@ -389,21 +403,28 @@ class Medico extends Conexion {
         }
     }
 
-    public function listarLiquidacionesMedicos($fecha_inicio, $fecha_fin, $totales_mayores_a){
+    public function listarLiquidacionesMedicos($fecha_inicio, $fecha_fin, $totales_mayores_a, $id_sede){
         try {
 
             $params = [$fecha_inicio, $fecha_fin];
 
+            $sqlSede = "";
+            if ($id_sede != ""){
+                $sqlSede = " AND am.id_sede_ordenante = $id_sede ";
+            }
+
             $sql = "SELECT 
                         m.id_medico as codigo,
+                        sede.nombre as sede, 
                         m.nombres_apellidos as medicos,
                         ROUND(SUM(ams.monto_comision_categoria_sin_igv),2) as comision_sin_igv
                         FROM atencion_medica am 
                         INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
                         INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
-                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND id_medico_ordenante NOT IN (1,2)
+                        INNER JOIN sede ON sede.id_sede = am.id_sede_ordenante
+                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND am.id_medico_ordenante NOT IN (1,2) $sqlSede
                         GROUP BY m.id_medico, m.nombres_apellidos
-                        HAVING  comision_sin_igv > ".$totales_mayores_a."
+                        HAVING  comision_sin_igv > ".$totales_mayores_a." 
                         ORDER BY m.nombres_apellidos";
                     
             $data =  $this->consultarFilas($sql, $params);
