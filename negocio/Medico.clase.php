@@ -286,7 +286,7 @@ class Medico extends Conexion {
 
             $sqlSede = "";
             if ($id_sede != ""){
-                $sqlSede = " AND am.id_sede_ordenante = $id_sede ";
+                $sqlSede = " AND am.id_sede_ordenante = ".$id_sede;
             }
             //coger todos los servicios realizados y hacer un distinct con el médico en cuestión, tomar en cujenta lols medicos 
             //realizantes.
@@ -309,16 +309,26 @@ class Medico extends Conexion {
         }
     }
 
-    public function listarAtencionesComisionParaLiquidacionXMedico($fecha_inicio, $fecha_fin){
+    public function listarAtencionesComisionParaLiquidacionXMedico($fecha_inicio, $fecha_fin, $totales_mayores_a, $id_sede){
         try {
 
             $params = [$fecha_inicio, $fecha_fin];
             $sqlMedico = " true ";
 
             if ($this->id_medico != ""){
-                $sqlMedico = " am.id_medico_ordenante = :2 ";
+                $sqlMedico = " am.id_medico_ordenante = :".count($params)." ";
                 array_push($params, $this->id_medico);
             }
+
+            $sqlSede = " true ";
+
+            if ($id_sede != ""){
+                $sqlSede = " am.id_sede_ordenante = :".count($params)." ";
+                array_push($params, $id_sede);
+            }
+
+            $sqlMayoresA = " HAVING sin_igv > :".count($params)." ";
+            array_push($params, $totales_mayores_a);
 
             $sql = "SELECT 
                         CONCAT(ams.id_servicio) as codigo, ams.nombre_servicio, 
@@ -328,9 +338,9 @@ class Medico extends Conexion {
                             ROUND(SUM(ams.monto_comision_categoria_sin_igv),2) as sin_igv
                         FROM atencion_medica am 
                         INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
-                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND $sqlMedico
+                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND $sqlMedico AND $sqlSede
                         GROUP BY ams.id_servicio, ams.nombre_servicio
-                        HAVING  sin_igv > 0.00
+                        $sqlMayoresA
                         ORDER BY ams.nombre_servicio";
                     
             $data =  $this->consultarFilas($sql, $params);
@@ -340,28 +350,38 @@ class Medico extends Conexion {
         }
     }
 
-    public function listarAtencionesComisionParaLiquidacionXMedicoImprimir($fecha_inicio, $fecha_fin, $totales_mayores_a){
+    public function listarAtencionesComisionParaLiquidacionXMedicoImprimir($fecha_inicio, $fecha_fin, $totales_mayores_a, $id_sede){
         try {
 
             $params = [$fecha_inicio, $fecha_fin];
             $sqlMedico = " true ";
 
             if ($this->id_medico != ""){
-                $sqlMedico = " am.id_medico_ordenante = :2 ";
+                $sqlMedico = " am.id_medico_ordenante = :".count($params)." ";
                 array_push($params, $this->id_medico);
             }
 
+            $sqlSede = " true ";
+            if ($id_sede != ""){
+                $sqlMedico = " am.id_sede_ordenante = :".count($params)." ";
+                array_push($params, $id_sede);
+            }
+
             $sql = "SELECT 
-                        distinct am.id_medico_ordenante as id_medico, me.nombres_apellidos, 
+                        distinct am.id_medico_ordenante as id_medico, 
+                        am.id_sede_ordenante, 
+                        s.nombre as sede,
+                        me.nombres_apellidos, 
                         SUM(ams.monto_comision_categoria_sin_igv) as sin_igv,
                         COUNT(distinct(am.id_paciente)) as total_pacientes
                     FROM atencion_medica am 
                     INNER JOIN medico me ON me.id_medico = am.id_medico_ordenante
                     INNER JOIN atencion_medica_servicio ams  ON am.id_atencion_medica = ams.id_atencion_medica
-                    WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND $sqlMedico
-                    GROUP BY am.id_medico_ordenante, me.nombres_apellidos
+                    INNER JOIN sede s ON s.id_sede = am.id_sede_ordenante
+                    WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND $sqlMedico AND $sqlSede
+                    GROUP BY am.id_medico_ordenante, am.id_sede_ordenante, s.nombre, me.nombres_apellidos
                     HAVING sin_igv >= ".$totales_mayores_a."
-                    ORDER BY me.nombres_apellidos";
+                    ORDER BY am.id_sede_ordenante, me.nombres_apellidos";
             $data = $this->consultarFilas($sql, $params);
 
             $sql = "SELECT cs.descripcion as categoria, 
@@ -370,12 +390,12 @@ class Medico extends Conexion {
                     INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
                     INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio
                     INNER JOIN categoria_servicio cs ON cs.id_categoria_servicio = ser.id_categoria_servicio
-                    WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND am.id_medico_ordenante = :2
+                    WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND am.id_medico_ordenante = :2 AND am.id_sede_ordenante = :3
                     GROUP BY cs.descripcion, cs.id_categoria_servicio
                     ORDER BY cs.descripcion DESC";
 
             foreach ($data as $key => $medico) {
-                $categorias = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin, $medico["id_medico"]]);
+                $categorias = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin, $medico["id_medico"], $medico["id_sede_ordenante"]]);
                 
                 $sql_ = "SELECT 
                             am.fecha_atencion, am.nombre_paciente, ams.nombre_servicio,  
@@ -386,12 +406,19 @@ class Medico extends Conexion {
                         FROM atencion_medica am 
                         INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
                         INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio
-                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND am.id_medico_ordenante = :2 AND ser.id_categoria_servicio = :3
+                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) 
+                                AND am.id_medico_ordenante = :2 
+                                AND ser.id_categoria_servicio = :3
+                                AND am.id_sede_ordenante = :4 
                         GROUP BY am.fecha_atencion, am.nombre_paciente, ams.id_servicio, ams.nombre_servicio
                         ORDER BY ams.nombre_servicio DESC";
             
                 foreach ($categorias as $_key => $value) {
-                    $categorias[$_key]["atenciones"] =  $this->consultarFilas($sql_, [$fecha_inicio, $fecha_fin, $medico["id_medico"], $value["id_categoria_servicio"]]);
+                    $categorias[$_key]["atenciones"] =  $this->consultarFilas($sql_, [
+                                $fecha_inicio, $fecha_fin, $medico["id_medico"], 
+                                $value["id_categoria_servicio"],
+                                $medico["id_sede_ordenante"]
+                            ]);
                 }
                 
                 $data[$key]["categorias"] = $categorias;
@@ -434,31 +461,41 @@ class Medico extends Conexion {
         }
     }
 
-    public function listarLiquidacionesMedicosImprimir($fecha_inicio, $fecha_fin, $totales_mayores_a){
+    public function listarLiquidacionesMedicosImprimir($fecha_inicio, $fecha_fin, $totales_mayores_a, $id_sede){
         try {
 
             $params = [$fecha_inicio, $fecha_fin];
 
+            $sqlSede = " true ";
+            if ($id_sede != ""){
+                $sqlSede = " am.id_sede_ordenante = $id_sede ";
+            }
+
             $sql = "SELECT 
                         m.id_medico as codigo,
                         m.nombres_apellidos as medicos,
-                        ROUND(SUM(ams.monto_comision_categoria_sin_igv),2) as comision_sin_igv
+                        ROUND(SUM(ams.monto_comision_categoria_sin_igv),2) as comision_sin_igv,
+                        se.nombre as sede
                         FROM atencion_medica am 
                         INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
                         INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
-                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND id_medico_ordenante NOT IN (1,2)
-                        GROUP BY m.id_medico, m.nombres_apellidos
+                        INNER JOIN sede se ON se.id_sede = am.id_sede_ordenante
+                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND id_medico_ordenante NOT IN (1,2) AND $sqlSede
+                        GROUP BY m.id_medico, se.nombre, m.nombres_apellidos
                         HAVING  comision_sin_igv > ".$totales_mayores_a."
-                        ORDER BY m.nombres_apellidos";
+                        ORDER BY se.nombre, m.nombres_apellidos";
                     
             $data =  $this->consultarFilas($sql, $params);
+
+            $data = Funciones::reagruparArregloPorKeys($data, ["sede"], "medicos");
+
             return $data;
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }
     }
 
-    public function listarMedicosLiquidacionXPromotoraImprimir($fecha_inicio, $fecha_fin){
+    public function listarMedicosLiquidacionXPromotoraImprimir($fecha_inicio, $fecha_fin, $id_sede){
         try {
 
             $sql = "SELECT descripcion as nombre_promotora, 
@@ -473,22 +510,32 @@ class Medico extends Conexion {
                 throw new Exception("ID Promotora no encontrado.", 1);
             }
 
+            $sqlSede = " true ";
+            if ($id_sede != ""){
+                $sqlSede = " am.id_sede_ordenante = $id_sede ";
+            }
+
             $sql = "SELECT 
                         m.id_medico as codigo,
                         m.nombres_apellidos as medicos,
                         COUNT(ams.id_servicio) as cantidad_servicios,
                         ROUND((SUM(sub_total) / 1.18),2)  as subtotal_sin_igv,
                         ROUND(SUM(ams.monto_comision_categoria_sin_igv),2) as comision_sin_igv,
-                        ROUND(SUM(ams.monto_comision_categoria),2) as monto_comision_con_igv
+                        ROUND(SUM(ams.monto_comision_categoria),2) as monto_comision_con_igv,
+                        s.nombre as sede
                         FROM atencion_medica am 
                         INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
                         INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
-                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND id_medico_ordenante NOT IN (1,2) AND id_promotora_ordenante = :2
-                        GROUP BY m.id_medico, m.nombres_apellidos
-                        HAVING  comision_sin_igv > 0.00
-                        ORDER BY m.nombres_apellidos";
+                        INNER JOIN sede s ON s.id_sede = am.id_sede_ordenante
+                        WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) 
+                                AND id_medico_ordenante NOT IN (1,2) AND id_promotora_ordenante = :2 AND  $sqlSede
+                        GROUP BY m.id_medico, s.nombre, m.nombres_apellidos
+                        HAVING comision_sin_igv > 0.00
+                        ORDER BY s.nombre, m.nombres_apellidos";
                     
-            $cabecera["registros"] =  $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin ,$this->id_promotora]);
+            $registros =  $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin ,$this->id_promotora]);
+
+            $cabecera["sedes"] = Funciones::reagruparArregloPorKeys($registros, ["sede"], "registros");
 
             return $cabecera;
         } catch (Exception $exc) {

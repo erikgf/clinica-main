@@ -111,8 +111,10 @@ try {
             $obj->id_medico = isset($_POST["p_id_medico"]) ? $_POST["p_id_medico"] : "";
             $fecha_inicio = isset($_POST["p_fecha_inicio"]) ? $_POST["p_fecha_inicio"] : $hoy;
             $fecha_fin = isset($_POST["p_fecha_fin"]) ? $_POST["p_fecha_fin"] : $hoy;
+            $totales_mayores_a = isset($_POST["p_totales_mayores"]) ? $_POST["p_totales_mayores"] : "0.00";
+            $id_sede = isset($_POST["p_id_sede"]) ? $_POST["p_id_sede"] : "";
 
-            $data = $obj->listarAtencionesComisionParaLiquidacionXMedico($fecha_inicio, $fecha_fin);
+            $data = $obj->listarAtencionesComisionParaLiquidacionXMedico($fecha_inicio, $fecha_fin, $totales_mayores_a, $id_sede);
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 

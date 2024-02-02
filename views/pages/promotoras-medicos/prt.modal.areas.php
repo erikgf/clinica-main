@@ -8,17 +8,15 @@
             <div class="modal-body">
                 <input type="hidden" id="txt-area-seleccionado">
                 <div class="row">
-                    <div class="col-md-8">
+                    <div class="col-md-9 col-sm-7">
                         <div class="form-group">
                             <label for="txt-area-descripcion">Descripción (<span style="color:red">*</span>)</label>
                             <input type="text" class="form-control uppercase" required id="txt-area-descripcion"/>
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label for="txt-area-comision">Comisión</label>
-                            <input type="number" step="0.01" class="form-control uppercase" id="txt-area-comision"/>
-                        </div>
+                    <div class="col-md-3 col-sm-5">
+                        <h5>Comisiones Por Sede</h5>
+                        <div id="blk-area-comisiones"></div>
                     </div>
                 </div>
             </div>

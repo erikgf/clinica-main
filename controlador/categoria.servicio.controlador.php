@@ -45,11 +45,7 @@ try {
                 throw new Exception("No se ha enviado el nombre/descripción de Categoría", 1);
             }
 
-            $obj->porcentaje_comision = isset($_POST["p_comision"]) ? $_POST["p_comision"] / 100.00 : NULL;
-
-            if ($obj->porcentaje_comision == NULL || $obj->porcentaje_comision == ""){
-                throw new Exception("No se ha enviado el nombre/descripción de Categoría.", 1);
-            }
+            $obj->comisiones_sedes = json_decode(isset($_POST["p_comisiones"]) ? $_POST["p_comisiones"] : "[]");
 
             $id_categoria_servicio = isset($_POST["p_id_categoria_servicio"]) ? $_POST["p_id_categoria_servicio"] : NULL;
             $obj->id_categoria_servicio = $id_categoria_servicio;

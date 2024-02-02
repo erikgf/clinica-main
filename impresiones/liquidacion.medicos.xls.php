@@ -3,6 +3,7 @@
 date_default_timezone_set('America/Lima');
 require_once '../datos/datos.empresa.php';
 require_once "../negocio/Sesion.clase.php";
+require_once "../negocio/util/Funciones.php";
 include_once "../plugins/phspreadsheet/vendor/autoload.php";
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -17,6 +18,7 @@ $id_medico = isset($_GET["idm"]) ? $_GET["idm"] : "";
 $fecha_inicio = isset($_GET["fi"]) ? $_GET["fi"] : NULL;
 $fecha_fin = isset($_GET["ff"]) ? $_GET["ff"] : NULL;
 $totales_mayores_a =  isset($_GET["tt"]) ? $_GET["tt"] : "0";
+$id_sede =  isset($_GET["s"]) ? $_GET["s"] : "";
 
 if ($fecha_inicio == NULL){
     echo "No se ha ingresado parámetro de FECHA DE INICIO";
@@ -35,7 +37,7 @@ require "../negocio/Medico.clase.php";
 $titulo_xls  = "";
 try {
   $obj = new Medico();
-  $data = $obj->listarLiquidacionesMedicosImprimir($fecha_inicio, $fecha_fin, $totales_mayores_a);
+  $data = $obj->listarLiquidacionesMedicosImprimir($fecha_inicio, $fecha_fin, $totales_mayores_a, $id_sede);
 
   if (count($data) <= 0){
     echo "Sin datos encontrado.";
@@ -48,15 +50,12 @@ try {
   exit;
 }
 
-try {
-    $spreadsheet = new Spreadsheet();
-
-    $spreadsheet->setActiveSheetIndex(0);
-    $alfabeto = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+function impresionSheet($spreadsheet, $titulo_xls, $sede, $fecha_inicio, $fecha_fin, $data){
     $sheetActivo = $spreadsheet->getActiveSheet();
+    $alfabeto = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     $actualFila = 1;
-    $sheetActivo->setCellValue($alfabeto[0].$actualFila++, "INFORME DE LIQUIDACIÓN MÉDICOS");	
+    $sheetActivo->setCellValue($alfabeto[0].$actualFila++, "INFORME DE LIQUIDACIÓN MÉDICOS - ".$sede);	
     $sheetActivo->setCellValue($alfabeto[0].$actualFila++, "Fechas : DEL ".$fecha_inicio." AL ".$fecha_fin);	
 
     $actualFila++;
@@ -91,7 +90,27 @@ try {
     }
 
     $spreadsheet->getActiveSheet()->setTitle($titulo_xls);	
+}
 
+try {
+    $spreadsheet = new Spreadsheet();
+    $sheets = $spreadsheet->getSheetCount();
+
+    foreach ($data as $key => $sede) {
+      if ($sheets > 1){
+        $myWorkSheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($spreadsheet, 'My Data');
+        $spreadsheet->addSheet($myWorkSheet, $sheets - 1);
+        $spreadsheet->setActiveSheetIndex($sheets - 1);
+      }
+
+      $nombreSede = $sede["sede"];
+      impresionSheet(
+        $spreadsheet, $nombreSede, $nombreSede, $fecha_fin, $fecha_fin, $sede["medicos"]
+      );
+      $sheets ++;
+    }
+
+    $spreadsheet->setActiveSheetIndex(0);
     $writer = new Xlsx($spreadsheet);
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     header('Content-Disposition: attachment; filename="'. urlencode($titulo_xls.".xlsx").'"');

@@ -12,6 +12,6 @@
             </div>
         </td>
         <td>{{descripcion}}</td>
-        <td>{{porcentaje_comision}} %</td>
+        <td>{{comisiones_sedes}}</td>
     </tr>
 {{/.}}

@@ -47,7 +47,7 @@
                             </div>
                             <div class="col-sm-2">
                                 <div class="form-group">
-                                    <label for="">Mayor a:</label>
+                                    <label for="">Comisión Mayor a:</label>
                                     <input class="form-control" value="100.00" id="txt-totalesmayores-liquidacion"/>
                                 </div>    
                             </div>

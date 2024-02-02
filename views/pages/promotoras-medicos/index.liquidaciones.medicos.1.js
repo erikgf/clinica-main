@@ -78,16 +78,33 @@ var LiquidacionesMedicos = function() {
 
         $btnImprimirPDF.on("click", function(e){
             e.preventDefault();
-            window.open("../../../impresiones/liquidacion.medicos.php?fi="+$txtFechaInicio.val()+"&ff="+$txtFechaFin.val()+"&tt="+$txtTotalesMayoresA.val(),"_blank")
+            const sentData = {
+                fi: $txtFechaInicio.val(),
+                ff: $txtFechaFin.val(),
+                tt: $txtTotalesMayoresA.val(),
+                s : $txtSede.val()
+            };
+
+            const params = new URLSearchParams(sentData);
+            window.open(`../../../impresiones/liquidacion.medicos.php?${params.toString()}`,"_blank");
         });
 
         $btnImprimirEXCEL.on("click", function(e){
             e.preventDefault();
-            window.open("../../../impresiones/liquidacion.medicos.xls.php?fi="+$txtFechaInicio.val()+"&ff="+$txtFechaFin.val()+"&tt="+$txtTotalesMayoresA.val(),"_blank")
+
+            const sentData = {
+                fi: $txtFechaInicio.val(),
+                ff: $txtFechaFin.val(),
+                tt: $txtTotalesMayoresA.val(),
+                s : $txtSede.val()
+            };
+
+            const params = new URLSearchParams(sentData);
+            window.open(`../../../impresiones/liquidacion.medicos.xls.php?${params.toString()}`,"_blank");
         });
     };
 
-    var cargarMedicos = function(){
+    const cargarMedicos = function(){
         $.ajax({ 
             url : VARS.URL_CONTROLADOR+"medico.controlador.php?op=listar_liquidacion_medicos",
             type: "POST",

@@ -8,21 +8,27 @@ class CategoriaServicio extends Conexion {
     public $descripcion;
     public $porcentaje_comision;
     public $id_usuario_registrado;
+    public $comisiones_sedes;
 
     private $ID_CATEGORIA_LABORATORIO = "14";
 
     public function listar(){
         try {
             $sql = "SELECT 
-                        cs.id_categoria_servicio as id,
-                        cs.descripcion,
-                        COALESCE((SELECT ROUND(porcentaje_comision * 100, 2)
-                            FROM categoria_porcentaje_comision
-                            WHERE estado_validez = 'A' AND estado_mrcb AND fecha_fin IS NULL 
-                            AND id_categoria_servicio = cs.id_categoria_servicio),'0.00') as porcentaje_comision
-                    FROM categoria_servicio cs
-                    WHERE estado_mrcb
-                    ORDER BY cs.descripcion";
+                            cs.id_categoria_servicio as id,
+                            cs.descripcion,
+                            GROUP_CONCAT(
+                                        CONCAT(SUBSTR(s.nombre, 5),' ',  ROUND(porcentaje_comision  * 100, 2),'%')
+                                    ) as comisiones_sedes
+                            FROM categoria_servicio cs
+                            LEFT JOIN categoria_porcentaje_comision cpc ON cpc.id_categoria_servicio = cs.id_categoria_servicio
+                                        AND cpc.estado_validez = 'A' 
+                                        AND cpc.estado_mrcb 
+                                        AND cpc.fecha_fin IS NULL
+                            LEFT JOIN sede s ON s.id_sede = cpc.id_sede 
+                            WHERE cs.estado_mrcb
+                            GROUP BY cs.id_categoria_servicio, cs.descripcion
+                            ORDER BY cs.descripcion";
                     
             $data =  $this->consultarFilas($sql);
             return $data;
@@ -39,7 +45,8 @@ class CategoriaServicio extends Conexion {
                         COALESCE((SELECT ROUND(porcentaje_comision * 100, 2)
                             FROM categoria_porcentaje_comision
                             WHERE estado_validez = 'A' AND estado_mrcb AND fecha_fin IS NULL 
-                            AND id_categoria_servicio = cs.id_categoria_servicio),'0.00') as porcentaje_comision
+                            AND id_categoria_servicio = cs.id_categoria_servicio
+                            ORDER BY porcentaje_comision DESC LIMIT 1),'0.00') as porcentaje_comision
                     FROM categoria_servicio cs
                     WHERE estado_mrcb AND (cs.es_mostrado_asistentes = 1 OR cs.id_categoria_servicio iN (10))
                     ORDER BY cs.descripcion";
@@ -57,6 +64,7 @@ class CategoriaServicio extends Conexion {
 
             $this->beginTransaction();
 
+            $hoy = date("Y-m-d");
             $fecha_ahora = date("Y-m-d H:i:s");
 
             $campos_valores = [
@@ -67,7 +75,19 @@ class CategoriaServicio extends Conexion {
                 $this->insert("categoria_servicio", $campos_valores);
                 $this->id_categoria_servicio = $this->getLastID();
 
-                $porcentaje_comision_actual = -1;
+                foreach($this->comisiones_sedes as $key => $value){
+                    $campos_valores = [
+                        "estado_validez"=>'A',
+                        "id_categoria_servicio"=>$this->id_categoria_servicio,
+                        "fecha_inicio"=>$hoy,
+                        "porcentaje_comision"=>$value->comision / 100.00,
+                        "id_sede"=>$value->id_sede,
+                        "id_usuario_registrado"=>$this->id_usuario_registrado,
+                        "fecha_hora_registrado"=>$fecha_ahora
+                    ];
+    
+                    $this->insert("categoria_porcentaje_comision", $campos_valores);
+                }
             } else {
                 $campos_valores_where = [
                     "id_categoria_servicio"=>$this->id_categoria_servicio
@@ -75,41 +95,52 @@ class CategoriaServicio extends Conexion {
 
                 $this->update("categoria_servicio", $campos_valores, $campos_valores_where);
 
-                $sql = "SELECT porcentaje_comision 
-                    FROM categoria_porcentaje_comision 
-                    WHERE id_categoria_servicio = :0 AND estado_validez = 'A' AND estado_mrcb AND fecha_fin IS NULL
-                    LIMIT 1";
+                foreach($this->comisiones_sedes as $key => $value){
+                    $porcentaje_comision = $value->comision;
 
-                $porcentaje_comision_actual = (float) $this->consultarValor($sql, [$this->id_categoria_servicio]);
-            }
+                    $sql = "SELECT porcentaje_comision 
+                            FROM categoria_porcentaje_comision 
+                            WHERE id_categoria_servicio = :0 AND id_sede = :1 AND estado_validez = 'A' AND estado_mrcb AND fecha_fin IS NULL
+                            LIMIT 1";
 
-            if ((float) $this->porcentaje_comision != $porcentaje_comision_actual){
-                $hoy = date("Y-m-d");
+                    $objPorcComisionActual = $this->consultarFila($sql, [$this->id_categoria_servicio, $value->id_sede]);
 
-                if ($porcentaje_comision_actual >= 0){
-                    //es un registro nuevo
-                    $campos_valores = [
-                        "estado_validez"=>'I',
-                        "fecha_fin"=>$hoy
-                    ];
+                    if ($objPorcComisionActual === false){
+                        $porcentaje_comision_actual = -1;
+                    } else {
+                        $porcentaje_comision_actual = (float) $objPorcComisionActual["porcentaje_comision"];
+                    }
 
-                    $campos_valores_where = [
-                        "id_categoria_servicio"=>$this->id_categoria_servicio                        
-                    ];
+                    if ((float) $porcentaje_comision != $porcentaje_comision_actual){
+                        if ($porcentaje_comision_actual >= 0){
+                            //es un registro nuevo
+                            $campos_valores = [
+                                "estado_validez"=>'I',
+                                "fecha_fin"=>$hoy
+                            ];
 
-                    $this->update("categoria_porcentaje_comision", $campos_valores, $campos_valores_where);
+                            $campos_valores_where = [
+                                "id_categoria_servicio"=>$this->id_categoria_servicio,
+                                "id_sede"=>$value->id_sede
+                            ];
+
+                            $this->update("categoria_porcentaje_comision", $campos_valores, $campos_valores_where);
+                        }
+                        
+                        $campos_valores = [
+                            "estado_validez"=>'A',
+                            "id_categoria_servicio"=>$this->id_categoria_servicio,
+                            "fecha_inicio"=>$hoy,
+                            "id_sede"=>$value->id_sede,
+                            "porcentaje_comision"=>$porcentaje_comision / 100.00,
+                            "id_usuario_registrado"=>$this->id_usuario_registrado,
+                            "fecha_hora_registrado"=>$fecha_ahora
+                        ];
+
+                        $this->insert("categoria_porcentaje_comision", $campos_valores);
+                    }
                 }
-                
-                $campos_valores = [
-                    "estado_validez"=>'A',
-                    "id_categoria_servicio"=>$this->id_categoria_servicio,
-                    "fecha_inicio"=>$hoy,
-                    "porcentaje_comision"=>$this->porcentaje_comision,
-                    "id_usuario_registrado"=>$this->id_usuario_registrado,
-                    "fecha_hora_registrado"=>$fecha_ahora
-                ];
 
-                $this->insert("categoria_porcentaje_comision", $campos_valores);
             }
             
             $this->commit();
@@ -142,14 +173,31 @@ class CategoriaServicio extends Conexion {
         try {
             $sql = "SELECT 
                         cs.id_categoria_servicio,
-                        cs.descripcion,
-                        COALESCE((SELECT ROUND(porcentaje_comision  * 100,2)
-                            FROM categoria_porcentaje_comision
-                            WHERE estado_validez = 'A' AND estado_mrcb AND fecha_fin IS NULL AND id_categoria_servicio = cs.id_categoria_servicio),'') as comision_area
+                        cs.descripcion
                     FROM categoria_servicio cs
                     WHERE estado_mrcb AND id_categoria_servicio = :0";
                     
             $data =  $this->consultarFila($sql, $this->id_categoria_servicio);
+
+
+            $sql = "SELECT 
+                        s.id_sede as id,
+                        s.nombre as descripcion,
+                        COALESCE(t.comision, '0.00') as comision
+                        FROM sede s
+                        LEFT JOIN 
+                        (SELECT id_sede, ROUND(porcentaje_comision  * 100, 2) as comision
+                            FROM categoria_porcentaje_comision cpc
+                            WHERE id_categoria_servicio = :0
+                            AND cpc.estado_validez = 'A' 
+                            AND cpc.estado_mrcb 
+                            AND cpc.fecha_fin IS NULL) t 
+                        ON s.id_sede = t.id_sede";
+
+            $comisiones_sedes = $this->consultarFilas($sql, [$this->id_categoria_servicio]);
+
+            $data["comisiones_sedes"] = $comisiones_sedes;
+
             return $data;
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);

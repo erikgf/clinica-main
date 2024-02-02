@@ -25,6 +25,8 @@ var Medico = function(_template, _$tabla, _$tbody){
         $tbbMedicos;
 
     var TR_FILA = null;
+
+    this._sedes = [];
     
     this.setInit = function(){
         tplMedicos  = _template;
@@ -278,12 +280,14 @@ var Medico = function(_template, _$tabla, _$tbody){
             type: "POST",
             dataType: 'json',
             delay: 250,
-            success: function(result){
+            success: (result) => {
                 let $html = `<option value="">Seleccionar</option>`;
                 result.forEach(item => {
                     $html += `<option value="${item.id}">${item.descripcion}</option>`
                 });
                 $txtSede.html($html);
+
+                this._sedes = result;
             },
             error: function (request) {
                 toastr.error(request.responseText);

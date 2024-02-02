@@ -52,7 +52,7 @@ var LiquidacionesIndividualMedicos = function() {
                 return;
             }
             */
-            cargarMedicos();
+            //cargarMedicos();
             //cargarAtenciones();
         });
 
@@ -77,7 +77,7 @@ var LiquidacionesIndividualMedicos = function() {
 
         $txtTotalesMayoresA.on("change", function(e){
             if (this.value == ""){
-                $txtTotalesMayoresA = "100.00";
+                $txtTotalesMayoresA.val("100.00");
             }
             cargarMedicos();
             /*
@@ -88,7 +88,16 @@ var LiquidacionesIndividualMedicos = function() {
 
         $btnImprimir.on("click", function(e){
             e.preventDefault();
-            window.open("../../../impresiones/liquidacion.individual.medicos.php?fi="+$txtFechaInicio.val()+"&ff="+$txtFechaFin.val()+"&tt="+$txtTotalesMayoresA.val()+"&idm="+$txtMedicos.val(),"_blank")
+            const sentData = {
+                fi: $txtFechaInicio.val(),
+                ff: $txtFechaFin.val(),
+                tt: $txtTotalesMayoresA.val(),
+                idm : $txtMedicos.val(),
+                s : $txtSede.val()
+            };
+
+            const params = new URLSearchParams(sentData);
+            window.open(`../../../impresiones/liquidacion.individual.medicos.php?${params.toString()}`,"_blank")
         });
 
         $btnVerResultados.on("click", function(e){

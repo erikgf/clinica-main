@@ -3,6 +3,7 @@ var Area = function(_template, _$tabla, _$tbody){
         $txtIdArea,
         $txtDescripcion,
         $txtComision,
+        $blkComisiones,
         $btnEliminar,
         $btnGuardar;
 
@@ -26,6 +27,7 @@ var Area = function(_template, _$tabla, _$tbody){
         $mdl = $("#mdl-area");
         $txtIdArea = $("#txt-area-seleccionado");
         $txtDescripcion = $("#txt-area-descripcion");
+        $blkComisiones = $("#blk-area-comisiones");
         $txtComision = $("#txt-area-comision");
         $btnEliminar = $("#btn-area-eliminar");
         $btnGuardar = $("#btn-area-guardar");
@@ -48,10 +50,32 @@ var Area = function(_template, _$tabla, _$tbody){
         });
     };
 
+
+    this.renderComisionesSede = (data = null) => {
+        if (Boolean(data)){
+            return data.map((item) => {
+                return `<div class="form-group">
+                            <label for="txt-area-comision-${item.id}">% ${item.descripcion}</label>
+                            <input type="number" step="0.01" class="form-control text-right txt-comisiones" data-idsede="${item.id}" value="${item.comision}" id="txt-area-comision-${item.id}"/>
+                        </div>`
+            }).join("");
+        }
+
+        const sedes = objMedico._sedes;
+        return sedes.map((item) => {
+            return `<div class="form-group">
+                        <label for="txt-area-comision-${item.id}">% ${item.descripcion}</label>
+                        <input type="number" step="0.01" class="form-control text-right txt-comisiones" data-idsede="${item.id}" id="txt-area-comision-${item.id}"/>
+                    </div>`
+        }).join("");
+    };
+
     this.nuevoRegistro = function(){
         $mdl.find("form")[0].reset();
         $mdl.modal("show");
         $mdl.find(".modal-title").html("Nueva Área");
+
+        $blkComisiones.html(this.renderComisionesSede());
 
         $txtIdArea.val("");
     };
@@ -84,8 +108,10 @@ var Area = function(_template, _$tabla, _$tbody){
 
         $txtIdArea.val(data.id_categoria_servicio);
         $txtDescripcion.val(data.descripcion);
-        $txtComision.val(data.comision_area);
-        
+
+        //$txtComision.val(data.comision_area);
+        $blkComisiones.html(this.renderComisionesSede(data.comisiones_sedes));
+
         $btnEliminar.show();
     };
 
@@ -120,7 +146,15 @@ var Area = function(_template, _$tabla, _$tbody){
     };
 
     this.guardar = function(){
-        var self = this;
+
+        const dataComisiones = $mdl.find(".txt-comisiones").toArray()
+                    .map((itemTxt => {
+                        return {
+                            id_sede: itemTxt.dataset.idsede,
+                            comision: itemTxt.value === "" ? 0.00 : itemTxt.value
+                        }
+                    }));
+
         $.ajax({ 
             url : VARS.URL_CONTROLADOR+"categoria.servicio.controlador.php?op=guardar",
             type: "POST",
@@ -129,15 +163,16 @@ var Area = function(_template, _$tabla, _$tbody){
             data: {
                 p_id_categoria_servicio : $txtIdArea.val(),
                 p_descripcion : $txtDescripcion.val(),
-                p_comision: $txtComision.val()
+                //p_comision: $txtComision.val()
+                p_comisiones: JSON.stringify(dataComisiones)
             },
-            success: function(result){
+            success: (result) => {
                 toastr.success(result.msj);
-                self.cargar();
+                this.cargar();
                 
                 $mdl.modal("hide");
             },
-            error: function (request) {
+            error: (request) => {
                 toastr.error(request.responseText);
                 return;
             },

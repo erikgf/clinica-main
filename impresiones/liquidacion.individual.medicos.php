@@ -20,6 +20,7 @@ $id_medico = isset($_GET["idm"]) ? $_GET["idm"] : "";
 $fecha_inicio = isset($_GET["fi"]) ? $_GET["fi"] : NULL;
 $fecha_fin = isset($_GET["ff"]) ? $_GET["ff"] : NULL;
 $totales_mayores_a =  isset($_GET["tt"]) ? $_GET["tt"] : "0";
+$id_sede =  isset($_GET["s"]) ? $_GET["s"] : "";
 
 if ($fecha_inicio == NULL){
     echo "No se ha ingresado parámeteo de FECHA DE INICIO";
@@ -50,7 +51,7 @@ require "../negocio/Medico.clase.php";
 try {
   $obj = new Medico();
   $obj->id_medico = $id_medico;
-  $data = $obj->listarAtencionesComisionParaLiquidacionXMedicoImprimir($fecha_inicio, $fecha_fin, $totales_mayores_a);
+  $data = $obj->listarAtencionesComisionParaLiquidacionXMedicoImprimir($fecha_inicio, $fecha_fin, $totales_mayores_a, $id_sede);
 
   if (count($data) <= 0){
     echo "Sin datos encontrado.";
@@ -97,6 +98,9 @@ foreach ($data as $key => $data_medico) {
 
     $pdf->SetFont($FONT,'', 9.5+ $aumento_font); 
     $pdf->Cell($ANCHO_TICKET,$ALTO_LINEA + .75, utf8_decode("LIQUIDACIÓN DETALLADA DE MÉDICO"),$BORDES,1,"C");
+
+    $pdf->SetFont($FONT,'', 7+ $aumento_font);
+    $pdf->Cell($ANCHO_TICKET,$ALTO_LINEA + .5, utf8_decode($data_medico["sede"]),$BORDES,1,"C");
 
     $pdf->SetFont($FONT,'', 11.5+ $aumento_font);
     $pdf->Cell($ANCHO_TICKET,$ALTO_LINEA + .75, utf8_decode($data_medico["nombres_apellidos"]),$BORDES,1,"C");

@@ -464,4 +464,46 @@ class Funciones {
         return (date('Y-m-d', strtotime($stringDate)) == $stringDate);
     }
 
+    public static function reagruparArregloPorKeys(array $arregloPrincipal, array $keys, string $nombreDetalle = "items"): array{
+        $arregloRetorno = [];
+        $ultimoKeyItem = "";
+        $actualKeyItem = "";
+        $actualItem = NULL;
+
+        foreach ($arregloPrincipal as $i => $item) {
+            $actualKeyItem = "";
+            foreach ($keys as $j => $keyValue) {
+                $actualKeyItem .= $item[$keyValue];
+            }
+
+            if ($ultimoKeyItem != $actualKeyItem){
+                if($actualItem){
+                    array_push($arregloRetorno, $actualItem);
+                    $actualItem = NULL;
+                }
+
+                if ($actualItem == NULL){
+                    foreach ($keys as $j => $keyValue) {
+                        $actualItem[$keyValue] = $item[$keyValue];
+                    }
+                    $actualItem[$nombreDetalle] = [];
+                }
+            }
+
+
+            $ultimoKeyItem = $actualKeyItem;
+            foreach ($keys as $j => $keyValue) {
+                unset($item[$keyValue]);
+            }
+            
+            array_push($actualItem[$nombreDetalle], $item);
+        }
+
+        if ($actualItem){
+            array_push($arregloRetorno, $actualItem);
+        }
+
+        return $arregloRetorno;
+   }
+
 }      
