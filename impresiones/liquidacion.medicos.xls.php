@@ -105,7 +105,7 @@ try {
 
       $nombreSede = $sede["sede"];
       impresionSheet(
-        $spreadsheet, $nombreSede, $nombreSede, $fecha_fin, $fecha_fin, $sede["medicos"]
+        $spreadsheet, $nombreSede, $nombreSede, $fecha_inicio, $fecha_fin, $sede["medicos"]
       );
       $sheets ++;
     }
