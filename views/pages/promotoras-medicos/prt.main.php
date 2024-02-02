@@ -104,7 +104,6 @@
                     </div>   
                 </div>
             </div>
-            
         </div>
 
         <div class="tab-pane fade show" id="blk-tabs-liquidacionmedicos" role="tabpanel" aria-labelledby="tabs-liquidacionmedicos">
@@ -139,7 +138,7 @@
                                     <select class="form-control" id="txt-sede-liquidaciontotal"></select>
                                 </div>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <button class="btn btn-primary btn-verresultados-liquidaciontotal"><span class="fa fa-search"></span> VER RESULTADOS</button>
                                 <p></p>
                                 <div class="btn-group">
