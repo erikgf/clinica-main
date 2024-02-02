@@ -53,7 +53,7 @@ class Comision extends Conexion {
         }
     }
 
-    public function obtenerComisionCategoriaServicio($id_servicio){
+    public function obtenerComisionCategoriaServicio($id_servicio, $id_sede_ordenante = 1){
         try {
 
             $sql = "SELECT id_categoria_servicio, comision  as porcentaje_comision 
@@ -67,13 +67,12 @@ class Comision extends Conexion {
             if ($objServicioComision["porcentaje_comision"] <= 0.00){
                 $sql = "SELECT ecc.id_categoria_servicio, ecc.porcentaje_comision
                         FROM categoria_porcentaje_comision ecc
-                        WHERE ecc.id_categoria_servicio IN (:0) 
+                        WHERE ecc.id_categoria_servicio IN (:0) AND ecc.id_sede = :1
                                 AND estado_validez = 'A' AND fecha_fin IS NULL AND ecc.estado_mrcb";
-                $objCategoriaComision = $this->consultarFila($sql, $objServicioComision["id_categoria_servicio"]);
+                $objCategoriaComision = $this->consultarFila($sql, [$objServicioComision["id_categoria_servicio"], $id_sede_ordenante]);
                 if ($objCategoriaComision != false){
                     return $objCategoriaComision;
                 }
-
             }
 
             return $objServicioComision;

@@ -346,7 +346,7 @@ class AtencionMedica extends Conexion {
                 $objServicio = $this->servicios[$i];
                 $objServicio->cantidad = $objServicio->cantidad == NULL ? "1" : $objServicio->cantidad;
                 $subtotal = $objServicio->precio_unitario * $objServicio->cantidad;
-                $objCategoriaComision = $objComision->obtenerComisionCategoriaServicio($objServicio->id_servicio);
+                $objCategoriaComision = $objComision->obtenerComisionCategoriaServicio($objServicio->id_servicio, $id_sede_ordenante);
 
                 if ($i == 0 && $posible_descuento != NULL){
                     $monto_comision_categoria = round($objCategoriaComision["porcentaje_comision"] * ($subtotal - $posible_descuento),3);
