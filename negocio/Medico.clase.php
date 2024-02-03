@@ -363,7 +363,7 @@ class Medico extends Conexion {
 
             $sqlSede = " true ";
             if ($id_sede != ""){
-                $sqlMedico = " am.id_sede_ordenante = :".count($params)." ";
+                $sqlSede = " am.id_sede_ordenante = :".count($params)." ";
                 array_push($params, $id_sede);
             }
 
