@@ -495,7 +495,7 @@ class Medico extends Conexion {
         }
     }
 
-    public function listarMedicosLiquidacionXPromotoraImprimir($fecha_inicio, $fecha_fin, $id_sede){
+    public function listarMedicosLiquidacionXPromotoraImprimir($fecha_inicio, $fecha_fin){
         try {
 
             $sql = "SELECT descripcion as nombre_promotora, 
@@ -508,11 +508,6 @@ class Medico extends Conexion {
 
             if ($cabecera == false){
                 throw new Exception("ID Promotora no encontrado.", 1);
-            }
-
-            $sqlSede = " true ";
-            if ($id_sede != ""){
-                $sqlSede = " am.id_sede_ordenante = $id_sede ";
             }
 
             $sql = "SELECT 
@@ -528,7 +523,7 @@ class Medico extends Conexion {
                         INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
                         INNER JOIN sede s ON s.id_sede = am.id_sede_ordenante
                         WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) 
-                                AND id_medico_ordenante NOT IN (1,2) AND id_promotora_ordenante = :2 AND  $sqlSede
+                                AND id_medico_ordenante NOT IN (1,2) AND id_promotora_ordenante = :2 
                         GROUP BY m.id_medico, s.nombre, m.nombres_apellidos
                         HAVING comision_sin_igv > 0.00
                         ORDER BY s.nombre, m.nombres_apellidos";

@@ -18,7 +18,6 @@ $login = Sesion::obtenerSesion()["nombre_usuario"];
 $id_promotora = isset($_GET["idp"]) ? $_GET["idp"] : "";
 $fecha_inicio = isset($_GET["fi"]) ? $_GET["fi"] : NULL;
 $fecha_fin = isset($_GET["ff"]) ? $_GET["ff"] : NULL;
-$id_sede = isset($_GET["s"]) ? $_GET["s"] : "";
 
 if ($fecha_inicio == NULL){
     echo "No se ha ingresado parámetro de FECHA DE INICIO";
@@ -41,7 +40,7 @@ require "../negocio/Medico.clase.php";
 try {
   $obj = new Medico();
   $obj->id_promotora = $id_promotora;
-  $data = $obj->listarMedicosLiquidacionXPromotoraImprimir($fecha_inicio, $fecha_fin, $id_sede);
+  $data = $obj->listarMedicosLiquidacionXPromotoraImprimir($fecha_inicio, $fecha_fin);
 
   if (count($data) <= 0){
     echo "Sin datos encontrado.";

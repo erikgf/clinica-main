@@ -3,6 +3,7 @@
 date_default_timezone_set('America/Lima');
 require_once '../datos/datos.empresa.php';
 require_once "../negocio/Sesion.clase.php";
+require "../negocio/util/Funciones.php";
 include_once "../plugins/phspreadsheet/vendor/autoload.php";
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -48,68 +49,88 @@ try {
   exit;
 }
 
+function impresionSheet($spreadsheet, $promotora,  $fecha_inicio, $fecha_fin, $sede){
+  $alfabeto = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  $sheetActivo = $spreadsheet->getActiveSheet();
+
+  $actualFila = 1;
+  $sheetActivo->setCellValue($alfabeto[0].$actualFila++, "INFORME DE LIQUIDACIÓN MÉDICOS: ".$promotora["nombre_promotora"]. " - ".$sede["sede"]);	
+  $sheetActivo->setCellValue($alfabeto[0].$actualFila++, "Fechas : "."DEL ".$fecha_inicio." AL ".$fecha_fin);	
+
+  $actualFila++;
+
+  $arregloCabecera = [
+                      ["ancho"=>10,"rotulo"=>"CÓDIGO"],
+                      ["ancho"=>70,"rotulo"=>"APELLIDOS NOMBRES MÉDICO"],
+                      ["ancho"=>20,"rotulo"=>"TOTAL SIN IGV" ],
+                      ["ancho"=>20,"rotulo"=>"COMISIÓN SIN IGV" ],
+                      ["ancho"=>20,"rotulo"=>"CANTIDAD SERVICIOS" ]
+                  ];
+
+  foreach ($arregloCabecera as $key => $value) {
+      $columna = $alfabeto[$key];
+      $sheetActivo->setCellValue($columna.$actualFila, $value["rotulo"]);			
+      $sheetActivo->getColumnDimension($columna)->setWidth($value["ancho"]);
+  }
+  
+  $subCabeceraEstilos = array('font' => array('bold' => true, 'name' => 'Arial','size' => 10),
+                              'alignment' => array('horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+                              );
+  $sheetActivo->getStyle('A'.$actualFila.':'.$columna.$actualFila)->applyFromArray($subCabeceraEstilos);
+
+  $actualFila++;
+
+  $primeraFila = $actualFila;
+
+  $registros = $sede["registros"];
+
+  foreach ($registros as $key => $registro) {
+      $i = 0;
+      $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["codigo"]);
+      $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["medicos"]);
+      $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["subtotal_sin_igv"]);
+      $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["comision_sin_igv"]);
+      $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["cantidad_servicios"]);
+      $actualFila++;
+  }
+  $ultimaFila = $actualFila - 1;
+  $actualFila = $actualFila + 3;
+
+  $sheetActivo->setCellValue($alfabeto[1].$actualFila, "PAGO PROMOTORA");	
+  $sheetActivo->setCellValue($alfabeto[1].$actualFila + 1, ($promotora["porcentaje_comision"] / 100));	
+  $sheetActivo->setCellValue($alfabeto[2].$actualFila, "TOTAL");	
+  $sheetActivo->setCellValue($alfabeto[2].$actualFila + 1,"=SUM(C".$primeraFila.":C".$ultimaFila.")");	
+  $sheetActivo->setCellValue($alfabeto[3].$actualFila, "COMISIÓN");	
+  $sheetActivo->setCellValue($alfabeto[3].$actualFila + 1,"=PRODUCT(B".($actualFila + 1).",C".($actualFila + 1).")");	
+
+  $estilosFinales = array('font' => array('bold' => true, 'name' => 'Arial','size' => 12),
+                              'alignment' => array('horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+                              );
+
+  $sheetActivo->getStyle('A'.$actualFila.':'.$alfabeto[3].$actualFila)->applyFromArray($estilosFinales);
+
+  $spreadsheet->getActiveSheet()->setTitle($sede["sede"]);	
+}
+
 try {
     $spreadsheet = new Spreadsheet();
+    $sheets = $spreadsheet->getSheetCount();
+    $sedes = $data["sedes"];
+
+    foreach ($sedes as $key => $sede) {
+      if ($sheets > 1){
+        $myWorkSheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($spreadsheet, 'My Data');
+        $spreadsheet->addSheet($myWorkSheet, $sheets - 1);
+        $spreadsheet->setActiveSheetIndex($sheets - 1);
+      }
+
+      impresionSheet(
+        $spreadsheet, $data, $fecha_inicio, $fecha_fin, $sede
+      );
+      $sheets++;
+    }
 
     $spreadsheet->setActiveSheetIndex(0);
-    $alfabeto = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    $sheetActivo = $spreadsheet->getActiveSheet();
-
-    $actualFila = 1;
-    $sheetActivo->setCellValue($alfabeto[0].$actualFila++, "INFORME DE LIQUIDACIÓN MÉDICOS: ".$data["nombre_promotora"]);	
-    $sheetActivo->setCellValue($alfabeto[0].$actualFila++, "Fechas : "."DEL ".$fecha_inicio." AL ".$fecha_fin);	
-
-    $actualFila++;
-
-    $arregloCabecera = [
-                        ["ancho"=>10,"rotulo"=>"CÓDIGO"],
-                        ["ancho"=>70,"rotulo"=>"APELLIDOS NOMBRES MÉDICO"],
-                        ["ancho"=>20,"rotulo"=>"TOTAL SIN IGV" ],
-                        ["ancho"=>20,"rotulo"=>"COMISIÓN SIN IGV" ],
-                        ["ancho"=>20,"rotulo"=>"CANTIDAD SERVICIOS" ]
-                    ];
-
-    foreach ($arregloCabecera as $key => $value) {
-        $columna = $alfabeto[$key];
-        $sheetActivo->setCellValue($columna.$actualFila, $value["rotulo"]);			
-        $sheetActivo->getColumnDimension($columna)->setWidth($value["ancho"]);
-    }
-    
-    $subCabeceraEstilos = array('font' => array('bold' => true, 'name' => 'Arial','size' => 10),
-                                'alignment' => array('horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
-                                );
-    $sheetActivo->getStyle('A'.$actualFila.':'.$columna.$actualFila)->applyFromArray($subCabeceraEstilos);
-
-    $actualFila++;
-    $registros = $data["registros"];
-
-    $primeraFila = $actualFila;
-    foreach ($registros as $key => $registro) {
-        $i = 0;
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["codigo"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["medicos"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["subtotal_sin_igv"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["comision_sin_igv"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["cantidad_servicios"]);
-        $actualFila++;
-    }
-    $ultimaFila = $actualFila - 1;
-    $actualFila = $actualFila + 3;
-
-    $sheetActivo->setCellValue($alfabeto[1].$actualFila, "PAGO PROMOTORA");	
-    $sheetActivo->setCellValue($alfabeto[1].$actualFila + 1, ($data["porcentaje_comision"] / 100));	
-    $sheetActivo->setCellValue($alfabeto[2].$actualFila, "TOTAL");	
-    $sheetActivo->setCellValue($alfabeto[2].$actualFila + 1,"=SUM(C".$primeraFila.":C".$ultimaFila.")");	
-    $sheetActivo->setCellValue($alfabeto[3].$actualFila, "COMISIÓN");	
-    $sheetActivo->setCellValue($alfabeto[3].$actualFila + 1,"=PRODUCT(B".($actualFila + 1).",C".($actualFila + 1).")");	
-
-    $estilosFinales = array('font' => array('bold' => true, 'name' => 'Arial','size' => 12),
-                                'alignment' => array('horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
-                                );
-
-    $sheetActivo->getStyle('A'.$actualFila.':'.$alfabeto[3].$actualFila)->applyFromArray($estilosFinales);                            
-
-    $spreadsheet->getActiveSheet()->setTitle($titulo_xls);	
 
     $writer = new Xlsx($spreadsheet);
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
