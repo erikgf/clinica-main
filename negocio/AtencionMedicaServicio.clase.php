@@ -1043,7 +1043,7 @@ class AtencionMedicaServicio extends Conexion {
 
                 if ($idSede != "*"){
                     array_push($params, $idSede);
-                    $sqlWhereSede = " AND id_sede = :".(count($params) - 1);
+                    $sqlWhereSede = " AND ca.id_sede = :".(count($params) - 1);
                 }
 
                 $sqlWhereEstado = " AND fue_atendido IN (0,1) ";
@@ -1060,7 +1060,7 @@ class AtencionMedicaServicio extends Conexion {
         
                 $sql  = "SELECT 
                     amd.id_atencion_medica_servicio,
-                    (CASE id_sede WHEN 1 THEN 'CHICLAYO' ELSE 'LAMBAYEQUE' END) as sede,
+                    (CASE ca.id_sede WHEN 1 THEN 'CHICLAYO' ELSE 'LAMBAYEQUE' END) as sede,
                     DATE_FORMAT(am.fecha_atencion,'%d-%m-%Y') as fecha_atencion, 
                     (CASE amd.fue_atendido WHEN '0' THEN 'PENDIENTE' WHEN '1' THEN 'REALIZADO' ELSE 'CANCELADO' END) as estado,
                     CONCAT(ca.serie_atencion,'-',cim.correlativo_atencion) as recibo,
