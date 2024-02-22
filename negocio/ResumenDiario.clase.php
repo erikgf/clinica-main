@@ -836,8 +836,8 @@ class ResumenDiario extends Conexion {
                                     cdr_descripcion = CONCAT('La ',
                                     CASE 
                                               WHEN idtipo_comprobante = '03' THEN CONCAT('Boleta de Venta número ', serie,'-',LPAD(numero_correlativo,6,'0')) 
-                                              WHEN idtipo_comprobante = '07' THEN CONCAT('Nota de Crédito número', serie,'-',LPAD(numero_correlativo,6,'0')) 
-                                              ELSE CONCAT('Nota de Débito número', serie,'-',LPAD(numero_correlativo,6,'0')) 
+                                              WHEN idtipo_comprobante = '07' THEN CONCAT('Nota de Crédito número ', serie,'-',LPAD(numero_correlativo,6,'0')) 
+                                              ELSE CONCAT('Nota de Débito número ', serie,'-',LPAD(numero_correlativo,6,'0')) 
                                               END, ', ha sido aceptada')
                                     WHERE estado_mrcb AND CONCAT(serie,numero_correlativo,idtipo_comprobante) IN (SELECT CONCAT(dersd.serie_comprobante, dersd.numero_correlativo_comprobante,dersd.idtipo_comprobante)
                                     FROM `documento_electronico_resumen_diario` ders
