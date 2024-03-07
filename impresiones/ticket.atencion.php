@@ -23,8 +23,10 @@ if ($id == NULL){
     exit;
 }
 
-$fecha_impresion = strftime("%d/%m/%Y");
-$fecha_qr = strftime( "%Y-%m-%d" );
+
+$fecha_impresion = date('d/m/Y');
+$fecha_qr =  date('Y-m-d');
+
 
 require "../negocio/AtencionMedica.clase.php";
 

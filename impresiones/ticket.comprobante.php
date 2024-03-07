@@ -28,8 +28,8 @@ if ($id == NULL){
    exit;
 }
 
-$fecha_impresion = strftime("%d/%m/%Y");
-$fecha_qr = strftime( "%Y-%m-%d" );
+$fecha_impresion = date('d/m/Y');
+$fecha_qr =  date('Y-m-d');
 
 $empresa = F_RAZON_SOCIAL_IMPRESIONES;
 $ruc = "R.U.C.: ".F_RUC;
