@@ -2,9 +2,7 @@
 
 namespace PhpOffice\PhpSpreadsheet\Calculation\Statistical;
 
-use PhpOffice\PhpSpreadsheet\Calculation\Functions;
-
-class StandardDeviations extends VarianceBase
+class StandardDeviations
 {
     /**
      * STDEV.
@@ -19,36 +17,14 @@ class StandardDeviations extends VarianceBase
      *
      * @return float|string The result, or a string containing an error
      */
-    public static function STDEV(...$args)
+    public static function STDEV(mixed ...$args)
     {
-        $aArgs = Functions::flattenArrayIndexed($args);
-
-        $aMean = Averages::AVERAGE($aArgs);
-
-        if (!is_string($aMean)) {
-            $returnValue = 0.0;
-            $aCount = -1;
-
-            foreach ($aArgs as $k => $arg) {
-                if (
-                    (is_bool($arg)) &&
-                    ((!Functions::isCellValue($k)) || (Functions::getCompatibilityMode() == Functions::COMPATIBILITY_OPENOFFICE))
-                ) {
-                    $arg = (int) $arg;
-                }
-                // Is it a numeric value?
-                if ((is_numeric($arg)) && (!is_string($arg))) {
-                    $returnValue += ($arg - $aMean) ** 2;
-                    ++$aCount;
-                }
-            }
-
-            if ($aCount > 0) {
-                return sqrt($returnValue / $aCount);
-            }
+        $result = Variances::VAR(...$args);
+        if (!is_numeric($result)) {
+            return $result;
         }
 
-        return Functions::DIV0();
+        return sqrt((float) $result);
     }
 
     /**
@@ -60,37 +36,15 @@ class StandardDeviations extends VarianceBase
      *        STDEVA(value1[,value2[, ...]])
      *
      * @param mixed ...$args Data values
-     *
-     * @return float|string
      */
-    public static function STDEVA(...$args)
+    public static function STDEVA(mixed ...$args): float|string
     {
-        $aArgs = Functions::flattenArrayIndexed($args);
-
-        $aMean = Averages::AVERAGEA($aArgs);
-
-        if (!is_string($aMean)) {
-            $returnValue = 0.0;
-            $aCount = -1;
-
-            foreach ($aArgs as $k => $arg) {
-                if ((is_bool($arg)) && (!Functions::isMatrixValue($k))) {
-                } else {
-                    // Is it a numeric value?
-                    if ((is_numeric($arg)) || (is_bool($arg)) || ((is_string($arg) && ($arg != '')))) {
-                        $arg = self::datatypeAdjustmentAllowStrings($arg);
-                        $returnValue += ($arg - $aMean) ** 2;
-                        ++$aCount;
-                    }
-                }
-            }
-
-            if ($aCount > 0) {
-                return sqrt($returnValue / $aCount);
-            }
+        $result = Variances::VARA(...$args);
+        if (!is_numeric($result)) {
+            return $result;
         }
 
-        return Functions::DIV0();
+        return sqrt((float) $result);
     }
 
     /**
@@ -102,39 +56,15 @@ class StandardDeviations extends VarianceBase
      *        STDEVP(value1[,value2[, ...]])
      *
      * @param mixed ...$args Data values
-     *
-     * @return float|string
      */
-    public static function STDEVP(...$args)
+    public static function STDEVP(mixed ...$args): float|string
     {
-        $aArgs = Functions::flattenArrayIndexed($args);
-
-        $aMean = Averages::AVERAGE($aArgs);
-
-        if (!is_string($aMean)) {
-            $returnValue = 0.0;
-            $aCount = 0;
-
-            foreach ($aArgs as $k => $arg) {
-                if (
-                    (is_bool($arg)) &&
-                    ((!Functions::isCellValue($k)) || (Functions::getCompatibilityMode() == Functions::COMPATIBILITY_OPENOFFICE))
-                ) {
-                    $arg = (int) $arg;
-                }
-                // Is it a numeric value?
-                if ((is_numeric($arg)) && (!is_string($arg))) {
-                    $returnValue += ($arg - $aMean) ** 2;
-                    ++$aCount;
-                }
-            }
-
-            if ($aCount > 0) {
-                return sqrt($returnValue / $aCount);
-            }
+        $result = Variances::VARP(...$args);
+        if (!is_numeric($result)) {
+            return $result;
         }
 
-        return Functions::DIV0();
+        return sqrt((float) $result);
     }
 
     /**
@@ -146,36 +76,14 @@ class StandardDeviations extends VarianceBase
      *        STDEVPA(value1[,value2[, ...]])
      *
      * @param mixed ...$args Data values
-     *
-     * @return float|string
      */
-    public static function STDEVPA(...$args)
+    public static function STDEVPA(mixed ...$args): float|string
     {
-        $aArgs = Functions::flattenArrayIndexed($args);
-
-        $aMean = Averages::AVERAGEA($aArgs);
-
-        if (!is_string($aMean)) {
-            $returnValue = 0.0;
-            $aCount = 0;
-
-            foreach ($aArgs as $k => $arg) {
-                if ((is_bool($arg)) && (!Functions::isMatrixValue($k))) {
-                } else {
-                    // Is it a numeric value?
-                    if ((is_numeric($arg)) || (is_bool($arg)) || ((is_string($arg) && ($arg != '')))) {
-                        $arg = self::datatypeAdjustmentAllowStrings($arg);
-                        $returnValue += ($arg - $aMean) ** 2;
-                        ++$aCount;
-                    }
-                }
-            }
-
-            if ($aCount > 0) {
-                return sqrt($returnValue / $aCount);
-            }
+        $result = Variances::VARPA(...$args);
+        if (!is_numeric($result)) {
+            return $result;
         }
 
-        return Functions::DIV0();
+        return sqrt((float) $result);
     }
 }

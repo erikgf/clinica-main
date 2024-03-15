@@ -2553,4 +2553,46 @@ class DocumentoElectronico extends Conexion {
             throw new Exception($exc->getMessage());
         }
     }
+
+    public function generarComprobanteFechas($fechaInicio, $fechaFin){
+        try {
+            
+
+            $this->beginTransaction();
+
+            $sql = "SELECT iddocumento_electronico as id, idtipo_comprobante as idtipocomprobante
+                    FROM `documento_electronico` 
+                    WHERE fecha_emision  >= :0 AND fecha_emision <= :1 and idtipo_comprobante IN ('01','07') AND estado_mrcb";
+
+            $facturas = $this->consultarFilas($sql, [$fechaInicio, $fechaFin]);
+
+            $this->registrar_en_bbdd= false;
+            $this->generar_xml = true;
+            $this->firmar_comprobante = true;
+
+            $registrados = 0;
+            $datax = [];
+            foreach ($facturas as $key => $value) {
+                $this->id_documento_electronico = $value["id"];
+                $tc = $value["idtipocomprobante"];
+                if ($tc == "01" || $tc == "03"){
+                    $data = $tc == "01" ? $this->generarFactura() : $this->generarBoleta();
+                } else {
+                    $data = $this->generarComprobante($tc);
+                }
+
+                if ($data){
+                    $registrados++;
+                    array_push($datax, $data);
+                }
+            }
+
+            $this->commit();
+            return ["msj"=>"Registro realizado correctamente.",  "registrados"=>$registrados, "datax"=>$datax];  
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
+        }
+    }
+
+
 }

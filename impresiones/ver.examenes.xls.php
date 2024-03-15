@@ -1,6 +1,8 @@
 <?php 
 /*hacer que solo imprimir si usuario de la sesion == idusuario*/
-date_default_timezone_set('America/Lima');
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 require_once '../datos/datos.empresa.php';
 require_once "../negocio/Sesion.clase.php";
 include_once "../plugins/phspreadsheet/vendor/autoload.php";
@@ -54,6 +56,7 @@ try {
   exit;
 }
 
+
 try {
     $spreadsheet = new Spreadsheet();
 
@@ -101,6 +104,9 @@ try {
     $colorCancelado = array('font' => array('color' => ['argb' => 'EB2B02']));
     $colorRealizado = array('font' => array('color' => ['argb' => '1b663e']));
 
+
+
+
     foreach ($data as $key => $registro) {
         $i = 0;
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["rotulo_atendido"]);
@@ -127,6 +133,7 @@ try {
 
         $actualFila++;
     }
+
 
     $spreadsheet->getActiveSheet()->setTitle($titulo_xls);
 

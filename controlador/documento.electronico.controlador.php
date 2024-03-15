@@ -63,6 +63,15 @@ try {
             Funciones::imprimeJSON("200", "OK", $data );
         break;
 
+        case "generar_firmar_fechas_xml":	
+            $fi = $_POST["p_fi"];
+            $ff = $_POST["p_ff"];
+
+            $data = $obj->generarComprobanteFechas($fi, $ff);
+
+            Funciones::imprimeJSON("200", "OK", $data );
+        break;
+
         case "consultar_documento_cliente":
             $numero_documento = isset($_POST["p_numero_documento"]) ? $_POST["p_numero_documento"] : "";
             Funciones::imprimeJSON("200", "OK", $obj->consultarDocumentoCliente($numero_documento));

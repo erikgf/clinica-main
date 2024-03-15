@@ -30,8 +30,8 @@ if ($id == NULL){
    exit;
 }
 
-$fecha_impresion = strftime("%d/%m/%Y");
-$fecha_qr = strftime( "%Y-%m-%d" );
+$fecha_impresion = date("d/m/Y");
+$fecha_qr = date( "Y-m-d" );
 
 
 $razon_social = F_RAZON_SOCIAL;
@@ -480,8 +480,8 @@ $id_tipo_documento_cliente = $datos["id_tipo_documento_cliente"];
 $numero_documento_cliente = $datos["numero_documento_cliente"];
 $razon_social_cliente = utf8_decode($datos["cliente"]);
 $direccion_cliente = utf8_decode($datos["direccion_cliente"]);
-$paciente = utf8_decode($datos["paciente"]);
-$tipo_paciente = utf8_decode($datos["tipo_paciente"]);
+$paciente = utf8_decode($datos["paciente"] ?? "");
+$tipo_paciente = utf8_decode($datos["tipo_paciente"] ?? "");
 $empresa_aseguradora = "";
 $total_letras = $datos["total_letras"];
 $observaciones = $datos["observaciones"];
