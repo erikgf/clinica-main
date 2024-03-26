@@ -18,42 +18,70 @@
                         <div class="card-header">
                             <h3 class="card-title">Exportar a CONCAR</h3>
                         </div>
-                        <form class="card-body">
-                            <div class="row">
-                                <div class="col-md-2 col-sm-6">
-                                    <div class="form-group input-group-sm">
-                                        <label for="txt-fechainicio">Fecha Inicio</label>
-                                        <input type="date" name="txt-fechainicio" id="txt-fechainicio" required class="form-control"/>
+                        <div class="card-body">
+                            <form id="frm-ventasanexos">
+                                <h4>Ventas y Anexos</h4>
+                                <div class="row">
+                                    <div class="col-md-2 col-lg-1 col-sm-6">
+                                        <div class="form-group input-group-sm">
+                                            <label for="txt-fechainicio">Fecha Inicio</label>
+                                            <input type="date" name="txt-fechainicio" id="txt-fechainicio" required class="form-control"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 col-lg-1 col-sm-6">
+                                        <div class="form-group input-group-sm">
+                                            <label for="txt-fechafin">Fecha Fin</label>
+                                            <input type="date" name="txt-fechafin" id="txt-fechafin" required class="form-control"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 col-lg-1 col-sm-6">
+                                        <div class="form-group input-group-sm">
+                                            <label for="txt-correlativo-inicio">Correlativo</label>
+                                            <input type="numeric" name="txt-correlativo-inicio" placeholder="Ejemplo: 1" required id="txt-correlativo-inicio" required class="form-control"/>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-2 col-sm-6">
-                                    <div class="form-group input-group-sm">
-                                        <label for="txt-fechafin">Fecha Fin</label>
-                                        <input type="date" name="txt-fechafin" id="txt-fechafin" required class="form-control"/>
-                                    </div>
-                                </div>
-                                <div class="col-md-2 col-sm-6">
-                                    <div class="form-group input-group-sm">
-                                        <label for="txt-correlativo-inicio">Correlativo</label>
-                                        <input type="numeric" name="txt-correlativo-inicio" placeholder="Ejemplo: 1" required id="txt-correlativo-inicio" required class="form-control"/>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="row">
-                                <!--
-                                <div class="col-md-2 col-sm-6">
-                                    <br>
-                                    <button class="btn btn-primary btn-block" type="submit" id="btn-listar"><span class="fa fa-search"></span> LISTAR</button>
+                                <div class="row">
+                                    <div class="col-md-2 col-lg-1 col-sm-6">
+                                        <button type="submit" class="btn btn-success btn-block" id="btn-exportar"><span class="fa fa-file"></span> EXPORTAR</button>
+                                    </div>
                                 </div>
-                                -->
-                                <div class="col-md-2 col-sm-6">
-                                    <button type="submit" class="btn btn-success btn-block" id="btn-exportar"><span class="fa fa-file-exportar"></span> EXPORTAR</button>
+                            </form>
+                            <hr>
+                            <form id="frm-cancelaciones">
+                                <h4>Cancelaciones de Ventas</h4>
+                                <div class="row">
+                                    <div class="col-md-2 col-lg-1 col-sm-6">
+                                        <div class="form-group input-group-sm">
+                                            <label for="txt-fechainiciocancelaciones">Fecha Inicio</label>
+                                            <input type="date" name="txt-fechainiciocancelaciones" id="txt-fechainiciocancelaciones" required class="form-control"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 col-lg-1 col-sm-6">
+                                        <div class="form-group input-group-sm">
+                                            <label for="txt-fechafincancelaciones">Fecha Fin</label>
+                                            <input type="date" name="txt-fechafincancelaciones" id="txt-fechafincancelaciones" required class="form-control"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 col-lg-1 col-sm-6">
+                                        <div class="form-group input-group-sm">
+                                            <label for="txt-correlativocancelaciones-inicio">Correlativo</label>
+                                            <input type="numeric" name="txt-correlativocancelaciones-inicio" placeholder="Ejemplo: 1" required id="txt-correlativocancelaciones-inicio" required class="form-control"/>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </form>
+
+                                <div class="row">
+                                    <div class="col-md-2 col-lg-1 col-sm-6">
+                                        <button type="submit" class="btn btn-success btn-block" id="btn-exportarcancelaciones"><span class="fa fa-file"></span> EXPORTAR</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
+
             </div>
 
             <!--
