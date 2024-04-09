@@ -11,7 +11,6 @@ $objTemplate->loadContent("prt.main.php");
 
 $_HOY = date("Y-m-d");
 
-
 include_once "../../template.php";
 
 ?>

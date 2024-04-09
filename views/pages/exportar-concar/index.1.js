@@ -17,7 +17,7 @@ const ExportarConcar = function() {
         $txtCorrelativoInicio = $("#txt-correlativo-inicio");
 
         $btnExportar = $("#btn-exportar");
-        $frmVentasAnexos = $("frm-ventasanexos");
+        $frmVentasAnexos = $("#frm-ventasanexos");
 
         $txtFechaInicioCancelaciones = $("#txt-fechainiciocancelaciones");
         $txtFechaFinCancelaciones = $("#txt-fechafincancelaciones");
