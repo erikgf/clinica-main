@@ -15,7 +15,6 @@ if (!Sesion::obtenerSesion()){
 }
 
 $login = utf8_decode(Sesion::obtenerSesion()["nombre_usuario"]);
-
 $id = isset($_GET["id"]) ? $_GET["id"] : NULL;
 
 if ($id == NULL){

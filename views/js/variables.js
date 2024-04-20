@@ -38,8 +38,6 @@ var Util = {
           primerInputEnEstarErrado.focus();
       }
 
-        console.log("campos si ncompletar ", camposSinCompletar);
-
       return camposSinCompletar <= 0;
   },
   formatearFechaCorrectamente : function(fechaFormatoHumano){
