@@ -32,40 +32,46 @@
                         <div class="card-header">
                             <h3 class="card-title">Filtrar</h3>
                         </div>
-                        <div class="card-body row">
-                            <div class="col-md-2 col-sm-6">
-                                <div class="form-group">
-                                    <label for="">Fecha Inicio</label>
-                                    <input type="date" class="txt-fechainicio form-control"/>
+                        <div class="card-body ">
+                            <div class="row">
+                                <div class="col-md-3 col-lg-2 col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label for="">Fecha Inicio</label>
+                                        <input type="date" class="txt-fechainicio form-control"/>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-lg-2 col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label for="">Fecha Fin</label>
+                                        <input type="date" class="txt-fechafin form-control"/>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-lg-2 col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label for="">Comisión Mayor a:</label>
+                                        <input class="form-control" value="100.00" id="txt-totalesmayores-liquidacion"/>
+                                    </div>    
+                                </div>
+                                <div class="col-md-3 col-lg-2 col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label for="">Sede</label>
+                                        <select class="form-control" id="txt-sede-liquidacion"></select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-lg-3 col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label for="">Seleccionar Médico(s)</label>
+                                        <select class="form-control" id="txt-medicos-liquidacion"></select>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-2 col-sm-6">
-                                <div class="form-group">
-                                    <label for="">Fecha Fin</label>
-                                    <input type="date" class="txt-fechafin form-control"/>
+                            <div class="row">
+                                <div class="col-md-3 col-sm-6 col-xs-12 form-group">
+                                    <button class="btn btn-block btn-primary btn-verresultados"><span class="fa fa-search"></span> VER RESULTADOS</button>
                                 </div>
-                            </div>
-                            <div class="col-sm-2">
-                                <div class="form-group">
-                                    <label for="">Comisión Mayor a:</label>
-                                    <input class="form-control" value="100.00" id="txt-totalesmayores-liquidacion"/>
-                                </div>    
-                            </div>
-                            <div class="col-sm-2">
-                                <div class="form-group">
-                                    <label for="">Sede</label>
-                                    <select class="form-control" id="txt-sede-liquidacion"></select>
+                                <div class="col-md-2 col-sm-6 col-xs-12 form-group">
+                                    <button class="btn btn-block btn-info btn-imprimir"><span class="fa fa-print"></span> IMPRIMIR</button>
                                 </div>
-                            </div>
-                            <div class="col-md-4 col-sm-12">
-                                <div class="form-group">
-                                    <label for="">Seleccionar Médico(s)</label>
-                                    <select class="form-control" id="txt-medicos-liquidacion"></select>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-primary btn-verresultados"><span class="fa fa-search"></span> VER RESULTADOS</button>
-                                <button class="btn btn-info btn-imprimir"><span class="fa fa-print"></span> IMPRIMIR</button>
                             </div>
                         </div>
                     </div>
@@ -78,7 +84,7 @@
                         <div class="card-header">
                             <h3 class="card-title">Atenciones</h3>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body overflow-auto">
                             <table class="table table-sm" id="tbl-atenciones">
                                 <thead>
                                     <tr>
@@ -108,47 +114,52 @@
 
         <div class="tab-pane fade show" id="blk-tabs-liquidacionmedicos" role="tabpanel" aria-labelledby="tabs-liquidacionmedicos">
             <div class="row">
-                <div class="col-md-9 col-sm-12">
+                <div class="col-md-12 col-lg-9 col-xs-12">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Filtrar</h3>
                         </div>
-                        <div class="card-body row">
-                            <div class="col-md-2 col-sm-6">
-                                <div class="form-group">
-                                    <label for="">Fecha Inicio</label>
-                                    <input type="date" class="txt-fechainicio-liquidaciontotal form-control"/>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 col-lg-2 col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label for="">Fecha Inicio</label>
+                                        <input type="date" class="txt-fechainicio-liquidaciontotal form-control"/>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-lg-2 col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label for="">Fecha Fin</label>
+                                        <input type="date" class="txt-fechafin-liquidaciontotal form-control"/>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-lg-2 col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label for="">Totales Mayor a:</label>
+                                        <input class="form-control" value="0.00" id="txt-totalesmayores-liquidaciontotal"/>
+                                    </div>    
+                                </div>
+                                <div class="col-md-3 col-lg-2 col-sm-6 col-xs-12">
+                                    <div class="form-group">
+                                        <label for="">Sede</label>
+                                        <select class="form-control" id="txt-sede-liquidaciontotal"></select>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-2 col-sm-6">
-                                <div class="form-group">
-                                    <label for="">Fecha Fin</label>
-                                    <input type="date" class="txt-fechafin-liquidaciontotal form-control"/>
+                            <div class="row">
+                                <div class="col-md-3 col-sm-6 col-xs-12 form-group">
+                                    <button class="btn btn-block btn-primary btn-verresultados-liquidaciontotal"><span class="fa fa-search"></span> VER RESULTADOS</button>
                                 </div>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="form-group">
-                                    <label for="">Totales Mayor a:</label>
-                                    <input class="form-control" value="0.00" id="txt-totalesmayores-liquidaciontotal"/>
-                                </div>    
-                            </div>
-                            <div class="col-md-2">
-                                <div class="form-group">
-                                    <label for="">Sede</label>
-                                    <select class="form-control" id="txt-sede-liquidaciontotal"></select>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <button class="btn btn-primary btn-verresultados-liquidaciontotal"><span class="fa fa-search"></span> VER RESULTADOS</button>
-                                <p></p>
-                                <div class="btn-group">
-                                    <button type="button" class="btn btn-info  dropdown-toggle dropdown-icon"  data-toggle="dropdown"><span class="fa fa-print"></span> IMPRIMIR</button>
-                                        <span class="sr-only">Toggle Dropdown</span>
-                                        <div class="dropdown-menu" role="menu">
-                                            <button class="dropdown-item btn-imprimir-liquidaciontotal-pdf"> PDF</button>
-                                            <button class="dropdown-item btn-imprimir-liquidaciontotal-excel"> EXCEL</button>
-                                        </div>
-                                    </button>
+                                <div class="col-md-2 col-sm-6 col-xs-12 form-group">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-info  dropdown-toggle dropdown-icon"  data-toggle="dropdown"><span class="fa fa-print"></span> IMPRIMIR</button>
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                            <div class="dropdown-menu" role="menu">
+                                                <button class="dropdown-item btn-imprimir-liquidaciontotal-pdf"> PDF</button>
+                                                <button class="dropdown-item btn-imprimir-liquidaciontotal-excel"> EXCEL</button>
+                                            </div>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -162,7 +173,7 @@
                         <div class="card-header">
                             <h3 class="card-title">Médicos</h3>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body overflow-auto">
                             <table class="table table-sm" id="tbl-medicos-liquidaciontotal">
                                 <thead>
                                     <tr>

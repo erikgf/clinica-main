@@ -42,9 +42,9 @@
                         <input type="date" id="txt-fechaatencion" readonly class="form-control"/>
                     </div>
                 </div>
+                <div class="col-md-3"></div>
+                <div class="col-md-5 col-sm-12" id="blk-historial-paciente"></div>
             </div>
-                <!-- -----------------SELECT PATIENT--------------------- -->
-            
             <div class="row">
                 <div class="col-md-5 col-sm-12">
                     <div class="form-group">
@@ -61,6 +61,7 @@
                         <button class="btn btn-info" data-toggle="modal" data-target="#mdl-paciente">GESTIONAR PACIENTES</button>
                     </div>     
                 </div>
+                
             </div>    
             <br>
                 <!-- -----------------SELECT CATEGORY--------------------- -->

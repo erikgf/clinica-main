@@ -13,6 +13,8 @@ var GestionAtenciones = function() {
     var ESTADO = "*";
     var STR_AREA_CACHE = "cache_area";
 
+    var objResumenCantidadExamenes = null;
+
     this.getTemplates = function(){
         var $templateExamenes = $.get("template.examenes.php");
         var $templatePopoverPagos = $.get("template.popover.pagos.php");
@@ -86,7 +88,6 @@ var GestionAtenciones = function() {
              mostrarPagos(this);
         });
 
-
         $(".cuadrado-estado").on("click", function(e){
             var $this = $(this),
                 valor;
@@ -123,6 +124,7 @@ var GestionAtenciones = function() {
                 p_estado : ESTADO
             },
             success: function(result){
+                const { datos , datos_resumen: datosResumen} = result;
                 $btnActualizar.prop("disabled", false);
                 $btnActualizar.html(tmpHtml);
 
@@ -130,13 +132,16 @@ var GestionAtenciones = function() {
                     TABLA_EXAMENES.destroy();
                     TABLA_EXAMENES = null;
                 }
-                $tblExamenes.find("tbody").html(tplExamenes(result));
-                if (result.length){
+                $tblExamenes.find("tbody").html(tplExamenes(datos));
+                if (datos.length){
                     TABLA_EXAMENES = $tblExamenes.DataTable({
                         "ordering": true,
                         "scrollX": true
                     });
                 }
+
+                console.log({datosResumen});
+                objResumenCantidadExamenes.show(datosResumen);
             },
             error: function (request) {
                 $btnActualizar.html(tmpHtml);
@@ -205,7 +210,6 @@ var GestionAtenciones = function() {
     this.setEventos();
     this.getTemplates();
 
-
     $txtArea.select2({
         ajax: { 
             url : VARS.URL_CONTROLADOR+"categoria.servicio.controlador.php?op=buscar_imagenes",
@@ -220,7 +224,6 @@ var GestionAtenciones = function() {
             processResults: function (response) {
                 var datos = response.datos;
                 datos.push({id:"*", text: "TODAS LAS AREAS"});
-                console.log(datos);
                 return {
                     results: datos
                 };
@@ -294,6 +297,8 @@ var GestionAtenciones = function() {
         tags: false,
         allowClear: true
     });
+
+    objResumenCantidadExamenes = new ResumenCantidadExamenes({id: "#blk-resumenes-areas"});
     
     return this;
 };

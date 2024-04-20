@@ -9,6 +9,7 @@ var ID_CAJA_SELECCIONADA = null,
     STR_CACHE_CAJA = "cache_caja_nuevo";
 var objCampaña = null;
 var idCajaCached;
+var objHistorialPaciente = null;
 
 var RegistroAtencion = function() {
     var getTemplates = function(){
@@ -73,6 +74,9 @@ var RegistroAtencion = function() {
 
         $txtPaciente.on("change", function(){
            canContinue();
+           if (objHistorialPaciente){
+            objHistorialPaciente.show($txtPaciente.val());
+           }
         });
 
         $txtMedicoOrdenante.on("change",function(){
@@ -735,6 +739,7 @@ var RegistroAtencion = function() {
         setFuncionesInicio();
         setEventos();
 
+        objHistorialPaciente = new HistorialPaciente({id: "#blk-historial-paciente"});
         objContinuarPago =  new ContinuarPago(); 
     };
     
@@ -745,7 +750,6 @@ var RegistroAtencion = function() {
 
     return this;
 };
-
 
 var checkCampañaServicios = () => {
     if (objCampaña){
@@ -833,7 +837,6 @@ var actualizarCampañaServicios = (deboAplicar,  $cards) => {
         $("#txt-pagoefectivo").val(nuevoEfectivo.toFixed(2));
     }
 };
-
 
 $(document).ready(function(){
     objRegistroAtencion = new RegistroAtencion(); 

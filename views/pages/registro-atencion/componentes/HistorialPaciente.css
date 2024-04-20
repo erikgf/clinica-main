@@ -1,0 +1,16 @@
+.HistorialPaciente_container{
+    max-height: 265px;
+    overflow: auto;
+    position: absolute;
+    width: 100%;
+    font-size: .85em;
+    z-index: 2;
+}
+
+.HistorialPaciente_container .card-header{
+    padding: 8px 16px;
+}
+
+.HistorialPaciente_container .card-body{
+    padding: .5rem 1.25rem;
+}

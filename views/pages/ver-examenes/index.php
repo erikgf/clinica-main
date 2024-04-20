@@ -17,4 +17,6 @@ include_once "../../template.php";
 
 ?>
 
-<script type="text/javascript" src="index.js" defer></script>
+<link rel="stylesheet" href="./components/ResumenCantidadExamens.css">
+<script type="text/javascript" src="./components/ResumenCantidadExamenes.js" defer></script>
+<script type="text/javascript" src="index.1.js" defer></script>

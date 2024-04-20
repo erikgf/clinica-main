@@ -105,7 +105,16 @@ class AtencionMedicaServicio extends Conexion {
 
             $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
 
-            return $datos;
+            $datosResumen = array_map(function ($item) {
+                return [
+                    "area"=>$item["area"],
+                    "fue_atendido"=>$item["fue_atendido"]
+                ];
+            }, $datos); 
+
+            $datosResumen = Funciones::reagruparArregloPorKeys($datosResumen, ["area"], "items");
+
+            return ["datos" => $datos, "datos_resumen"=>$datosResumen];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }
