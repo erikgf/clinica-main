@@ -290,7 +290,12 @@ class Conexion{
             case "1*":
                 return $consulta->fetch(PDO::FETCH_ASSOC);
             case "1":
-                return $consulta->fetch(PDO::FETCH_NUM)[0];
+                $ret = $consulta->fetch(PDO::FETCH_NUM);
+                if ($ret == false){
+                    return false; 
+                }
+
+                return $ret[0];
             case "!":
                 return $r;
         }

@@ -22,6 +22,8 @@ class Template{
     public $ID_ROL_COORDINADOR_LABORATORIO = "11";
     public $ID_ROL_ASISTENTE_ADMINISTRADOR = "12";
     public $ID_ROL_RECEPCION_DESCUENTOS = "13";
+    public $ID_ROL_VALIDADOR_LAB = "14";
+    public $ID_ROL_PROMOTORA = "15";
 
     function __construct(){
         
@@ -250,7 +252,7 @@ class Template{
     }
 
     public function mostrarAccesoNoValido(){
-        echo '<script> alert("No tiene permiso para ver esto"); history.back() </script>';
+        '<script> alert("No tiene permiso para ver esto"); history.back() </script>';
     }
 
     public function mostrarSesionNoActiva(){

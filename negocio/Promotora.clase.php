@@ -9,6 +9,9 @@ class Promotora extends Conexion {
     public $descripcion;
     public $porcentaje_comision;
     public $id_usuario_registrado;
+    public $id_usuario;
+    public $estado_acceso;
+    public $clave;
 
     public function listar(){
         try {
@@ -201,6 +204,122 @@ class Promotora extends Conexion {
             return ["msj"=>count($arregloIdMedicos)." Médicos quitados"];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function listarUsuario(){
+        try {
+            $sql = "SELECT 
+                        pr.id_promotora,
+                        pr.numero_documento,
+                        pr.descripcion as nombres,
+                        COALESCE(u.estado_acceso,'I') as estado_acceso
+                    FROM promotora pr
+                    LEFT JOIN usuario u ON u.id_promotora = pr.id_promotora AND u.estado_mrcb
+                    WHERE pr.estado_mrcb AND pr.numero_documento IS NOT NULL
+                    ORDER BY pr.descripcion";
+            $data =  $this->consultarFilas($sql);
+            return $data;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function guardarUsuario(){
+        try {
+
+            $this->beginTransaction();
+
+            $sql = "SELECT id_usuario FROM usuario WHERE id_promotora = :0 AND estado_mrcb";
+            $idUsuario = $this->consultarValor($sql, [$this->id_promotora]);
+
+            if ($idUsuario == NULL){
+                $sql = "SELECT numero_documento FROM promotora WHERE id_promotora = :0 AND estado_mrcb AND numero_documento IS NOT NULL";
+                $promotora = $this->consultarFila($sql, [$this->id_promotora]);
+
+                if (!$promotora){
+                    throw new Exception("La promotora a registrar debe tener NÚM. DOC.", 1);
+                }
+
+                $campos_valores = [
+                    "id_promotora"=>$this->id_promotora,
+                    "nombre_usuario"=>$promotora["numero_documento"],
+                    "clave"=>md5($promotora["numero_documento"]),
+                    "estado_acceso"=>$this->estado_acceso
+                ];  
+                $this->insert("usuario", $campos_valores);
+                $this->id_usuario = $this->getLastID();
+            } else {
+                $campos_valores = [
+                    "estado_acceso"=>$this->estado_acceso,
+                ];
+
+                $campos_valores_where = [
+                    "id_promotora"=>$this->id_promotora
+                ];
+
+                $this->update("usuario", $campos_valores, $campos_valores_where);
+            }
+
+            $this->commit();
+            return ["msj"=>"Registrado registrado correctamente"];
+
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
+        }
+    }
+
+    public function leerUsuario(){
+        try {
+            $sql = "SELECT 
+                        pr.id_promotora,
+                        pr.numero_documento,
+                        pr.descripcion as nombres,
+                        COALESCE(u.estado_acceso, 'I') as estado_acceso
+                    FROM promotora pr
+                    LEFT JOIN usuario u ON u.id_promotora = pr.id_promotora AND u.estado_mrcb
+                    WHERE pr.estado_mrcb AND pr.id_promotora = :0 AND pr.numero_documento IS NOT NULL";
+            return $this->consultarFila($sql, [$this->id_promotora]);
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function getPromotoraFromUsuario(){
+        try {
+            $sql = "SELECT 
+                        pr.id_promotora
+                    FROM promotora pr
+                    LEFT JOIN usuario u ON u.id_promotora = pr.id_promotora AND u.estado_mrcb
+                    WHERE pr.estado_mrcb AND u.id_usuario = :0 AND pr.numero_documento IS NOT NULL";
+            return $this->consultarFila($sql, [$this->id_usuario]);
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+    
+    public function cambiarClave(){
+        try {
+            $this->beginTransaction();
+
+            if (strlen($this->clave) < 6){
+                throw new Exception("Clave no válida.", 1);
+            }
+
+            $campos_valores = [
+                "clave"=>md5($this->clave)
+            ];
+                
+            $campos_valores_where = [
+                "id_promotora"=>$this->id_promotora
+            ];
+
+            $this->update("usuario", $campos_valores, $campos_valores_where);
+
+            $this->commit();
+            return ["msj"=>"Registrado correctamente."];
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
         }
     }
 

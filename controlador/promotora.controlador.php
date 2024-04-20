@@ -83,6 +83,48 @@ try {
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 
+        case "listar_usuario":
+            $data = $obj->listarUsuario();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "guardar_usuario":
+            $id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : "";
+            if ($id_promotora == ""){
+                throw new Exception("Promotora a registrar no válida.", 1);
+            }
+
+            $obj->id_promotora = $id_promotora;
+            $obj->estado_acceso = isset($_POST["p_estado_acceso"]) ? $_POST["p_estado_acceso"] : NULL;
+            $data = $obj->guardarUsuario();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "leer_usuario":
+            $id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : "";
+            if ($id_promotora == ""){
+                throw new Exception("Promotora consultada no válida.", 1);
+            }
+            $obj->id_promotora = $id_promotora;
+
+            $data = $obj->leerUsuario();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "cambiar_clave":
+            $id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : NULL;
+            $obj->id_promotora = $id_promotora;
+
+            $obj->clave = isset($_POST["p_clave"]) ? $_POST["p_clave"] : NULL;
+            if ($obj->clave == "" || $obj->clave == NULL){
+                throw new Exception("Se debe ingresar una clave válida.", 1);
+            }
+
+            $data = $obj->cambiarClave();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+
         default:
             throw new Exception( "No existe la función consultada en el API.", 1);
         break;

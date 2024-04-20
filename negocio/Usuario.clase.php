@@ -10,16 +10,17 @@ class Usuario extends Conexion{
         try {
             
             $sql = "SELECT u.id_usuario, u.clave, u.estado_acceso,
-                        CONCAT(c.nombres,' ',apellido_paterno,' ',apellido_materno) as nombres_apellidos, 
-                        c.id_rol,
+                        COALESCE(pr.descripcion, CONCAT(c.nombres,' ',apellido_paterno,' ',apellido_materno)) as nombres_apellidos, 
+                        r.id_rol,
                         r.descripcion as nombre_rol,
                         COALESCE((SELECT url from rol_interfaz ri
                             INNER JOIN interfaz i ON i.id_interfaz = ri.id_interfaz
-                            WHERE ri.id_rol = c.id_rol
+                            WHERE ri.id_rol = r.id_rol
                             LIMIt 1),'') as interfaz_inicio_sesion
                     FROM usuario u 
-                    INNER JOIN colaborador c ON c.id_colaborador = u.id_colaborador
-                    INNER JOIN rol r ON r.id_rol = c.id_rol
+                    LEFT JOIN colaborador c ON c.id_colaborador = u.id_colaborador
+                    LEFT JOIN promotora pr ON pr.id_promotora = u.id_promotora
+                    LEFT JOIN rol r ON r.id_rol = COALESCE(c.id_rol, pr.id_rol)
                     WHERE u.estado_mrcb AND u.nombre_usuario = :0";
             $usuario = $this->consultarFila($sql, [$this->nombre_usuario]);
 
@@ -136,8 +137,18 @@ class Usuario extends Conexion{
                 return [];
             }
 
-            $sql  = "SELECT id_rol FROM colaborador WHERE id_colaborador IN (SELECT id_colaborador FROM usuario WHERE id_usuario = :0)";
+            //Colaborador
+            $sql  = "SELECT id_rol  
+                        FROM colaborador 
+                        WHERE id_colaborador IN (SELECT id_colaborador FROM usuario WHERE id_usuario = :0)";
             $id_rol = $this->consultarValor($sql, [$id_usuario_registro]);
+
+            if ($id_rol == false){
+                $sql  = "SELECT id_rol  
+                        FROM promotora 
+                        WHERE id_promotora IN (SELECT id_promotora FROM usuario WHERE id_usuario = :0)";
+                $id_rol = $this->consultarValor($sql, [$id_usuario_registro]);
+            }
 
             $sql = "SELECT 
                         i.rotulo, 

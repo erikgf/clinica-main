@@ -7,17 +7,15 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" id="tab-promotoras" data-toggle="pill" href="#blk-tab-promotoras" role="tab" aria-controls="blk-tab-promotoras" aria-selected="false">
+                    Promotoras
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" id="tab-roles" data-toggle="pill" href="#blk-tab-roles" role="tab" aria-controls="blk-tab-roles" aria-selected="false">
                     Roles
                 </a>
             </li>
-            <!--
-            <li class="nav-item">
-                <a class="nav-link" id="tab-accesos" data-toggle="pill" href="#blk-tab-accesos" role="tab" aria-controls="blk-tab-accesos" aria-selected="false">
-                    Accesos
-                </a>
-            </li>
-            -->
         </ul>
     </div>
     <div class="card-body">
@@ -55,6 +53,38 @@
                 </div>
              </div>
         </div>
+
+        <div class="tab-pane fade show" id="blk-tab-promotoras" role="tabpanel" aria-labelledby="tab-promotoras">
+             <div class="row">
+                <div class="col-sm-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Promotoras</h3><br>
+                            <small class="card-subtitle">Sólo aparecerán promotoras que tengan NÚMERO DE DOCUMENTO registrado.</small>
+                            <div class="card-tools m-0">
+                                <button id="btn-actualizar-promotoras" class="btn btn-sm btn-success"><span class="fa fa-refresh"></span> ACTUALIZAR </button>
+                            </div>
+                        </div>
+                        <div class="card-body overlay-wrapper">
+                            <div class="overlay" id="overlay-tbl-promotoras" style="display:none;"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Cargando...</div></div>
+                            <table class="table table-sm" id="tbl-promotoras">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 75px">Opc.</th>
+                                        <th>N. Documento</th>
+                                        <th>Nombres/Razón Social</th>
+                                        <th>Sistema</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbd-promotoras">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+             </div>
+        </div>
+
         <div class="tab-pane fade show" id="blk-tab-roles" role="tabpanel" aria-labelledby="tab-roles">
              <div class="row">
                 <div class="col-md-7 col-sm-12">
