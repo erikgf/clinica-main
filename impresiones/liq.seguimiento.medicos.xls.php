@@ -51,11 +51,24 @@ try {
   exit;
 }
 
+function getColumnaPorNumero(int $columna){
+    $alfabeto = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    $limiteAlfabeto = strlen($alfabeto); // 26
+
+    if ($columna < $limiteAlfabeto){
+        return $alfabeto[$columna];
+    }
+
+    $primerColumna =  (int) floor($columna/$limiteAlfabeto) - 1;
+    $segundaColumna = $columna - $limiteAlfabeto;
+    return $alfabeto[$primerColumna].$alfabeto[$segundaColumna];
+}
+
 try {
     $spreadsheet = new Spreadsheet();
 
     $spreadsheet->setActiveSheetIndex(0);
-    $alfabeto = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    //$alfabeto = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     $sheetActivo = $spreadsheet->getActiveSheet();
 
     $sheetActivo->setCellValue('A1', "REPORTE GENERAL DE SEGUIMIENTO DE MEDICOS");
@@ -111,7 +124,7 @@ try {
     }
 
     foreach ($arregloCabecera as $key => $value) {
-        $columna = $alfabeto[$key];
+        $columna = getColumnaPorNumero($key);
         $sheetActivo->setCellValue($columna.$actualFila, $value["rotulo"]);			
         $sheetActivo->getColumnDimension($columna)->setWidth($value["ancho"]);
     }
@@ -139,8 +152,8 @@ try {
             $promotora = $registro["promotora"];
             $fechasTemp = $data["fechas"];
 
-            $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $medico);
-            $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $promotora);
+            $sheetActivo->setCellValue(getColumnaPorNumero($i++).$actualFila, $medico);
+            $sheetActivo->setCellValue(getColumnaPorNumero($i++).$actualFila, $promotora);
 
             //var_dump("medico, promo, ondex set ", $actualFila, "med ", $medico);
            // echo "</br>";
@@ -150,11 +163,11 @@ try {
 
         foreach ($fechasTemp as $_key => $value) {
             if ($value == $mes_anio_atencion){
-                $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["comision_sin_igv"]);
+                $sheetActivo->setCellValue(getColumnaPorNumero($i++).$actualFila, $registro["comision_sin_igv"]);
                 array_splice($fechasTemp, 0, $_key + 1);
                 break;
             }
-            $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, "");
+            $sheetActivo->setCellValue(getColumnaPorNumero($i++).$actualFila, "");
         }
 
         $last_medico = $medico;
@@ -163,26 +176,8 @@ try {
     $cabeceraEstilos = array('font' => array('bold'=>true, 'name' => 'Arial Narrow','size' => 12),
                                 'alignment' => array('horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
                                 );
-    $sheetActivo->getStyle('A7:'.$alfabeto[$i].'E7')->applyFromArray($cabeceraEstilos);
-    /*
-    $worksheet->getStyle("E2")->getNumberFormat()->setFormatCode("YYYY-MM-DD");
-    $actualFila++;
-
-    foreach ($data as $key => $registro) {
-        $i = 0;
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["id_atencion_medica"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["fecha_atencion"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["monto_descuento"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["importe_total"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["usuario_registro"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["usuario_validador"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["paciente"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["servicio_atendido"]);
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["sede"]);
-
-        $actualFila++;
-    }
-    */
+    $sheetActivo->getStyle('A7:'.getColumnaPorNumero($i++).'E7')->applyFromArray($cabeceraEstilos);
+    
     $spreadsheet->getActiveSheet()->setTitle("LIQ_SGTO_MEDICOS");
 
     $writer = new Xlsx($spreadsheet);

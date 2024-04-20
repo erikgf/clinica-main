@@ -15,6 +15,7 @@ $ruta_base = "../../../";
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title><?php echo NOMBRE_SISTEMA." - Iniciar Sesión"; ?></title>
   <!-- Tell the browser to be responsive to screen width -->
+  <link rel="icon" href="<?php echo $ruta_base; ?>icon/icon_dmi_white.png">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="<?php echo $ruta_base; ?>template/plugins/fontawesome-free/css/all.min.css">

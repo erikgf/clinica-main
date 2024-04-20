@@ -17,7 +17,7 @@ $obj->id_usuario_registrado = Sesion::obtenerSesionId();
 try {
     switch($op){
         case "buscar":
-            $cadenaBuscar = $_POST["p_cadenabuscar"];
+            $cadenaBuscar = isset($_POST["p_cadenabuscar"]) ? $_POST["p_cadenabuscar"] : "";
             $data = $obj->buscar($cadenaBuscar);
             Funciones::imprimeJSON("200", "OK", $data);
         break;
@@ -76,7 +76,7 @@ try {
         break;
 
         case "buscar_imagenes":
-            $cadenaBuscar = $_POST["p_cadenabuscar"];
+            $cadenaBuscar = isset($_POST["p_cadenabuscar"]) ? $_POST["p_cadenabuscar"] : "";
             $data = $obj->buscarParaAsistentes($cadenaBuscar);
             Funciones::imprimeJSON("200", "OK", $data);
         break;

@@ -496,12 +496,13 @@ $tipo_moneda = $datos["idtipo_moneda"];
 
 $valor_resumen = $datos["valor_resumen"]; //DigestValue
 $valor_firma = $datos["valor_firma"]; //SignatureValue
-$respuesta_sunat = utf8_decode($datos["respuesta_sunat"]);
+
+$respuesta_sunat = utf8_decode($datos["respuesta_sunat"] ?? "");
 
 $documento_afectado = $datos["documento_afectado"];
 $motivo_nota  = $datos["motivo_nota"];
 
-$usuario_atendido = utf8_decode($datos["usuario_atendido"]);
+$usuario_atendido = utf8_decode($datos["usuario_atendido"] ?? "");
 
 $detalle = $datos["detalle"];
 $cuotas = $datos["cuotas"];
