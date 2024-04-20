@@ -2679,9 +2679,9 @@ class DocumentoElectronico extends Conexion {
 
                 foreach ($_cuentasContables as $j => $cuentaContable) {
                     if ($esNota){
-                        $debeHaber = $cuentaContable["cc"] == "121201"  ? "H" : "D";
-                    } else {
                         $debeHaber = $cuentaContable["cc"] == "121201"  ? "D" : "H";
+                    } else {
+                        $debeHaber = $cuentaContable["cc"] == "121201"  ? "H" : "D";
                     }
 
                     array_push($registros, [

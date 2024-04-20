@@ -306,6 +306,7 @@ class Servicio extends Conexion {
             $registro =  $this->consultarFila($sql, [$this->id_servicio]);
 
             if ($registro != false){
+                $niveles = [1,2];
                 $detalle = [];
                 $sql = "SELECT 
                             le.id_lab_examen,
