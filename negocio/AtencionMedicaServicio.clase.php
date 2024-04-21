@@ -54,7 +54,6 @@ class AtencionMedicaServicio extends Conexion {
             if ($id_area != "*" && strlen($id_area) > 0){
                 $sqlArea = " AND s.id_categoria_servicio = ".$id_area;
             }
-            
 
             $sql  = "SELECT 
                     amd.id_atencion_medica,
@@ -105,15 +104,25 @@ class AtencionMedicaServicio extends Conexion {
 
             $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
 
-            $datosResumen = array_map(function ($item) {
-                return [
-                    "area"=>$item["area"],
-                    "fue_atendido"=>$item["fue_atendido"]
-                ];
-            }, $datos); 
 
-            $datosResumen = Funciones::reagruparArregloPorKeys($datosResumen, ["area"], "items");
-
+            $sql = "SELECT 
+                        cs.descripcion as area, 
+                        SUM(IF(amd.fue_atendido = 0, 1, 0)) as cantidad_pendientes,
+                        SUM(IF(amd.fue_atendido = 1, 1, 0)) as cantidad_atendidos,
+                        SUM(IF(amd.fue_atendido = 2, 1, 0)) as cantidad_cancelados
+                        FROM atencion_medica_servicio amd 
+                        INNER JOIN atencion_medica am ON am.id_atencion_medica = amd.id_atencion_medica
+                        INNER JOIN servicio s ON s.id_servicio = amd.id_servicio
+                        INNER JOIN categoria_servicio cs ON cs.id_categoria_servicio = s.id_categoria_servicio
+                        WHERE am.estado_mrcb AND amd.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) 
+                                AND cs.es_mostrado_asistentes = 1
+                                $sqlEstado
+                                $sqlMedicoAtendido
+                                $sqlMedicoRealizante
+                                $sqlArea  
+                        GROUP BY cs.descripcion
+                        ORDER BY cs.descripcion DESC";
+            $datosResumen = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
             return ["datos" => $datos, "datos_resumen"=>$datosResumen];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);

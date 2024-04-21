@@ -8,22 +8,13 @@
         </div>
     </div>
     <div class="card-body">
-        {{#each data}}
         <div class="row">
-            <div class="col-sm-2 col-md-3  col-xs-6">
-                <h4 class="font-weight-bold">{{area}} </h4>
+            {{#each data}}
+            <div class="col-md-4 col-xs-12 col-lg-2">
+                <h5 class="font-weight-bold">{{area}}: </h4> 
+                <p><b style="font-size:1em" class="badge badge-success">REALIZADOS: {{cantidad_atendidos}}</b> <b style="font-size:1em" class="badge badge-secondary">PENDIENTES: {{cantidad_pendientes}}</b> </p>
             </div>
-            <div class="col-sm-2 col-md-3 col-xs-6">
-                <b class="badge">PENDIENTES</b> :  {{cantidad_pendientes}} exámenes.
-            </div>
-            <div class="col-sm-2 col-md-3  col-xs-6">
-                <b class="badge badge-success">REALIZADOS</b> :  {{cantidad_realizados}} exámenes.
-            </div>
-            <div class="col-sm-2 col-md-3 col-xs-6">
-                <b class="badge badge-danger">CANCELADOS</b> :  {{cantidad_cancelados}} exámenes.
-            </div>
+            {{/each}}
         </div>
-        <hr>
-        {{/each}}
     </div>
 </div>

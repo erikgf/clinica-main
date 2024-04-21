@@ -20,6 +20,7 @@
                                     <tr>
                                         <th>Fecha</th>
                                         <th>Examen</th>
+                                        <th>Precio</th>
                                         <th>Médico</th>
                                     </tr>
                                 </thead>
@@ -28,7 +29,8 @@
                                     <tr>
                                         <td>{{fecha_atencion}}</td>
                                         <td>{{examen}}</td>
-                                        <td><span class="badge bg-primary">{{medico}}</span></td>
+                                        <td>S/{{precio}}</td>
+                                        <td><span class="badge bg-primary" style="font-size:1em">{{medico}}</span></td>
                                     </tr>
                                     {{/items}}
                                 </tbody>

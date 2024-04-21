@@ -34,39 +34,11 @@ const ResumenCantidadExamenes = function ({id, renderData = null}){
     };
 
     this.show = (_data) => {
-        this.render(procesarData(_data));
+        this.render(_data);
     };
 
     this.hide = () => {
         this.$el.hide();
-    };
-
-    const procesarData = (renderUnprocessedData) => {
-        return renderUnprocessedData.map ( area => {
-            console.log({area});
-            let cantidad_pendientes = 0, cantidad_realizados = 0, cantidad_cancelados = 0;
-            const itemsArea = area.items;
-            itemsArea.forEach(item => {
-                if (item.fue_atendido == 0){
-                    cantidad_pendientes++;
-                    return;
-                }
-    
-                if (item.fue_atendido == 1){
-                    cantidad_realizados++;
-                    return;
-                }
-    
-                cantidad_cancelados++;
-            });
-
-            return {
-                area: area.area,
-                cantidad_pendientes,
-                cantidad_realizados,
-                cantidad_cancelados
-            }
-        });
     };
 
     return this.init();

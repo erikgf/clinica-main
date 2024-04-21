@@ -464,7 +464,7 @@ class Funciones {
         return (date('Y-m-d', strtotime($stringDate)) == $stringDate);
     }
 
-    public static function reagruparArregloPorKeys(array $arregloPrincipal, array $keys, string $nombreDetalle = "items"): array{
+    public static function reagruparArregloPorKeys(array $arregloPrincipal, array $columnasAgrupadoras, string $nombreDetalle = "items"): array{
         $arregloRetorno = [];
         $ultimoKeyItem = "";
         $actualKeyItem = "";
@@ -472,7 +472,7 @@ class Funciones {
 
         foreach ($arregloPrincipal as $i => $item) {
             $actualKeyItem = "";
-            foreach ($keys as $j => $keyValue) {
+            foreach ($columnasAgrupadoras as $j => $keyValue) {
                 $actualKeyItem .= $item[$keyValue];
             }
 
@@ -483,7 +483,7 @@ class Funciones {
                 }
 
                 if ($actualItem == NULL){
-                    foreach ($keys as $j => $keyValue) {
+                    foreach ($columnasAgrupadoras as $j => $keyValue) {
                         $actualItem[$keyValue] = $item[$keyValue];
                     }
                     $actualItem[$nombreDetalle] = [];
@@ -492,7 +492,7 @@ class Funciones {
 
 
             $ultimoKeyItem = $actualKeyItem;
-            foreach ($keys as $j => $keyValue) {
+            foreach ($columnasAgrupadoras as $j => $keyValue) {
                 unset($item[$keyValue]);
             }
             

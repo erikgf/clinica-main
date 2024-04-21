@@ -1,9 +1,9 @@
 .HistorialPaciente_container{
-    max-height: 265px;
+    max-height: 275px;
     overflow: auto;
     position: absolute;
     width: 100%;
-    font-size: .85em;
+    font-size: 1em;
     z-index: 2;
 }
 
