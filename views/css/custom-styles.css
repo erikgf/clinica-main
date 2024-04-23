@@ -92,3 +92,11 @@ div.dataTables_wrapper {
     width: 100%;
     margin: 0 auto;
 }
+
+.zona-loader{
+  z-index: 3;
+  position: absolute;
+  opacity: .9;
+  height: 100%;
+  width: calc(100% - 32px);
+}

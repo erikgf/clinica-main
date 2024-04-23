@@ -39,8 +39,6 @@ class Sesion{
         session_destroy();
     }
 
-
-
 }
 
 Sesion::iniciarSesion();

@@ -28,7 +28,7 @@ var PromotorasMedicos = function() {
                 objArea = new Area(tplAreas, $tblAreas, $tbbAreas);
                 objPromotora =  new Promotora(tplPromotoras, $tblPromotoras, $tbbPromotoras);
                 objMedico = new Medico(tplMedicos, $tblMedicos, $tbbMedicos);
-
+                new MedicoAprobar({id: "#blk-medicos-aprobar"});
             })
             .fail(function(e1,e2, e3){
                 console.error(e1,e2, e3);

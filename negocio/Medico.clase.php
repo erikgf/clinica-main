@@ -20,6 +20,15 @@ class Medico extends Conexion {
     public $tipo_personal_medico;
     public $es_realizante;
     public $id_sede;
+    public $fecha_nacimiento;
+
+    public function __construct($objDB = null){
+        if ($objDB != null){
+            parent::__construct($objDB);
+        } else {
+            parent::__construct();
+        }
+    }
 
     public function buscar($cadenaBuscar){
         try {
@@ -52,6 +61,7 @@ class Medico extends Conexion {
                 "telefono_uno"=>$this->telefono_uno,
                 "telefono_dos"=>$this->telefono_dos,
                 "correo"=>$this->correo,
+                "fecha_nacimiento"=>$this->fecha_nacimiento,
                 "domicilio"=>$this->domicilio,
                 "id_promotora"=>$this->id_promotora == "" ? NULL : $this->id_promotora,
                 "id_especialidad_medico"=>$this->id_especialidad,

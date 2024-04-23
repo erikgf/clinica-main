@@ -354,6 +354,11 @@ class Funciones {
             print_r($datos);
             return;
        }
+
+        if (is_string($datos)){
+            echo $datos;
+            return;
+        }
     
         echo json_encode($datos);
     }

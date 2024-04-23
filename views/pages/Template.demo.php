@@ -1,5 +1,7 @@
 <?php
 
+include_once '../../../negocio/Globals.clase.php';
+
 class Template{
     private $title;
     private $content;
@@ -8,25 +10,9 @@ class Template{
     private $usuario = null;
     private $arregloInterfacesDisponibles = [];
     private $interfazActual = "";
-
-    public $ID_ROL_ADMINISTRADOR = "1";
-    public $ID_ROL_RECEPCION = "2";
-    public $ID_ROL_FACTURACION = "3";
-    public $ID_ROL_LOGISTICA = "4";
-    
-    public $ID_VISUALIZADOR = "6";
-    public $ID_CONTABILIDAD = "7";
-    public $ID_ROL_ASISTENTE_REVISION = "8";
-    public $ID_ROL_LABORATORIO = "9";
-    public $ID_ROL_RECEPCION_SUPERVISOR = "10";
-    public $ID_ROL_COORDINADOR_LABORATORIO = "11";
-    public $ID_ROL_ASISTENTE_ADMINISTRADOR = "12";
-    public $ID_ROL_RECEPCION_DESCUENTOS = "13";
-    public $ID_ROL_VALIDADOR_LAB = "14";
-    public $ID_ROL_PROMOTORA = "15";
+    public static $alertas = [];
 
     function __construct(){
-        
         $this->usuario = Sesion::obtenerSesion();
 
         if ($this->usuario == null){
@@ -34,8 +20,6 @@ class Template{
         }
 
         $this->interfazActual = basename($_SERVER['REQUEST_URI']);
-
-        $this->loadNavbar();
         //$id_rol = isset( $this->usuario) ?  $this->usuario["id_rol"] : "";
         $actualDir = getcwd();
         chdir("../../");
@@ -43,6 +27,7 @@ class Template{
         $obj = new Usuario();
         $data = $obj->getInterfaces($this->usuario["id_usuario_registrado"]);
         $this->arregloInterfacesDisponibles = $data["interfaces"];
+        Template::$alertas = $data["alertas"];
         $this->usuario["id_rol"] = $data["id_rol"];
         chdir($actualDir);
 
@@ -53,12 +38,12 @@ class Template{
         $this->content = file_get_contents($ruta, true);
     }
 
-    public function loadNavbar(){
-        $this->navbar = file_get_contents("../navbar.php", true);
+    public function getAlertas(){
+        return $this->alertas;
     }
 
     public function renderNavbarItems(){
-        echo $this->navbar;
+        include '../navbar.php';
     }
 
     public function renderContent(){
@@ -109,9 +94,9 @@ class Template{
             </li>';
 
         echo $html;
-
     }
 
+    /*
     public function renderMenuOld(){
         $id_rol = Sesion::obtenerSesion()["id_rol"];
         $interfaz_actual = basename($_SERVER['REQUEST_URI']);
@@ -250,6 +235,7 @@ class Template{
         echo $html;
 
     }
+    */
 
     public function mostrarAccesoNoValido(){
         '<script> alert("No tiene permiso para ver esto"); history.back() </script>';
@@ -263,7 +249,7 @@ class Template{
 
     public function esIdRolSupervisor(){
         $id_rol = $this->usuario["id_rol"];
-        return ($id_rol == $this->ID_ROL_RECEPCION_SUPERVISOR ||  $id_rol == $this->ID_ROL_RECEPCION_DESCUENTOS) ? "1" : "0"; 
+        return ($id_rol == Globals::$ID_ROL_RECEPCION_SUPERVISOR ||  $id_rol ==  Globals::$ID_ROL_RECEPCION_DESCUENTOS) ? "1" : "0"; 
     }
 
 }

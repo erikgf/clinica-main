@@ -143,6 +143,7 @@ class Usuario extends Conexion{
                         WHERE id_colaborador IN (SELECT id_colaborador FROM usuario WHERE id_usuario = :0)";
             $id_rol = $this->consultarValor($sql, [$id_usuario_registro]);
 
+            //Promotora
             if ($id_rol == false){
                 $sql  = "SELECT id_rol  
                         FROM promotora 
@@ -153,15 +154,45 @@ class Usuario extends Conexion{
             $sql = "SELECT 
                         i.rotulo, 
                         i.url,
-                        i.id_interfaz_padre as padre
+                        es_padre as padre
                         FROM rol_interfaz ri
-                        INNER JOIN interfaz i ON i.id_interfaz = ri.id_interfaz
+                        INNER JOIN interfaz i ON i.id_interfaz = ri.id_interfaz AND i.es_padre = 0
                         WHERE ri.id_rol IN (:0)
                         ORDER BY i.id_interfaz";
             
             $interfaces =  $this->consultarFilas($sql, [$id_rol]);
+            $alertas = $this->getAlertas($id_rol);
 
-            return ["id_rol"=>$id_rol, "interfaces"=>$interfaces];
+            return ["id_rol"=>$id_rol, "interfaces"=>$interfaces,  "alertas"=>$alertas];
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function getAlertas($id_rol){
+        try {
+            //Por ahora solo se trabajará alertas para MEDICOS POR EDITAR.
+
+            if (!in_array($id_rol, [Globals::$ID_ROL_ADMINISTRADOR])){
+                return [];
+            }
+
+            $sql = "SELECT COUNT(id_medico)
+                    FROM medico_promotora_temporal m 
+                    WHERE m.estado_mrcb AND m.estado_activo = 'P'";
+
+            $cantidadPendientes = $this->consultarValor($sql);
+
+            if ($cantidadPendientes <= 0){
+                return [];
+            }
+
+            return [
+                [
+                    "mensaje"=>"Hay ".$cantidadPendientes." Médicos por aprobar.",
+                    "url"=>"../promotoras-medicos/"
+                ]
+            ];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }

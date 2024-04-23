@@ -1,4 +1,4 @@
-const MantenimientoMedicos = function({id}){
+const MantenimientoMedicosActivar = function({id}){
     this.$ = null;
     this.$el = null;
     this.template = null;
@@ -11,11 +11,10 @@ const MantenimientoMedicos = function({id}){
                             </div>
                         </div>`;
     
-    const TEMPLATE_NAME = "./template.lst.medicos.activos.hbs";
-    let DT = null;
-    let $TR_SELECCIONADO = null;
+    const TEMPLATE_NAME = "./template.lst.medicos.activar.hbs";
 
-    let $tblMain, $tbdMain;
+    let $tblMain, $tbdMain, $modalRegistro;
+    this.firstTimeOpenedCard = false;
 
     this.init = () => {
         this.$ = window.$;
@@ -25,39 +24,50 @@ const MantenimientoMedicos = function({id}){
 
         this.$el = this.$(id);
 
+        this.requestTemplates();
         this.setDOM();
         this.setEventos();
-        this.requestTemplates();
 
-
-        this.listar();
         return this;
     };
 
     this.setDOM = () => {
         $tblMain = this.$el.find("table");
         $tbdMain = this.$el.find("tbody");
-        $modalRegistro = $("#mdl-medico-viejo");
+        $modalRegistro = $("#mdl-medico");
     };
 
     this.setEventos = () => {
-       this.$el.on("click",".on-refresh", () => {
-            this.listar();
+       this.$el.on("click",".btn-tool", ()=>{
+            if (this.firstTimeOpenedCard == false){
+                this.firstTimeOpenedCard = true;
+                this.listar();
+            }
        });
 
-       $tbdMain.on("click", "tr button.on-edit", (e) =>{
+       this.$el.on("click",".on-refresh", () => {
+            this.actualizar();
+       });
+
+       this.$el.on("click", ".on-new-record", () => {
+            this.nuevoRegistro();
+       });
+
+        $tbdMain.on("click", "tr button.on-edit", (e) =>{
             const $btn = $(e.currentTarget);
             this.leer($btn);
         });
 
-        $modalRegistro.on("submit","form", (e) => {
+        $tbdMain.on("click", "tr button.on-delete", (e) =>{
+            const $btn = $(e.currentTarget);
+            this.eliminar($btn);
+        });
+
+       $modalRegistro.on("submit","form", (e) => {
             e.preventDefault();
             const form = e.currentTarget;
+            console.log({form});
             this.guardar();
-       });
-
-       $modalRegistro.on("hide.bs.modal", () => {
-            $TR_SELECCIONADO = null;
        });
     };
 
@@ -81,27 +91,7 @@ const MantenimientoMedicos = function({id}){
     };
 
     this.render = (_data) => {
-        
-        if (DT){
-            DT.destroy();
-        }
-
         $tbdMain.html(this.template.lista(_data)).show();
-        DT = $tblMain.DataTable({
-            "responsive":true,
-            "pageLength": 10,
-            /*
-            "columns": [
-                    { "width": "75px" },
-                    null,
-                    { "width": "135px" },
-                    { "width": "115px" },
-                    { "width": "115px" },
-                    { "width": "115px" }
-                  ]
-            */
-        });
-
         if (this.primerRender == false){
             this.primerRender = true;
         }
@@ -113,7 +103,7 @@ const MantenimientoMedicos = function({id}){
 
         $btnGuardar.prop("disabled", true);
         const dataForm = {
-            p_id_medico_modificado : $form[0].id_medico_seleccionado.value,
+            p_id_medico : $form[0].id_medico_seleccionado.value,
             p_numero_documento : $form[0].numero_documento.value,
             p_colegiatura : $form[0].colegiatura.value,
             p_id_especialidad : $form[0].especialidad.value,
@@ -121,25 +111,26 @@ const MantenimientoMedicos = function({id}){
             p_apellidos_nombres : $form[0].apellidos_nombres.value,
         };
 
+        const action = dataForm.p_id_medico == "" 
+                            ? "guardar"
+                            : "editar";
+
         try{
-            await this.$.ajax({
-                url: `${VARS.URL_CONTROLADOR}medico.promotora.controlador.php?op=editar_viejo`,
+            const data = await this.$.ajax({
+                url: `${VARS.URL_CONTROLADOR}medico.promotora.controlador.php?op=${action}`,
                 type: "post",
                 dataType: 'json',
                 delay: 5000,
                 data: dataForm
             });
 
+            if (this.data){
+                this.data.push(data);
+                this.render(this.data);
+            }
+            
             $modalRegistro.modal("hide");
             toastr.success("Registro realizado correctamente!");
-
-            if ($TR_SELECCIONADO){
-                $TR_SELECCIONADO.remove();
-            }
-
-            if(pMantenimientoMedicos){
-                pMantenimientoMedicos.actualizar();
-            }
 
         } catch ( error ){
             console.error(error);
@@ -149,27 +140,12 @@ const MantenimientoMedicos = function({id}){
         }
     }
 
-    this.listar = async () => {
-        const $btnActualizar = this.$el.find(".on-refresh");
-        this._setCargando(true);
-        $btnActualizar.prop("disabled", true);
+    this.nuevoRegistro = () => {
+        const $form = $modalRegistro.find("form");
+        $modalRegistro.find(".modal-title").html("Nuevo Médico");
+        $form[0].reset();
 
-        try{
-            const res = await this.$.ajax({
-                url: VARS.URL_CONTROLADOR+"medico.promotora.controlador.php?op=listar_medicos_activos",
-                type: "post",
-                dataType: 'json',
-                delay: 5000,
-            });
-
-            this.data = res;
-            this.render(this.data);
-        } catch ( error ){
-            console.error(error);
-        } finally {
-            this._setCargando(false);
-            $btnActualizar.prop("disabled", false);
-        }
+        $modalRegistro.modal("show");
     };
 
     this.leer = async ($btn) => {
@@ -182,7 +158,7 @@ const MantenimientoMedicos = function({id}){
 
         try{
             const data = await this.$.ajax({
-                url: VARS.URL_CONTROLADOR+"medico.promotora.controlador.php?op=leer_medico",
+                url: VARS.URL_CONTROLADOR+"medico.promotora.controlador.php?op=leer",
                 type: "post",
                 dataType: 'json',
                 delay: 5000,
@@ -199,8 +175,73 @@ const MantenimientoMedicos = function({id}){
             elements.fecha_nacimiento.value =  data.fecha_nacimiento;
             elements.apellidos_nombres.value =  data.nombres_apellidos;
 
-            $TR_SELECCIONADO = $btn.parents("tr");
+        } catch ( error ){
+            console.error(error);
+        } finally {
+            $btn.prop("disabled", false);
+        }
+    };
 
+    this.actualizar = () => {
+        if (this.$el.hasClass("collapsed-card")){
+            this.firstTimeOpenedCard = false;
+            this.$el.find(".btn-tool").click();
+            return;
+        }
+
+        this.listar();
+    };
+
+    this.listar = async () => {
+        const $btnActualizar = this.$el.find(".on-refresh");
+        this._setCargando(true);
+        $btnActualizar.prop("disabled", true);
+
+        try{
+            const res = await this.$.ajax({
+                url: VARS.URL_CONTROLADOR+"medico.promotora.controlador.php?op=listar",
+                type: "post",
+                dataType: 'json',
+                delay: 5000,
+            });
+
+            this.data = res;
+            this.render(this.data);
+        } catch ( error ){
+            console.error(error);
+        } finally {
+            this._setCargando(false);
+            $btnActualizar.prop("disabled", false);
+        }
+    };
+
+    this.eliminar = async ($btn) => {
+        if (!confirm("¿Está seguro de eliminar este registro?")){
+            return;
+        }
+        const id = $btn.data("id");
+
+        $btn.prop("disabled", true);
+        try{
+            const data = await this.$.ajax({
+                url: `${VARS.URL_CONTROLADOR}medico.promotora.controlador.php?op=anular`,
+                type: "post",
+                dataType: 'json',
+                delay: 5000,
+                data: {
+                    p_id_medico : id
+                }
+            });
+
+
+            const $tr = $btn.parents("tr");
+            $tr.remove();
+
+            if (this.data){
+                this.data = this.data.filter( item => {
+                    return item.id != id
+                });
+            }
         } catch ( error ){
             console.error(error);
         } finally {

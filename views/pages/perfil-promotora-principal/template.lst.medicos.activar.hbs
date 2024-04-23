@@ -1,0 +1,21 @@
+{{#.}}
+    <tr>
+        <td>
+            <button data-id="{{id_medico}}" title="Editar" class="btn bg-warning btn-sm on-edit"><i class="fa fa-edit"></i></button>
+            <button data-id="{{id_medico}}" title="Eliminar" class="btn bg-danger btn-sm on-delete"><i class="fa fa-trash"></i></button>
+        </td>
+        <td><span class="badge badge-primary">PENDIENTE</span></td>
+        <td>{{numero_documento}}</td>
+        <td>{{nombres_apellidos}}</td>
+        <td>{{cmp}}</td>
+        <td>{{fecha_nacimiento}}</td>
+        <td>{{especialidad}}</td>
+    </tr>
+{{/.}}
+{{^.}}
+    <tr>
+        <td colspan="99">
+            <p class="text-center">No hay registros que mostrar.</p>
+        </td>
+    </tr>
+{{/.}}

@@ -18,7 +18,7 @@
             </li>
             <li class="nav-item">
             <a class="nav-link" id="tab-promotoras-medicos" data-toggle="pill" href="#blk-tab-promotoras-medicos" role="tab" aria-controls="blk-tab-promotoras-medicos" aria-selected="false">
-                Mantenimientos
+                Mantenimientos <b></b>
             </a>
             </li>
         </ul>
@@ -309,6 +309,41 @@
         <div class="tab-pane fade" id="blk-tab-promotoras-medicos" role="tabpanel" aria-labelledby="tab-promotoras-medicos">
              <div class="row">
                 <div class="col-md-8">
+                    <div class="card collapsed-card" id="blk-medicos-aprobar">
+                        <div class="card-header">
+                            <h3 class="card-title">Médicos para aprobar (<b id="lbl-cantidad-medicosaprobar"></b>)</h3>
+                            <div class="card-tools">
+                                <select name="txt-medicos-estado" id="txt-medico-estado">
+                                    <option selected value="P">PENDIENTES</option>
+                                    <option value="A">APROBADOS</option>
+                                    <option value="R">RECHAZADOS</option>
+                                </select>
+                                <button type="button" class="btn btn-sm on-refresh bg-success" title="Actualizar">
+                                    <i class="fas fa-refresh"></i>
+                                </button>
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body"style="display: none;position:relative">
+                            <div class="zona-loader"></div>
+                            <table class="table" style="min-height: 300px">
+                                <thead>
+                                    <tr>
+                                        <th>OPC</th>
+                                        <th>Estado</th>
+                                        <th>Núm. Doc.</th>
+                                        <th>Médico</th>
+                                        <th>CMP</th>
+                                        <th>F. Nacimiento</th>
+                                        <th>Especialidad</th>
+                                    </tr>
+                                </thead> 
+                                <tbody></tbody>   
+                            </table>
+                        </div>
+                    </div>
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Médicos</h3>

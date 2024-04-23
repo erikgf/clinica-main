@@ -13,9 +13,11 @@ const GenerarReportePromotora = function({id}){
         this.$el = this.$(id);
         this.setDOM();
         this.setEventos();
+        this.limitarFechas();
     };
 
     this.setDOM = () => {
+        $form = this.$el.find("form");
         $txtFechaInicio = this.$el.find("#txt-fechainicio");
         $txtFechaFin = this.$el.find("#txt-fechafin");
         $btnImprimirPDF = this.$el.find("#btn-imprimir-pdf");
@@ -23,20 +25,39 @@ const GenerarReportePromotora = function({id}){
     };
 
     this.setEventos = () => {
-        $btnImprimirPDF.on("click", (e) => {
+        $form.on("submit", (e)=>{
             e.preventDefault();
-            this.generarPDF({fechaInicio: $txtFechaInicio.val(), fechaFin: $txtFechaFin.val()});
-        });
-        
-        $btnImprimirEXCEL.on("click", (e) => {
-            e.preventDefault();
-            this.generarEXCEL({fechaInicio: $txtFechaInicio.val(), fechaFin: $txtFechaFin.val()});
+            const { originalEvent : { submitter : $btn} } = e;
+            const id = $btn.id;
+            const fechaInicio =  $txtFechaInicio.val(), fechaFin = $txtFechaFin.val();
+
+            if (id === "btn-imprimir-pdf"){
+                this.generarPDF({fechaInicio, fechaFin});
+                return;
+            }
+
+            if (id === "btn-imprimir-excel"){
+                this.generarEXCEL({fechaInicio, fechaFin});
+                return;
+            }
         });
 
         const date = new Date();
         const [strDate] = date.toISOString().split("T");
         $txtFechaInicio.val(strDate);
         $txtFechaFin.val(strDate);
+    };
+
+    this.limitarFechas = () => {
+        const date = new Date();
+        const [strDateHoy] = date.toISOString().split("T");
+        $txtFechaInicio.prop("max", strDateHoy);
+        $txtFechaInicio.prop("max", strDateHoy);
+
+        date.setDate(date.getDate() - 90); //90 días atrás;
+        const [strDate] = date.toISOString().split("T");;
+        $txtFechaInicio.prop("min", strDate);
+        $txtFechaFin.prop("min", strDate);
     };
 
     this.generarPDF = ({fechaInicio, fechaFin}) =>{

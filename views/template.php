@@ -42,20 +42,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Left navbar links -->
       <?php $objTemplate->renderNavbarItems(); ?>
       <!--
-  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-    <ul class="navbar-nav">
-      <li class="nav-item">
-        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-      </li>
-      <li class="nav-item d-none d-sm-inline-block">
-        <a onclick="showContent('registro-paciente')" class="nav-link" id="ctn-historial">Pacientes</a>
-      </li>
-      <li class="nav-item d-none d-sm-inline-block">
-        <a onclick="showContent('registro-atencion')"  class="nav-link">Registro de Atenciones</a>
-      </li>
-    </ul>
-    <?php // include_once "pages/navbar.links.php";  ?>
-  </nav>
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+              <a onclick="showContent('registro-paciente')" class="nav-link" id="ctn-historial">Pacientes</a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+              <a onclick="showContent('registro-atencion')"  class="nav-link">Registro de Atenciones</a>
+            </li>
+          </ul>
+        </nav>
       -->
     
   <!-- /.navbar -->
@@ -63,10 +62,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
+  <!--
     <a href="#" class="brand-link">
       <img src="<?php echo RUTA_BASE; ?>/icon/icon_dmi_white.png" alt="DMI Logo" class="brand-image img-circle elevation-3">
       <span class="brand-text font-weight-light">Software | DMI</span>
     </a>
+  -->
 
     <!-- Sidebar -->
     <div class="sidebar">
@@ -102,13 +103,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <div class="content">
           <?php  $objTemplate->renderContent(); ?>
         </div>
-          <!--
-          <div class="content" id="content-registro-atencion" data-name="RegistroAtencion"></div>
-          <div class="content" id="content-registro-atencion-caja" data-name="RegistroAtencionCaja"></div>
-          <div class="content" id="content-registro-paciente" data-name="RegistroPaciente"></div>
-          <div class="content" id="content-editar-servicios" data-name="EditarServicios"></div>
-          -->
-          <!-- /.content-wrapper -->
       </div><!-- /.container-fluid -->
     </div>
     <!-- /.content-header -->

@@ -1,0 +1,28 @@
+{{#.}}
+    <tr>
+        <td>
+            <div class="input-group-prepend">
+                <button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                Opc.
+                </button>
+                <div class="dropdown-menu p-0">
+                    <button class="dropdown-item bg-success on-aprobar" data-id="{{id_medico}}" title="APROBAR"><i class="fa fa-check"></i> APROBAR</button>
+                    <button class="dropdown-item bg-danger on-rechazar" data-descripcion="{{nombres_apellidos}}" data-id="{{id_medico}}" title="RECHAZAR"><i class="fa fa-close"></i> RECHAZAR</button>
+                </div>
+            </div>
+        </td>
+        <td title="{{observacion_rechazo}}"><span class="badge badge-{{estado_color}}">{{estado_descripcion}}</span></td>
+        <td>{{numero_documento}}</td>
+        <td>{{nombres_apellidos}}</td>
+        <td>{{cmp}}</td>
+        <td>{{fecha_nacimiento}}</td>
+        <td>{{especialidad}}</td>
+    </tr>
+{{/.}}
+{{^.}}
+    <tr>
+        <td colspan="99">
+            <p class="text-center">No hay registros que mostrar.</p>
+        </td>
+    </tr>
+{{/.}}
