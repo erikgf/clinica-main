@@ -333,11 +333,12 @@
                                     <tr>
                                         <th>OPC</th>
                                         <th>Estado</th>
-                                        <th>Núm. Doc.</th>
                                         <th>Médico</th>
                                         <th>CMP</th>
                                         <th>F. Nacimiento</th>
                                         <th>Especialidad</th>
+                                        <th>Celular</th>
+                                        <th>Dirección</th>
                                     </tr>
                                 </thead> 
                                 <tbody></tbody>   

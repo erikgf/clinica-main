@@ -18,6 +18,7 @@ const PerfilPromotoraPrincipal = function (){
         };
 
         this.cargarEspecialidades();
+        this.cargarSedes();
     };
 
 
@@ -40,13 +41,33 @@ const PerfilPromotoraPrincipal = function (){
             $txtEspecialidad.prop("disabled", false);
         }
     };
+
+
+    this.cargarSedes = async () => {
+        const $txtSede = $(".sede");
+        $txtSede.prop("disabled", true);
+
+        try{
+            const res = await $.ajax({
+                url: VARS.URL_CONTROLADOR+"sede.controlador.php?op=listar",
+                type: "post",
+                dataType: 'json',
+                delay: 5000,
+            });
+
+            $txtSede.html(this.template.select(res));
+        } catch ( error ){
+            console.error(error);
+        } finally {
+            $txtSede.prop("disabled", false);
+        }
+    };
     
     return this.init();
 };
 
 $(document).ready(function(){
     new PerfilPromotoraPrincipal();
-    //new MantenimientoMedicos();
 });
 
 

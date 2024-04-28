@@ -10,29 +10,37 @@
                     <div class="card-body">
                         <input type="hidden" name="id_medico_seleccionado">
                         <div class="row">
+                            <!-- 
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="txt-medico-numerodocumento">Núm. Documento (<span style="color:red">*</span>)</label>
+                                    <label>Núm. Documento (<span style="color:red">*</span>)</label>
                                     <input type="text" required name="numero_documento" class="form-control uppercase" maxlength="11"/>
                                 </div>
                             </div>
+                            -->
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="txt-medico-colegiatura">Colegiatura (<span style="color:red">*</span>)</label>
+                                    <label>Colegiatura (<span style="color:red">*</span>)</label>
                                     <input type="text" required name="colegiatura" class="form-control uppercase">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="txt-medico-rne">F. Nacimiento (<span style="color:red">*</span>)</label>
+                                    <label >F. Nacimiento (<span style="color:red">*</span>)</label>
                                     <input type="date" required name="fecha_nacimiento" class="form-control uppercase">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Especialidad (<span style="color:red">*</span>)</label>
+                                    <select type="text" name="especialidad" required class="form-control uppercase especialidad"></select>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label for="txt-medico-apellidosnombres">Apellidos y Nombres (<span style="color:red">*</span>)</label>
+                                    <label>Apellidos y Nombres (<span style="color:red">*</span>)</label>
                                     <input type="text" required name="apellidos_nombres" class="form-control uppercase" required>
                                 </div>
                             </div>
@@ -40,10 +48,20 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="txt-medico-especialidad">Especialidad (<span style="color:red">*</span>)</label>
-                                    <select type="text" name="especialidad" required class="form-control uppercase especialidad">
-                                        <option value="1">GENÉRICA</option>
-                                    </select>
+                                    <label >Celular</label>
+                                    <input type="text" name="celular"  class="form-control uppercase celular" />
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <label >Dirección</label>
+                                    <textarea  name="direccion"  class="form-control uppercase direccion"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="txt-medico-sede">Sede  (<span style="color:red">*</span>)</label>
+                                    <select  name="sede"  class="form-control uppercase sede" required id="txt-medico-sede"></select>
                                 </div>
                             </div>
                         </div>

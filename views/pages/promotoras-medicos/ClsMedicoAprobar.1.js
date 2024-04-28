@@ -105,16 +105,6 @@ const MedicoAprobar = function({id}){
             DT = $tblMain.DataTable({
                 "responsive":true,
                 "pageLength": 10,
-                /*
-                "columns": [
-                        { "width": "75px" },
-                        null,
-                        { "width": "135px" },
-                        { "width": "115px" },
-                        { "width": "115px" },
-                        { "width": "115px" }
-                      ]
-                */
             });
         }
 
@@ -203,17 +193,21 @@ const MedicoAprobar = function({id}){
             this.data = res;
             this.render(this.data);
 
-            const cantidadPendientes= this.data?.length;
-            const $tabPromotorasMedicos = this.$("#tab-promotoras-medicos");
-            this.$el.find("#lbl-cantidad-medicosaprobar").html(cantidadPendientes);
+            if ($cboEstado.val() == 'P'){
+                const cantidadPendientes= this.data?.length;
+                const $tabPromotorasMedicos = this.$("#tab-promotoras-medicos");
+                this.$el.find("#lbl-cantidad-medicosaprobar").html(cantidadPendientes);
+    
+                if (cantidadPendientes > 0){
+                    $tabPromotorasMedicos.addClass("alertas-disponibles");
+                    $tabPromotorasMedicos.find("b").html(`(${cantidadPendientes})`);
+                } else {
+                    $tabPromotorasMedicos.removeClass("alertas-disponibles");
+                    $tabPromotorasMedicos.find("b").empty();
+                    this.$(".navbar-nav.ml-auto").remove();
+                }
 
-            if (cantidadPendientes > 0){
-                $tabPromotorasMedicos.addClass("alertas-disponibles");
-                $tabPromotorasMedicos.find("b").html(`(${cantidadPendientes})`);
-            } else {
-                $tabPromotorasMedicos.removeClass("alertas-disponibles");
-                $tabPromotorasMedicos.find("b").empty();
-                this.$(".navbar-nav.ml-auto").remove();
+                return;
             }
             
         } catch ( error ){

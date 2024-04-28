@@ -180,7 +180,7 @@ class Medico extends Conexion {
                         m.nombres_apellidos as medico,
                         m.colegiatura,
                         m.rne, 
-                        CONCAT(telefono_uno,' ',telefono_dos) as telefonos,
+                        CONCAT(COALESCE(telefono_uno,''),' ',COALESCE(telefono_dos,'')) as telefonos,
                         m.correo,
                         m.domicilio,
                         pr.descripcion as promotora,
@@ -233,7 +233,7 @@ class Medico extends Conexion {
             $sql = "SELECT 
                     id_medico as id,
                     TRIM(COALESCE(nombres_apellidos,'')) as text,
-                    CONCAT(telefono_uno,' ',telefono_dos) as telefonos
+                    CONCAT(COALESCE(telefono_uno,''),' ',COALESCE(telefono_dos,'')) as telefonos
                     FROM medico
                     WHERE estado_mrcb AND id_medico NOT IN (1,2)";
                     

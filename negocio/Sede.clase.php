@@ -6,6 +6,8 @@ class Sede extends Conexion {
     public $id_sede;
     public $descripcion;
 
+    public $id_usuario_registrado;
+
     public function listar(){
         try {
             $sql = "SELECT 

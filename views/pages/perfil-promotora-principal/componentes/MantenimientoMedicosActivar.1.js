@@ -66,7 +66,6 @@ const MantenimientoMedicosActivar = function({id}){
        $modalRegistro.on("submit","form", (e) => {
             e.preventDefault();
             const form = e.currentTarget;
-            console.log({form});
             this.guardar();
        });
     };
@@ -104,11 +103,14 @@ const MantenimientoMedicosActivar = function({id}){
         $btnGuardar.prop("disabled", true);
         const dataForm = {
             p_id_medico : $form[0].id_medico_seleccionado.value,
-            p_numero_documento : $form[0].numero_documento.value,
+            //p_numero_documento : $form[0].numero_documento.value,
             p_colegiatura : $form[0].colegiatura.value,
             p_id_especialidad : $form[0].especialidad.value,
             p_fecha_nacimiento : $form[0].fecha_nacimiento.value,
             p_apellidos_nombres : $form[0].apellidos_nombres.value,
+            p_celular: $form[0].celular.value,
+            p_direccion: $form[0].direccion.value,
+            p_id_sede : $form[0].sede.value
         };
 
         const action = dataForm.p_id_medico == "" 
@@ -116,7 +118,7 @@ const MantenimientoMedicosActivar = function({id}){
                             : "editar";
 
         try{
-            const data = await this.$.ajax({
+            const [data] = await this.$.ajax({
                 url: `${VARS.URL_CONTROLADOR}medico.promotora.controlador.php?op=${action}`,
                 type: "post",
                 dataType: 'json',
@@ -124,8 +126,19 @@ const MantenimientoMedicosActivar = function({id}){
                 data: dataForm
             });
 
+            
             if (this.data){
-                this.data.push(data);
+                if (action === "guardar"){
+                    this.data.push(data);
+                } else {
+                    const id_medico_modificado = parseInt(dataForm.p_id_medico);
+                    this.data = this.data.map( el => {
+                        if (el.id_medico === id_medico_modificado){
+                            return data;
+                        }
+                        return el;
+                    });
+                }
                 this.render(this.data);
             }
             
@@ -134,7 +147,7 @@ const MantenimientoMedicosActivar = function({id}){
 
         } catch ( error ){
             console.error(error);
-            toastr.error(error);
+            toastr.error(error?.responseText);
         } finally {
             $btnGuardar.prop("disabled", false);
         }
@@ -169,11 +182,14 @@ const MantenimientoMedicosActivar = function({id}){
 
             const { elements } = $form[0];
             elements.id_medico_seleccionado.value = id;
-            elements.numero_documento.value =  data.numero_documento;
+            //elements.numero_documento.value =  data.numero_documento;
             elements.colegiatura.value =  data.cmp;
             elements.especialidad.value =  data.id_especialidad;
             elements.fecha_nacimiento.value =  data.fecha_nacimiento;
             elements.apellidos_nombres.value =  data.nombres_apellidos;
+            elements.celular.value =  data.celular;
+            elements.direccion.value =  data.direccion;
+            elements.sede.value =  data.id_sede;
 
         } catch ( error ){
             console.error(error);
@@ -223,7 +239,7 @@ const MantenimientoMedicosActivar = function({id}){
 
         $btn.prop("disabled", true);
         try{
-            const data = await this.$.ajax({
+            await this.$.ajax({
                 url: `${VARS.URL_CONTROLADOR}medico.promotora.controlador.php?op=anular`,
                 type: "post",
                 dataType: 'json',
@@ -232,7 +248,6 @@ const MantenimientoMedicosActivar = function({id}){
                     p_id_medico : id
                 }
             });
-
 
             const $tr = $btn.parents("tr");
             $tr.remove();

@@ -13,52 +13,25 @@
             </div>
             <div class="card-body"style="display: none;position:relative">
                 <div class="zona-loader"></div>
-                <table class="table" style="min-height: 300px">
-                    <thead>
-                        <tr>
-                            <th>OPC</th>
-                            <th>Estado</th>
-                            <th>Núm. Doc.</th>
-                            <th>Médico</th>
-                            <th>CMP</th>
-                            <th>F. Nacimiento</th>
-                            <th>Especialidad</th>
-                        </tr>
-                    </thead> 
-                    <tbody>
-                        
-                    </tbody>   
-                </table>
-            </div>
-        </div>
-
-        <div class="card"  id="blk-medicos-activos">
-            <div class="card-header">
-                <h3 class="card-title">Mis Médicos: Activos</h3>
-                <div class="card-tools">
-                    <button type="button" class="btn btn-md btn-success on-refresh" title="Actualizar"><i class="fa fa-refresh"></i></button>
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                        <i class="fas fa-minus"></i>
-                    </button>
+                <div class="overflow-auto">
+                    <table class="table" style="max-height: 300px">
+                        <thead>
+                            <tr>
+                                <th>OPC</th>
+                                <th>Estado</th>
+                                <th>Médico</th>
+                                <th>CMP</th>
+                                <th>F. Nacimiento</th>
+                                <th>Especialidad</th>
+                                <th>Celular</th>
+                                <th>Dirección</th>
+                            </tr>
+                        </thead> 
+                        <tbody>
+                            
+                        </tbody>   
+                    </table>
                 </div>
-            </div>
-            <div class="card-body"style="position:relative">
-                <div class="zona-loader"></div>
-                <table class="table" style="min-height: 300px">
-                    <thead>
-                        <tr>
-                            <th>OPC</th>
-                            <th>Estado</th>
-                            <th>Núm. Doc.</th>
-                            <th>Médico</th>
-                            <th>CMP</th>
-                            <th>F. Nacimiento</th>
-                            <th>Sede</th>
-                            <th>Especialidad</th>
-                        </tr>
-                    </thead> 
-                    <tbody> </tbody>   
-                </table>
             </div>
         </div>
     </div>
@@ -99,5 +72,40 @@
             </form>
         </div>
 
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card"  id="blk-medicos-activos">
+            <div class="card-header">
+                <h3 class="card-title">Mis Médicos: Activos</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-md btn-success on-refresh" title="Actualizar"><i class="fa fa-refresh"></i></button>
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body"style="position:relative">
+                <div class="zona-loader"></div>
+                <table class="table" style="min-height: 300px">
+                    <thead>
+                        <tr>
+                            <th>OPC</th>
+                            <th>Estado</th>
+                            <th>Médico</th>
+                            <th>CMP</th>
+                            <th>F. Nacimiento</th>
+                            <th>Sede</th>
+                            <th>Especialidad</th>
+                            <th>Celular</th>
+                            <th>Dirección</th>
+                        </tr>
+                    </thead> 
+                    <tbody> </tbody>   
+                </table>
+            </div>
+        </div>
     </div>
 </div>

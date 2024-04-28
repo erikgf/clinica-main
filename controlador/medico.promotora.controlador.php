@@ -3,17 +3,7 @@ require_once '../datos/local_config_web.php';
 require_once '../negocio/Sesion.clase.php';
 require_once '../negocio/Globals.clase.php';
 
-//Test mode.
-/*
-$objUsuario = [];
-$objUsuario["id_usuario_registrado"] = 44;
-$objUsuario["nombre_usuario"] = "JP";
-$objUsuario["id_rol"] = 15;
-Sesion::setSesion($objUsuario);
-*/
-
 $objUsuario = Sesion::obtenerSesion();
-
 
 if ($objUsuario == null){
     Funciones::imprimeJSON(Globals::$HTTP_NO_CREDENCIALES, "ERROR", "No hay credenciales válidas.");
@@ -61,10 +51,13 @@ try {
         break;
 
         case "guardar":
+            /*
             $obj->numero_documento = isset($_POST["p_numero_documento"]) ? $_POST["p_numero_documento"] : NULL;
             if (!$obj->numero_documento){
                 throw new Exception("Número documento no ingresado", Globals::$HTTP_NO_VALIDO);
             }
+            */
+
             $obj->apellidos_nombres = isset($_POST["p_apellidos_nombres"]) ? $_POST["p_apellidos_nombres"] : NULL;
             if (!$obj->apellidos_nombres){
                 throw new Exception("Nombres y apellidos no ingresados", Globals::$HTTP_NO_VALIDO);
@@ -81,15 +74,26 @@ try {
             if (!$obj->id_especialidad){
                 throw new Exception("Fecha de nacimiento no ingresada", Globals::$HTTP_NO_VALIDO);
             }
+
+            $obj->celular = isset($_POST["p_celular"]) ? $_POST["p_celular"] : "";
+            $obj->direccion = isset($_POST["p_direccion"]) ? $_POST["p_direccion"] : "";
+
+            $obj->id_sede = isset($_POST["p_id_sede"]) ? $_POST["p_id_sede"] : NULL;
+            if (!$obj->id_sede){
+                throw new Exception("Sede no ingresada", Globals::$HTTP_NO_VALIDO);
+            }
+
             $data = $obj->guardar();
             Funciones::imprimeJSON(Globals::$HTTP_OK, "OK", $data);
         break;
 
         case "editar":
+            /*
             $obj->numero_documento = isset($_POST["p_numero_documento"]) ? $_POST["p_numero_documento"] : NULL;
             if (!$obj->numero_documento){
                 throw new Exception("Número documento no ingresado", Globals::$HTTP_NO_VALIDO);
             }
+            */
             $obj->apellidos_nombres = isset($_POST["p_apellidos_nombres"]) ? $_POST["p_apellidos_nombres"] : NULL;
             if (!$obj->apellidos_nombres){
                 throw new Exception("Nombres y apellidos no ingresados", Globals::$HTTP_NO_VALIDO);
@@ -110,15 +114,25 @@ try {
             if (!$obj->id_medico){
                 throw new Exception("No se ha enviado el ID del registro a modificar", Globals::$HTTP_NO_VALIDO);
             }
+            $obj->celular = isset($_POST["p_celular"]) ? $_POST["p_celular"] : "";
+            $obj->direccion = isset($_POST["p_direccion"]) ? $_POST["p_direccion"] : "";
+
+            $obj->id_sede = isset($_POST["p_id_sede"]) ? $_POST["p_id_sede"] : NULL;
+            if (!$obj->id_sede){
+                throw new Exception("Sede no ingresada", Globals::$HTTP_NO_VALIDO);
+            }
+
             $data = $obj->editar();
             Funciones::imprimeJSON(Globals::$HTTP_OK, "OK", $data);
         break;
 
         case "editar_viejo":
+            /*
             $obj->numero_documento = isset($_POST["p_numero_documento"]) ? $_POST["p_numero_documento"] : NULL;
             if (!$obj->numero_documento){
                 throw new Exception("Número documento no ingresado", Globals::$HTTP_NO_VALIDO);
             }
+            */
             $obj->apellidos_nombres = isset($_POST["p_apellidos_nombres"]) ? $_POST["p_apellidos_nombres"] : NULL;
             if (!$obj->apellidos_nombres){
                 throw new Exception("Nombres y apellidos no ingresados", Globals::$HTTP_NO_VALIDO);
@@ -135,12 +149,18 @@ try {
             if (!$obj->id_especialidad){
                 throw new Exception("Fecha de nacimiento no ingresada", Globals::$HTTP_NO_VALIDO);
             }
+            $obj->celular = isset($_POST["p_celular"]) ? $_POST["p_celular"] : "";
+            $obj->direccion = isset($_POST["p_direccion"]) ? $_POST["p_direccion"] : "";
+
+            $obj->id_sede = isset($_POST["p_id_sede"]) ? $_POST["p_id_sede"] : NULL;
+            if (!$obj->id_sede){
+                throw new Exception("Sede no ingresada", Globals::$HTTP_NO_VALIDO);
+            }
 
             $obj->id_medico_modificado = isset($_POST["p_id_medico_modificado"]) ? $_POST["p_id_medico_modificado"] : NULL;
             if (!$obj->id_medico_modificado){
                 throw new Exception("No se ha enviado el ID del registro a modificar", Globals::$HTTP_NO_VALIDO);
             }
-            
             $data = $obj->editarViejo();
             Funciones::imprimeJSON(Globals::$HTTP_OK, "OK", $data);
         break;

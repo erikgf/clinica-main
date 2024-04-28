@@ -52,7 +52,6 @@ const MantenimientoMedicos = function({id}){
 
         $modalRegistro.on("submit","form", (e) => {
             e.preventDefault();
-            const form = e.currentTarget;
             this.guardar();
        });
 
@@ -114,11 +113,14 @@ const MantenimientoMedicos = function({id}){
         $btnGuardar.prop("disabled", true);
         const dataForm = {
             p_id_medico_modificado : $form[0].id_medico_seleccionado.value,
-            p_numero_documento : $form[0].numero_documento.value,
+            //p_numero_documento : $form[0].numero_documento.value,
             p_colegiatura : $form[0].colegiatura.value,
             p_id_especialidad : $form[0].especialidad.value,
             p_fecha_nacimiento : $form[0].fecha_nacimiento.value,
             p_apellidos_nombres : $form[0].apellidos_nombres.value,
+            p_celular: $form[0].celular.value,
+            p_direccion: $form[0].direccion.value,
+            p_id_sede : $form[0].sede.value
         };
 
         try{
@@ -130,15 +132,19 @@ const MantenimientoMedicos = function({id}){
                 data: dataForm
             });
 
-            $modalRegistro.modal("hide");
             toastr.success("Registro realizado correctamente!");
 
-            if ($TR_SELECCIONADO){
-                $TR_SELECCIONADO.remove();
+            if (DT){
+                if ($TR_SELECCIONADO){
+                    console.log({$TR_SELECCIONADO});
+                    DT.row($TR_SELECCIONADO).remove().draw();
+                }
             }
 
-            if(pMantenimientoMedicos){
-                pMantenimientoMedicos.actualizar();
+            $modalRegistro.modal("hide");
+
+            if(pMantenimientoMedicosActivar){
+                pMantenimientoMedicosActivar.actualizar();
             }
 
         } catch ( error ){
@@ -193,11 +199,14 @@ const MantenimientoMedicos = function({id}){
 
             const { elements } = $form[0];
             elements.id_medico_seleccionado.value = id;
-            elements.numero_documento.value =  data.numero_documento;
+           // elements.numero_documento.value =  data.numero_documento;
             elements.colegiatura.value =  data.cmp;
             elements.especialidad.value =  data.id_especialidad;
             elements.fecha_nacimiento.value =  data.fecha_nacimiento;
             elements.apellidos_nombres.value =  data.nombres_apellidos;
+            elements.celular.value =  data.celular;
+            elements.direccion.value =  data.direccion;
+            elements.sede.value =  data.id_sede;
 
             $TR_SELECCIONADO = $btn.parents("tr");
 

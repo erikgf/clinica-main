@@ -21,18 +21,21 @@ class MedicoPromotoraTemporalAdmin extends Conexion {
         try {
             $sql = "SELECT 
                         m.id_medico,
-                        m.numero_documento,
                         m.nombres_apellidos,
                         m.cmp,
                         esp.descripcion as especialidad,
                         DATE_FORMAT(m.fecha_nacimiento, '%d-%m-%Y') as fecha_nacimiento,
                         pr.descripcion as promotora,
                         m.estado_activo,
+                        m.direccion,
+                        m.celular,
+                        s.nombre as sede,
                         (CASE m.estado_activo WHEN 'P' THEN 'PENDIENTE' WHEN 'A' THEN 'APROBADO' ELSE 'RECHAZADO' END) as estado_descripcion,
                         (CASE m.estado_activo WHEN 'P' THEN 'warning' WHEN 'A' THEN 'success' ELSE 'danger' END) as estado_color,
                         m.observacion_rechazo
                     FROM medico_promotora_temporal m 
                     INNER JOIN promotora pr ON pr.id_promotora = m.id_promotora
+                    INNER JOIN sede s ON s.id_sede = m.id_sede
                     LEFT JOIN especialidad_medico esp ON esp.id_especialidad_medico = m.id_especialidad
                     WHERE m.estado_mrcb AND estado_activo = :0
                     ORDER BY m.fecha_hora_registro";
@@ -58,7 +61,9 @@ class MedicoPromotoraTemporalAdmin extends Conexion {
 
             $this->beginTransaction();
 
-            $sql = "SELECT numero_documento, cmp, nombres_apellidos, fecha_nacimiento, id_especialidad, id_promotora, id_medico_modificado
+            $sql = "SELECT cmp, nombres_apellidos, fecha_nacimiento, id_especialidad, 
+                    direccion, celular, id_sede,
+                    id_promotora, id_medico_modificado
                     FROM medico_promotora_temporal
                     WHERE id_medico = :0 AND estado_mrcb AND estado_activo = 'P'";
 
@@ -70,21 +75,21 @@ class MedicoPromotoraTemporalAdmin extends Conexion {
 
             $objMedico = new Medico();
             $objMedico->id_medico = $medicoTemporal["id_medico_modificado"] ;
-            $objMedico->numero_documento = $medicoTemporal["numero_documento"];
+            //$objMedico->numero_documento = $medicoTemporal["numero_documento"];
             $objMedico->apellidos_nombres = $medicoTemporal["nombres_apellidos"];
             $objMedico->colegiatura = $medicoTemporal["cmp"];
             $objMedico->id_promotora = $medicoTemporal["id_promotora"];
             $objMedico->id_especialidad = $medicoTemporal["id_especialidad"];
             $objMedico->fecha_nacimiento = $medicoTemporal["fecha_nacimiento"];
+            $objMedico->domicilio = $medicoTemporal["direccion"];
+            $objMedico->telefono_uno = $medicoTemporal["celular"];
             $objMedico->tipo_personal_medico = 0;
             $objMedico->es_informante = 0;
             $objMedico->es_realizante = 0;
-            $objMedico->id_sede = 1;
+            $objMedico->id_sede = $medicoTemporal["id_sede"];
             $objMedico->rne = NULL;
-            $objMedico->telefono_uno = NULL;
             $objMedico->telefono_dos = NULL;
             $objMedico->correo = NULL;
-            $objMedico->domicilio = NULL;
 
             $objRpt = $objMedico->guardar();
 
