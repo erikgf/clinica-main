@@ -111,11 +111,14 @@ class CajaMovimiento extends Conexion {
 
             if ($this->id_tipo_movimiento == 1){
                 $this->correlativo_atencion = $obj["correlativo_atencion"];
+                $serie = $obj["serie_atencion"];
             } else {
                 if ($this->tipo_flujo_movimiento === "E"){
                     $this->correlativo_egreso = $obj["correlativo_egresos"];
+                    $serie = $obj["serie_egresos"];
                 } else {
                     $this->correlativo_ingreso = $obj["correlativo_ingresos"];
+                    $serie = $obj["serie_ingresos"];
                 }
             }
 
@@ -136,6 +139,7 @@ class CajaMovimiento extends Conexion {
                 "fecha_transaccion"=>$this->fecha_transaccion,
                 "monto_credito"=>$this->monto_credito,
                 "monto_descuento"=>$this->monto_descuento,
+                "serie_atencion"=>$serie,
                 "correlativo_atencion"=>$this->correlativo_atencion,
                 "correlativo_ingreso"=>$this->correlativo_ingreso,
                 "correlativo_egreso"=>$this->correlativo_egreso,
@@ -316,7 +320,7 @@ class CajaMovimiento extends Conexion {
             throw new Exception($exc->getMessage(), 1);
         }
     }
-
+    /*
     public function generarDocumentoElectronicoDesdeAtencion($id_tipo_comprobante, $atencion_medica){
         try {
 
@@ -408,6 +412,7 @@ class CajaMovimiento extends Conexion {
             throw new Exception($e->getMessage(), 1);
         }
     }
+    */
     
     public function anularMovimiento($motivo_anulacion){
         try {

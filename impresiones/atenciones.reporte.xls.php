@@ -33,7 +33,7 @@ require "../negocio/AtencionMedica.clase.php";
 $titulo_xls  = "";
 try {
   $obj = new AtencionMedica();
-  $data = $obj->listarAtencionesGeneral($fecha_inicio, $fecha_fin);
+  $data = $obj->listarAtencionesGeneralIncluyeNotas($fecha_inicio, $fecha_fin);
 
   if (count($data) <= 0){
     echo "Sin datos encontrados.";
@@ -60,8 +60,9 @@ try {
     $actualFila++;
 
     $arregloCabecera = [
-                        ["ancho"=>12,"rotulo"=>"FECHA"],
-                        ["ancho"=>8,"rotulo"=>"RECIBO"],
+                        ["ancho"=>15,"rotulo"=>"F. ATENCIÓN"],
+                        ["ancho"=>17,"rotulo"=>"F. COMPROBANTE"],
+                        ["ancho"=>10,"rotulo"=>"RECIBO"],
                         ["ancho"=>16,"rotulo"=>"COMPROBANTE"],
                         ["ancho"=>42,"rotulo"=>"CLIENTE"],
                         ["ancho"=>42,"rotulo"=>"PACIENTE"],
@@ -93,7 +94,8 @@ try {
     foreach ($data as $key => $registro) {
         $anulado = $registro["estado_anulado"] == "1";
         $i = 0;
-        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["fecha"]);
+        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["fecha_registro"]);
+        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["fecha_emision"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["numero_acto_medico"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["comprobante"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["cliente"]);

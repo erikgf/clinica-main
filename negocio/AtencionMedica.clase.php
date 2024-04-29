@@ -988,13 +988,50 @@ class AtencionMedica extends Conexion {
     public function listarAtencionesGeneral($fecha_inicio, $fecha_fin){
         try {
             $sql  = "SELECT 
+                            am.id_atencion_medica,
+                            COALESCE(CONCAT(cim.serie_atencion,'-',cim.correlativo_atencion), '-') as numero_acto_medico, 
+                            DATE_FORMAT(am.fecha_atencion, '%d/%m/%Y') as fecha_registro,
+                            COALESCE(DATE_FORMAT(de.fecha_emision, '%d/%m/%Y'),'') as fecha_emision,
+                            de.iddocumento_electronico,
+                            COALESCE(CONCAT(de.serie,'-',LPAD(de.numero_correlativo,7,'0')),'S/C') as comprobante,
+                            nombre_paciente as paciente,
+                            COALESCE(p.razon_social, CONCAT(p.nombres,' ',p.apellidos_paterno,' ',p.apellidos_materno),'') as cliente,
+                            am.pago_efectivo as monto_efectivo,
+                            am.pago_deposito as monto_deposito,
+                            am.pago_tarjeta as monto_tarjeta,
+                            am.pago_credito as monto_credito,
+                            (am.pago_efectivo + am.pago_deposito + am.pago_tarjeta + am.pago_credito) as monto_total,
+                            COALESCE(de.estado_anulado, NOT am.estado_mrcb) as estado_anulado,
+                            de.DE_NOTA_ID as iddocumento_electronico_nota,
+                            CONCAT(de.DE_NOTA_SERIE,'-',LPAD(de.DE_NOTA_NUMERO_CORRELATIVO,7,'0')) as  comprobante_nota,
+                            COALESCE(de.DE_NOTA_DESCRIPCION_MOTIVO, am.motivo_anulado) as motivo_nota,
+                            IF (de.cdr_estado IS NULL, 'NO ENVIADO', (CASE de.cdr_estado WHEN '0' THEN 'ACEPTADO' WHEN '-1' THEN 'REVISAR' WHEN '' THEN 'REENVIAR' ELSE 'RECHAZADO' END)) as cdr_estado_descripcion,
+                            IF (de.cdr_estado IS NULL, 'gray', (CASE de.cdr_estado WHEN '0' THEN 'green' WHEN '-1' THEN 'orange' WHEN '' THEN 'blue' ELSE 'red' END)) as cdr_estado_color
+                            FROM atencion_medica am
+                            LEFT JOIN paciente p ON p.id_paciente = am.id_paciente
+                            LEFT JOIN documento_electronico de ON de.id_atencion_medica = am.id_atencion_medica AND de.estado_mrcb
+                            INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
+                            WHERE am.fecha_atencion BETWEEN :0 AND :1
+                            ORDER BY fecha_registro";
+            $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
+
+            return $datos;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function listarAtencionesGeneralIncluyeNotas($fecha_inicio, $fecha_fin){
+        try {
+            $sql  = "SELECT * FROM
+                    (SELECT 
                     am.id_atencion_medica,
-                    COALESCE(CONCAT(c.serie_atencion,'-',cim.correlativo_atencion), '-') as numero_acto_medico,
-                    -- COALESCE(am.numero_acto_medico,'-') as numero_acto_medico,
-                    DATE_FORMAT(COALESCE(de.fecha_emision, am.fecha_atencion), '%d/%m/%Y') as fecha_registro,
-                    DATE_FORMAT(COALESCE(de.fecha_emision, am.fecha_atencion), '%d/%m/%Y') as fecha,
+                    COALESCE(CONCAT(cim.serie_atencion,'-',cim.correlativo_atencion), '-') as numero_acto_medico, 
+                    am.fecha_atencion as fecha_raw,
+                    DATE_FORMAT(am.fecha_atencion, '%d/%m/%Y') as fecha_registro,
+                    COALESCE(DATE_FORMAT(de.fecha_emision, '%d/%m/%Y'),'') as fecha_emision,
                     de.iddocumento_electronico,
-                    COALESCE(CONCAT(de.serie,'-',LPAD(de.numero_correlativo,7,'0')),'S/C') comprobante,
+                    COALESCE(CONCAT(de.serie,'-',LPAD(de.numero_correlativo,7,'0')),'S/C') as comprobante,
                     nombre_paciente as paciente,
                     COALESCE(p.razon_social, CONCAT(p.nombres,' ',p.apellidos_paterno,' ',p.apellidos_materno),'') as cliente,
                     am.pago_efectivo as monto_efectivo,
@@ -1012,10 +1049,32 @@ class AtencionMedica extends Conexion {
                     LEFT JOIN paciente p ON p.id_paciente = am.id_paciente
                     LEFT JOIN documento_electronico de ON de.id_atencion_medica = am.id_atencion_medica AND de.estado_mrcb
                     INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
-                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
-                    INNER JOIN caja c ON c.id_caja = ci.id_caja
-                    WHERE (COALESCE(de.fecha_emision, am.fecha_atencion) BETWEEN :0 AND :1)
-                    ORDER BY am.id_atencion_medica";
+                    WHERE am.fecha_atencion BETWEEN :0 AND :1
+                    UNION
+                    SELECT
+                    NULL as id_atencion_medica,
+                    NULL as numero_acto_medico,
+                    de.fecha_emision as fecha_raw,
+                    DATE_FORMAT(de.fecha_emision, '%d/%m/%Y') as fecha_registro,
+                    DATE_FORMAT(de.fecha_emision, '%d/%m/%Y') as fecha_emision, 
+                    de.iddocumento_electronico,
+                    CONCAT(de.serie,'-',LPAD(de.numero_correlativo,7,'0')) as comprobante,
+                    NULL as paciente,
+                    de.descripcion_cliente as cliente,
+                    (de.importe_total * -1) as monto_efectivo,
+                    '0.00' as monto_deposito,
+                    '0.00' as monto_tarjeta,
+                    '0.00' as monto_credito,
+                    (de.importe_total * -1) as monto_total,
+                    de.estado_anulado,
+                    NULL as iddocumento_electronico_nota,
+                    NULL as comprobante_nota,
+                    de.descripcion_motivo_nota as motivo_nota,
+                    IF (de.cdr_estado IS NULL, 'NO ENVIADO', (CASE de.cdr_estado WHEN '0' THEN 'ACEPTADO' WHEN '-1' THEN 'REVISAR' WHEN '' THEN 'REENVIAR' ELSE 'RECHAZADO' END)) as cdr_estado_descripcion,
+                    IF (de.cdr_estado IS NULL, 'gray', (CASE de.cdr_estado WHEN '0' THEN 'green' WHEN '-1' THEN 'orange' WHEN '' THEN 'blue' ELSE 'red' END)) as cdr_estado_color
+                    FROM documento_electronico de
+                    WHERE de.idtipo_comprobante = '07' AND (de.fecha_emision BETWEEN :0  AND :1) AND de.estado_mrcb) as T
+                    ORDER BY T.fecha_raw";
             $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
 
             return $datos;
