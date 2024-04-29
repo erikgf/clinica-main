@@ -27,6 +27,7 @@ var Medico = function(_template, _$tabla, _$tbody){
     var TR_FILA = null;
 
     this._sedes = [];
+    this._especialidades = [];
     
     this.setInit = function(){
         tplMedicos  = _template;
@@ -37,6 +38,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         this.setEventos();
         
         this.cargarSedes();
+        this.cargarEspecialidades();
         this.cargar();
         return this;
     };
@@ -288,6 +290,31 @@ var Medico = function(_template, _$tabla, _$tbody){
                 $txtSede.html($html);
 
                 this._sedes = result;
+            },
+            error: function (request) {
+                toastr.error(request.responseText);
+                return;
+            },
+            cache: true
+            }
+        );
+    };
+
+    this.cargarEspecialidades = function(){
+        $.ajax({ 
+            url : VARS.URL_CONTROLADOR+"especialidad.controlador.php?op=listar",
+            type: "POST",
+            dataType: 'json',
+            delay: 250,
+            success: (result) => {
+                let $html = `<option value="">Seleccionar</option>`;
+                result.forEach(item => {
+                    $html += `<option value="${item.id}">${item.descripcion}</option>`
+                });
+
+                $txtEspecialidadMedico.html($html);
+
+                this._especialidades = result;
             },
             error: function (request) {
                 toastr.error(request.responseText);
