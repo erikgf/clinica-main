@@ -142,7 +142,6 @@ try {
     $last_medico = NULL;
     $i = 0;
 
-
     foreach ($dataRegistros as $key => $registro) {
         $medico = $registro["medico"];
         if ($last_medico == NULL ||  $last_medico != $medico){

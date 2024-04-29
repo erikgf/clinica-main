@@ -619,7 +619,10 @@ class Medico extends Conexion {
         try {
             $params = [$fecha_inicio, $fecha_fin];
 
-            $sql = "SELECT MONTH('$fecha_inicio') as mes_inicio, YEAR('$fecha_inicio') as anio_inicio,  MONTH('$fecha_fin') as mes_fin, YEAR('$fecha_fin') as anio_fin";
+            $sql = "SELECT  MONTH('$fecha_inicio') as mes_inicio, 
+                            YEAR('$fecha_inicio') as anio_inicio,  
+                            MONTH('$fecha_fin') as mes_fin, 
+                            YEAR('$fecha_fin') as anio_fin";
             $dataMesAnioFechas = $this->consultarFila($sql);
 
             $fechas = [];
@@ -677,7 +680,7 @@ class Medico extends Conexion {
                         WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND  :1) AND id_medico_ordenante NOT IN (1,2) $sqlWhereSedes $sqlWherePromotoras $sqlWhereAreas
                         GROUP BY m.id_medico, m.nombres_apellidos, CONCAT(MONTH(am.fecha_atencion),'-',YEAR(am.fecha_atencion))
                         HAVING  comision_sin_igv >  ".$totalesMayoresA."
-                        ORDER BY m.nombres_apellidos";
+                        ORDER BY m.nombres_apellidos, 3";
                     
             $data =  $this->consultarFilas($sql, $params);
 
