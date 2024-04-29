@@ -44,6 +44,8 @@ try {
   $obj->fue_atendido = $estado;
   $data = $obj->listarExamenesAdministrador($fecha_inicio, $fecha_fin, $area);
 
+  $data = $data["datos"];
+
   if (count($data) <= 0){
     echo "Sin datos encontrados.";
     exit;
