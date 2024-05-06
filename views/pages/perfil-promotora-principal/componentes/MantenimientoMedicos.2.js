@@ -38,6 +38,11 @@ const MantenimientoMedicos = function({id}){
         $tblMain = this.$el.find("table");
         $tbdMain = this.$el.find("tbody");
         $modalRegistro = $("#mdl-medico-viejo");
+
+        const year = new Date().getFullYear();
+        const fechaNacimiento = $modalRegistro.find("[name='fecha_nacimiento']");
+        fechaNacimiento.attr("min", year + "-01-01");
+        fechaNacimiento.attr("max", year + "-12-31");
     };
 
     this.setEventos = () => {

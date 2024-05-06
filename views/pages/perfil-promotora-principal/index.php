@@ -18,6 +18,6 @@ include_once "./ptr.modal.viejo.registro.php";
 
 
 <script type="text/javascript" src="./componentes/GenerarReportePromotora.js" defer></script>
-<script type="text/javascript" src="./componentes/MantenimientoMedicosActivar.1.js" defer></script>
-<script type="text/javascript" src="./componentes/MantenimientoMedicos.1.js" defer></script>
+<script type="text/javascript" src="./componentes/MantenimientoMedicosActivar.2.js" defer></script>
+<script type="text/javascript" src="./componentes/MantenimientoMedicos.2.js" defer></script>
 <script type="text/javascript" src="index.2.js" defer></script>

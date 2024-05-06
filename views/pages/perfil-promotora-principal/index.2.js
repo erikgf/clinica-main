@@ -21,7 +21,6 @@ const PerfilPromotoraPrincipal = function (){
         this.cargarSedes();
     };
 
-
     this.cargarEspecialidades = async () => {
         const $txtEspecialidad = $(".especialidad");
         $txtEspecialidad.prop("disabled", true);

@@ -53,11 +53,15 @@ class MedicoPromotoraTemporal extends Conexion {
                         m.celular,
                         m.direccion,
                         s.nombre as sede,
-                        DATE_FORMAT(m.fecha_nacimiento, '%d-%m-%Y') as fecha_nacimiento
+                        DATE_FORMAT(m.fecha_nacimiento, '%d/%m') as fecha_nacimiento,
+                        (CASE m.estado_activo WHEN 'P' THEN 'PENDIENTE' WHEN 'A' THEN 'APROBADO' ELSE 'RECHAZADO' END) as estado_descripcion,
+                        (CASE m.estado_activo WHEN 'P' THEN 'warning' WHEN 'A' THEN 'success' ELSE 'danger' END) as estado_color,
+                        (CASE m.estado_activo WHEN 'P' THEN 1 ELSE 0 END) as es_procesable,
+                        observacion_rechazo
                     FROM medico_promotora_temporal m 
                     INNER JOIN sede s ON s.id_sede = m.id_sede
                     LEFT JOIN especialidad_medico esp ON esp.id_especialidad_medico = m.id_especialidad
-                    WHERE m.estado_mrcb AND m.id_promotora = :0 AND estado_activo = 'P' $sqlExtra
+                    WHERE m.estado_mrcb AND m.id_promotora = :0 $sqlExtra
                     ORDER BY m.fecha_hora_registro";
             
             return  $this->consultarFilas($sql, $params);
@@ -68,11 +72,12 @@ class MedicoPromotoraTemporal extends Conexion {
 
     public function leer(){
         try {
+            $anio = date("Y");
             $sql = "SELECT 
                         m.id_medico,
                         m.nombres_apellidos,
                         m.cmp,
-                        m.fecha_nacimiento,
+                        DATE_FORMAT(m.fecha_nacimiento, '$anio-%m-%d') as fecha_nacimiento,
                         m.id_especialidad,
                         m.direccion,
                         m.celular,
@@ -252,7 +257,7 @@ class MedicoPromotoraTemporal extends Conexion {
                         m.nombres_apellidos,
                         m.colegiatura as cmp,
                         esp.descripcion as especialidad,
-                        DATE_FORMAT(m.fecha_nacimiento, '%d-%m-%Y') as fecha_nacimiento,
+                        DATE_FORMAT(m.fecha_nacimiento, '%d/%m') as fecha_nacimiento,
                         m.domicilio as direccion,
                         m.telefono_uno as celular,
                         sede.nombre as sede
@@ -270,12 +275,13 @@ class MedicoPromotoraTemporal extends Conexion {
 
     public function leerMedicoActivo(){
         try {
+            $anio = date("Y");
             $sql = "SELECT 
                         m.id_medico,
                         m.numero_documento,
                         m.nombres_apellidos,
                         m.colegiatura as cmp,
-                        m.fecha_nacimiento,
+                        DATE_FORMAT(m.fecha_nacimiento, '$anio-%m-%d') as fecha_nacimiento,
                         m.id_especialidad_medico as id_especialidad,
                         m.telefono_uno as celular,
                         m.domicilio as direccion,

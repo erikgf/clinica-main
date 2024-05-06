@@ -24,7 +24,7 @@ class MedicoPromotoraTemporalAdmin extends Conexion {
                         m.nombres_apellidos,
                         m.cmp,
                         esp.descripcion as especialidad,
-                        DATE_FORMAT(m.fecha_nacimiento, '%d-%m-%Y') as fecha_nacimiento,
+                        DATE_FORMAT(m.fecha_nacimiento, '%d/%m') as fecha_nacimiento,
                         pr.descripcion as promotora,
                         m.estado_activo,
                         m.direccion,

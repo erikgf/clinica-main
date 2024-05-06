@@ -35,6 +35,12 @@ const MantenimientoMedicosActivar = function({id}){
         $tblMain = this.$el.find("table");
         $tbdMain = this.$el.find("tbody");
         $modalRegistro = $("#mdl-medico");
+
+
+        const year = new Date().getFullYear();
+        const fechaNacimiento = $modalRegistro.find("[name='fecha_nacimiento']");
+        fechaNacimiento.attr("min", year + "-01-01");
+        fechaNacimiento.attr("max", year + "-12-31");
     };
 
     this.setEventos = () => {
@@ -156,6 +162,7 @@ const MantenimientoMedicosActivar = function({id}){
     this.nuevoRegistro = () => {
         const $form = $modalRegistro.find("form");
         $modalRegistro.find(".modal-title").html("Nuevo Médico");
+        $form[0].id_medico_seleccionado.value = "";
         $form[0].reset();
 
         $modalRegistro.modal("show");
@@ -221,7 +228,13 @@ const MantenimientoMedicosActivar = function({id}){
                 delay: 5000,
             });
 
-            this.data = res;
+            this.data = res.map( item => {
+                console.log({item});
+                return {
+                    ...item, 
+                    es_procesable : item.es_procesable == "1"
+                }
+            });
             this.render(this.data);
         } catch ( error ){
             console.error(error);

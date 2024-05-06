@@ -16,6 +16,7 @@
         <td>{{colegiatura}}</td>
         <td>{{rne}}</td>
         <td>{{telefonos}}</td>
+        <td>{{fecha_nacimiento}}</td>
         <td>{{domicilio}}</td>
         <td>{{promotora}}</td>
         <td>{{especialidad}}</td>

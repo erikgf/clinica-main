@@ -185,7 +185,8 @@ class Medico extends Conexion {
                         m.domicilio,
                         pr.descripcion as promotora,
                         esp.descripcion as especialidad,
-                        sede.nombre as sede
+                        sede.nombre as sede,
+                        DATE_FORMAT(m.fecha_nacimiento, '%d/%m') as fecha_nacimiento
                     FROM medico m 
                     LEFT JOIN promotora pr ON pr.id_promotora = m.id_promotora
                     LEFT JOIN especialidad_medico esp ON esp.id_especialidad_medico = m.id_especialidad_medico

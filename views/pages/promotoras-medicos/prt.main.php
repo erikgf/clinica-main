@@ -335,7 +335,7 @@
                                         <th>Estado</th>
                                         <th>Médico</th>
                                         <th>CMP</th>
-                                        <th>F. Nacimiento</th>
+                                        <th>Cumpleaños</th>
                                         <th>Especialidad</th>
                                         <th>Celular</th>
                                         <th>Dirección</th>
@@ -363,6 +363,7 @@
                                         <th>Colegiatura</th>
                                         <th>RNE</th>
                                         <th>Teléfonos</th>
+                                        <th>Cumpleaños</th>
                                         <th>Domicilio</th>
                                         <th>Promotora</th>
                                         <th>Especialidad</th>

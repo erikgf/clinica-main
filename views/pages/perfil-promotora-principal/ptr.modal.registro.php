@@ -26,8 +26,8 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label for="txt-medico-rne">F. Nacimiento (<span style="color:red">*</span>)</label>
-                                    <input type="date" required name="fecha_nacimiento" class="form-control uppercase" id="txt-medico-rne">
+                                    <label for="txt-medico-fn">Día/Mes Nacimiento (<span style="color:red">*</span>)</label>
+                                    <input type="date" required name="fecha_nacimiento" class="form-control uppercase" id="txt-medico-fn">
                                 </div>
                             </div>
                             <div class="col-md-4">

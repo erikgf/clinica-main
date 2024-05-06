@@ -34,7 +34,7 @@ include_once 'prt.modal.areas.php';
 </style>
 
 <script type="text/javascript" src="ClsMedico.1.js" defer></script>
-<script type="text/javascript" src="ClsMedicoAprobar.1.js" defer></script>
+<script type="text/javascript" src="ClsMedicoAprobar.2.js" defer></script>
 <script type="text/javascript" src="ClsArea.js" defer></script>
 <script type="text/javascript" src="ClsPromotora.js" defer></script>
 <script type="text/javascript" src="index.liquidaciones.individual.medicos.1.js" defer></script>

@@ -26,7 +26,7 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label >F. Nacimiento (<span style="color:red">*</span>)</label>
+                                    <label >Día/Mes Nacimiento (<span style="color:red">*</span>)</label>
                                     <input type="date" required name="fecha_nacimiento" class="form-control uppercase">
                                 </div>
                             </div>

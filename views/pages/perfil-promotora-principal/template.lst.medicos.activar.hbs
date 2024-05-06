@@ -1,10 +1,12 @@
 {{#.}}
     <tr>
         <td>
+            {{#es_procesable}}
             <button data-id="{{id_medico}}" title="Editar" class="btn bg-warning btn-sm on-edit"><i class="fa fa-edit"></i></button>
             <button data-id="{{id_medico}}" title="Eliminar" class="btn bg-danger btn-sm on-delete"><i class="fa fa-trash"></i></button>
+            {{/es_procesable}}
         </td>
-        <td><span class="badge badge-primary">PENDIENTE</span></td>
+        <td  title="{{observacion_rechazo}}"><span class="badge badge-{{estado_color}}">{{estado_descripcion}}</span></td>
         <td>{{nombres_apellidos}}</td>
         <td>{{cmp}}</td>
         <td>{{fecha_nacimiento}}</td>

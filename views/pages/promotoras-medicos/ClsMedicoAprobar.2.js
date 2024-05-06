@@ -62,7 +62,6 @@ const MedicoAprobar = function({id}){
             }
        });
 
-
         $tbdMain.on("click", "tr button.on-aprobar", (e) =>{
             const $btn = $(e.currentTarget);
             this.aprobar($btn);
@@ -97,6 +96,7 @@ const MedicoAprobar = function({id}){
         
         if (DT){
             DT.destroy();
+            DT = null;
         }
 
         $tbdMain.html(this.template.lista(_data));
