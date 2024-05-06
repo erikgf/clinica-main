@@ -990,8 +990,8 @@ class AtencionMedica extends Conexion {
             $sql  = "SELECT 
                             am.id_atencion_medica,
                             COALESCE(CONCAT(cim.serie_atencion,'-',cim.correlativo_atencion), '-') as numero_acto_medico, 
-                            DATE_FORMAT(am.fecha_atencion, '%d/%m/%Y') as fecha_registro,
-                            COALESCE(DATE_FORMAT(de.fecha_emision, '%d/%m/%Y'),'') as fecha_emision,
+                            COALESCE(de.fecha_emision, am.fecha_atencion) as fecha_raw,
+                            DATE_FORMAT(COALESCE(de.fecha_emision, am.fecha_atencion), '%d/%m/%Y') as fecha_registro,
                             de.iddocumento_electronico,
                             COALESCE(CONCAT(de.serie,'-',LPAD(de.numero_correlativo,7,'0')),'S/C') as comprobante,
                             nombre_paciente as paciente,
@@ -1011,8 +1011,8 @@ class AtencionMedica extends Conexion {
                             LEFT JOIN paciente p ON p.id_paciente = am.id_paciente
                             LEFT JOIN documento_electronico de ON de.id_atencion_medica = am.id_atencion_medica AND de.estado_mrcb
                             INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
-                            WHERE am.fecha_atencion BETWEEN :0 AND :1
-                            ORDER BY fecha_registro";
+                            WHERE COALESCE(de.fecha_emision, am.fecha_atencion) BETWEEN :0 AND :1
+                            ORDER BY fecha_raw";
             $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
 
             return $datos;
@@ -1027,9 +1027,8 @@ class AtencionMedica extends Conexion {
                     (SELECT 
                     am.id_atencion_medica,
                     COALESCE(CONCAT(cim.serie_atencion,'-',cim.correlativo_atencion), '-') as numero_acto_medico, 
-                    am.fecha_atencion as fecha_raw,
-                    DATE_FORMAT(am.fecha_atencion, '%d/%m/%Y') as fecha_registro,
-                    COALESCE(DATE_FORMAT(de.fecha_emision, '%d/%m/%Y'),'') as fecha_emision,
+                    COALESCE(de.fecha_emision,am.fecha_atencion) as fecha_raw
+                    DATE_FORMAT(COALESCE(de.fecha_emision,am.fecha_atencion), '%d/%m/%Y') as fecha_registro,
                     de.iddocumento_electronico,
                     COALESCE(CONCAT(de.serie,'-',LPAD(de.numero_correlativo,7,'0')),'S/C') as comprobante,
                     nombre_paciente as paciente,
@@ -1044,35 +1043,37 @@ class AtencionMedica extends Conexion {
                     CONCAT(de.DE_NOTA_SERIE,'-',LPAD(de.DE_NOTA_NUMERO_CORRELATIVO,7,'0')) as  comprobante_nota,
                     COALESCE(de.DE_NOTA_DESCRIPCION_MOTIVO, am.motivo_anulado) as motivo_nota,
                     IF (de.cdr_estado IS NULL, 'NO ENVIADO', (CASE de.cdr_estado WHEN '0' THEN 'ACEPTADO' WHEN '-1' THEN 'REVISAR' WHEN '' THEN 'REENVIAR' ELSE 'RECHAZADO' END)) as cdr_estado_descripcion,
-                    IF (de.cdr_estado IS NULL, 'gray', (CASE de.cdr_estado WHEN '0' THEN 'green' WHEN '-1' THEN 'orange' WHEN '' THEN 'blue' ELSE 'red' END)) as cdr_estado_color
+                    IF (de.cdr_estado IS NULL, 'gray', (CASE de.cdr_estado WHEN '0' THEN 'green' WHEN '-1' THEN 'orange' WHEN '' THEN 'blue' ELSE 'red' END)) as cdr_estado_color,
+                    0 as es_nota
                     FROM atencion_medica am
                     LEFT JOIN paciente p ON p.id_paciente = am.id_paciente
                     LEFT JOIN documento_electronico de ON de.id_atencion_medica = am.id_atencion_medica AND de.estado_mrcb
                     INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
-                    WHERE am.fecha_atencion BETWEEN :0 AND :1
+                    WHERE COALESCE(de.fecha_emision, am.fecha_atencion) BETWEEN :0 AND :1
                     UNION
                     SELECT
                     NULL as id_atencion_medica,
                     NULL as numero_acto_medico,
                     de.fecha_emision as fecha_raw,
                     DATE_FORMAT(de.fecha_emision, '%d/%m/%Y') as fecha_registro,
-                    DATE_FORMAT(de.fecha_emision, '%d/%m/%Y') as fecha_emision, 
                     de.iddocumento_electronico,
                     CONCAT(de.serie,'-',LPAD(de.numero_correlativo,7,'0')) as comprobante,
-                    NULL as paciente,
+                    am.nombre_paciente as paciente,
                     de.descripcion_cliente as cliente,
-                    (de.importe_total * -1) as monto_efectivo,
-                    '0.00' as monto_deposito,
-                    '0.00' as monto_tarjeta,
-                    '0.00' as monto_credito,
-                    (de.importe_total * -1) as monto_total,
+                    am.pago_efectivo * -1 as monto_efectivo,
+                    am.pago_deposito * -1 as monto_deposito,
+                    am.pago_tarjeta * -1 as monto_tarjeta,
+                    am.pago_credito * -1 as monto_credito,
+                    (am.pago_efectivo + am.pago_deposito + am.pago_tarjeta + am.pago_credito) * -1 as monto_total,
                     de.estado_anulado,
                     NULL as iddocumento_electronico_nota,
                     NULL as comprobante_nota,
                     de.descripcion_motivo_nota as motivo_nota,
                     IF (de.cdr_estado IS NULL, 'NO ENVIADO', (CASE de.cdr_estado WHEN '0' THEN 'ACEPTADO' WHEN '-1' THEN 'REVISAR' WHEN '' THEN 'REENVIAR' ELSE 'RECHAZADO' END)) as cdr_estado_descripcion,
-                    IF (de.cdr_estado IS NULL, 'gray', (CASE de.cdr_estado WHEN '0' THEN 'green' WHEN '-1' THEN 'orange' WHEN '' THEN 'blue' ELSE 'red' END)) as cdr_estado_color
+                    IF (de.cdr_estado IS NULL, 'gray', (CASE de.cdr_estado WHEN '0' THEN 'green' WHEN '-1' THEN 'orange' WHEN '' THEN 'blue' ELSE 'red' END)) as cdr_estado_color,
+                    1 as es_nota
                     FROM documento_electronico de
+                    INNER JOIN atencion_medica am ON am.DE_ID = de.id_documento_electronico_previo
                     WHERE de.idtipo_comprobante = '07' AND (de.fecha_emision BETWEEN :0  AND :1) AND de.estado_mrcb) as T
                     ORDER BY T.fecha_raw";
             $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
