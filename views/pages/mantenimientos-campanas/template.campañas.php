@@ -13,7 +13,6 @@
         </td>
         <td>{{sede}}</td>
         <td>{{nombre}}</td>
-        <td>{{descripcion}}</td>
         <td>{{fecha_inicio}}</td>
         <td>{{fecha_fin}}</td>
         <td>{{#if_ estado '==' 1}}<span class="badge bg-success">ACTIVO</span>{{else}}<span class="badge bg-danger">INACTIVO</span>{{/if_}}</td>

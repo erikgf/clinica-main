@@ -109,11 +109,10 @@ class AtencionMedica extends Conexion {
             $resPaciente  = $resPaciente["datos"];
 
             /* Campaña */
-            $sql = "SELECT id_campaña, monto_maximo, monto_minimo, tipo_pago
+            $sql = "SELECT id_campaña, tipo_pago
                     FROM campaña 
                     WHERE :0 BETWEEN fecha_inicio and fecha_fin and estado_mrcb LIMIT 1";
             $campaña =  $this->consultarFila($sql, [$fecha_hoy]);
-
 
             if ($this->servicios == NULL || $this->servicios == ""){
                 throw new Exception("No hay servicios válidos enviados.", 1);
@@ -263,17 +262,12 @@ class AtencionMedica extends Conexion {
             if ($campaña == false){
                 $id_campaña = NULL;
             } else {
-
+                $id_campaña = $campaña["id_campaña"];
                 if ($campaña["tipo_pago"] == 0){
-                    if ($this->pago_credito <= 0){
-                        $id_campaña = $campaña["id_campaña"];
-                    } else {
+                    if ($this->pago_credito > 0){
                         $id_campaña = NULL;
                     }
-                } else {
-                    $id_campaña = $campaña["id_campaña"];
                 }
-            
             }
 
             $this->obtenerNumeroActoMedicoCorrelativo();

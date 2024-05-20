@@ -61,6 +61,8 @@ var Campaña = function(){
         $txtClase = $("#txt-campaña-clase");
         $txtServicioCategoria = $("#txt-campaña-serviciocategoria");
         $txtValor = $("#txt-campaña-valor");
+        $txtMontoMinimo = $("#txt-campaña-montominimo");
+        $txtMontoMaximo  = $("#txt-campaña-montomaximo");
 
         $tblCampañas = $("#tbl-campañas");
         $tbdCampañas = $("#tbd-campañas");
@@ -74,8 +76,6 @@ var Campaña = function(){
         $overlayTabla = $("#overlay-tbl-campañas");
         $btnActualizar =  $("#btn-actualizar-campañas");
 
-        $txtMontoMinimo = $("#txt-campaña-montominimo");
-        $txtMontoMaximo  = $("#txt-campaña-montomaximo");
         $txtTipoPago  = $("#txt-campaña-tipopago");
     };
 
@@ -108,6 +108,8 @@ var Campaña = function(){
             $txtTipo.val("1");
             $txtValor.val("0.00");
             $txtServicioCategoria.val("").select2("trigger");
+            $txtMontoMaximo.val("");
+            $txtMontoMinimo.val("");
 
             $tblDescuentos.empty();
         });
@@ -169,6 +171,8 @@ var Campaña = function(){
                 $txtTipo.val("servicio");
                 $txtClase.val("1");
                 $txtValor.val("0.00");
+                $txtMontoMaximo.val("");
+                $txtMontoMinimo.val("");
                 
                 const resultDescuentos = JSON.parse(result.descuento_categorias_json);
                 $tblDescuentos.html(self.renderItems(resultDescuentos));
@@ -193,8 +197,6 @@ var Campaña = function(){
         $txtSede.val(data.id_sede);
 
         $txtTipoPago.val(data.tipo_pago);
-        $txtMontoMinimo.val(data.monto_minimo);
-        $txtMontoMaximo.val(data.monto_maximo);
         
         $btnEliminar.show();
     };
@@ -232,7 +234,6 @@ var Campaña = function(){
     this.guardar = function(){
         var self = this;
 
-
         if ($tblDescuentos.find("tr").length <= 0){
             toastr.error("No hay descuentos ingresados.");
             return;
@@ -244,12 +245,17 @@ var Campaña = function(){
             const cells = o.children;
             const esPorcentaje = cells[3].dataset.val == "1" ? 1 : 0;
             const descuento = cells[4].dataset.val;
+            const monto_minimo = cells[5].dataset.val;
+            const monto_maximo = cells[6].dataset.val;
+
             arregloJSON.push({
                 tipo: cells[1].dataset.val,
                 id: cells[2].dataset.val,
                 descripcion_servicio_categoria: cells[2].dataset.desc,
                 porcentaje: esPorcentaje,
-                descuento: descuento
+                descuento: descuento,
+                monto_minimo,
+                monto_maximo
             });
         });
 
@@ -265,8 +271,6 @@ var Campaña = function(){
                 p_fecha_inicio: $txtFechaInicio.val(),
                 p_fecha_fin: $txtFechaFin.val(),
                 p_id_sede : $txtSede.val(),
-                p_monto_maximo: $txtMontoMaximo.val(),
-                p_monto_minimo: $txtMontoMinimo.val(),
                 p_tipo_pago: $txtTipoPago.val(),
                 p_descuento_categorias_json : JSON.stringify(arregloJSON)
             },
@@ -388,6 +392,8 @@ var Campaña = function(){
                         <td data-val="${e.id}" data-desc="${e.descripcion_servicio_categoria}">${e.descripcion_servicio_categoria}</td>
                         <td data-val="${e.porcentaje == "1" ? "1" : "0"}">${e.porcentaje == "1" ? "PORCENTAJE" : "MONTO FIJO"}</td>
                         <td data-val="${e.descuento}"> -${e.porcentaje != "1" ? "S/":  ""}${parseFloat(e.descuento * (e.porcentaje == "1" ? 100 : 1)).toFixed(2)}${e.porcentaje == "1" ? "%" : ""}</td>  
+                        <td class="text-center" data-val="${e.monto_minimo ?? ""}">${Boolean(e.monto_minimo) ? parseFloat(e.monto_minimo).toFixed(2) : '-'}</td>
+                        <td class="text-center" data-val="${e.monto_maximo ?? ""}">${Boolean(e.monto_maximo) ? parseFloat(e.monto_maximo).toFixed(2) : '-'}</td>
                     </tr>`;
         });
         return html;
@@ -395,7 +401,9 @@ var Campaña = function(){
 
     this.agregarItem = function(){
         const   id_servicio_categoria =  $txtServicioCategoria.val(),
-                descuento = $txtValor.val();
+                descuento = $txtValor.val(),
+                monto_minimo = $txtMontoMinimo.val(),
+                monto_maximo = $txtMontoMaximo.val();
 
         if (id_servicio_categoria === null || id_servicio_categoria === ""){
             toastr.error("Seleccione un servicio o categoría");
@@ -407,13 +415,14 @@ var Campaña = function(){
             return;
         }
 
-
         const objItem = {
             tipo : $txtTipo.val(),
             porcentaje: $txtClase.val(),
             id: id_servicio_categoria,
             descripcion_servicio_categoria: $txtServicioCategoria.find("option:selected").html(),
-            descuento :  $txtClase.val() == '1' ? parseFloat(descuento * 0.01).toFixed(2) : descuento
+            descuento :  $txtClase.val() == '1' ? parseFloat(descuento * 0.01).toFixed(2) : descuento,
+            monto_minimo,
+            monto_maximo
         };
 
         $tblDescuentos.append(this.renderItems([objItem]));

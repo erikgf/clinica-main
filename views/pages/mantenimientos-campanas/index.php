@@ -17,5 +17,5 @@ include_once 'prt.modal.campañas.php';
 
 ?>
 
-<script type="text/javascript" src="ClsCampaña.v1.js" defer></script>
+<script type="text/javascript" src="ClsCampaña.2.js" defer></script>
 <script type="text/javascript" src="index.js" defer></script>

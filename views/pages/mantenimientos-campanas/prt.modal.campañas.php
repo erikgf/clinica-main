@@ -53,18 +53,6 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label for="txt-campaña-montominimo">Monto Mínimo</label>
-                            <input type="number" class="form-control " required id="txt-campaña-montominimo"/>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label for="txt-campaña-montomaximo">Monto Máximo</label>
-                            <input type="number" class="form-control " required id="txt-campaña-montomaximo"/>
-                        </div>
-                    </div>
                 </div>
 
                 <hr>
@@ -80,18 +68,18 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label for="txt-campaña-serviciocategoria">Servicio/Categoría</label>
                             <select class="form-control" id="txt-campaña-serviciocategoria"></select>
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-1">
                         <div class="form-group">
                             <label for="txt-campaña-clase">Clase</label>
                             <select class="form-control" id="txt-campaña-clase">
-                                <option value="1">Porcentaje</option>
-                                <option value="0">Monto Fijo</option>
+                                <option value="1" title="Porcentaje">%</option>
+                                <option value="0" title="Monto Fijo">S/</option>
                             </select>
                         </div>
                     </div>
@@ -99,6 +87,18 @@
                         <div class="form-group">
                             <label for="txt-campaña-valor">Valor (-)</label>
                             <input type="number" class="form-control" value="0.00" id="txt-campaña-valor"/>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="txt-campaña-montominimo">Monto Mínimo</label>
+                            <input type="number" class="form-control" id="txt-campaña-montominimo"/>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="txt-campaña-montomaximo">Monto Máximo</label>
+                            <input type="number" class="form-control" id="txt-campaña-montomaximo"/>
                         </div>
                     </div>
 
@@ -117,6 +117,8 @@
                                     <th>Servicio/Categoría</th>
                                     <th>Clase</th>
                                     <th>Dscto</th>
+                                    <th>M. Mínimo</th>
+                                    <th>M. Máximo</th>
                                 </tr>
                             </thead>
                             <tbody id="tbl-descuentos">

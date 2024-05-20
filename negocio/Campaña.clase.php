@@ -24,7 +24,7 @@ class Campaña extends Conexion {
 
             $dia = date("Y-m-d");
 
-            $sql = "SELECT nombre, descuento_general, descuento_categorias_json, :1 as igv, monto_minimo, monto_maximo, tipo_pago
+            $sql = "SELECT nombre, descuento_general, descuento_categorias_json, :1 as igv, tipo_pago
                     FROM campaña
                     WHERE :0 BETWEEN fecha_inicio and fecha_fin and estado_mrcb 
                         AND id_sede IN (SELECT id_sede FROM caja WHERE id_caja = :2 AND estado_mrcb)
@@ -42,12 +42,11 @@ class Campaña extends Conexion {
             $sql = "SELECT 
                         c.id_campaña,
                         c.nombre,
-                        c.descripcion,
                         s.nombre as sede,
                         DATE_FORMAT(c.fecha_inicio, '%d-%m-%Y') as fecha_inicio,
                         DATE_FORMAT(c.fecha_fin, '%d-%m-%Y') as fecha_fin,
                         (CURRENT_DATE BETWEEN c.fecha_inicio AND c.fecha_fin) as estado,
-                        monto_minimo, monto_maximo, tipo_pago
+                        tipo_pago
                     FROM campaña c
                     INNER JOIN sede s ON s.id_sede = c.id_sede
                     WHERE c.estado_mrcb
@@ -75,8 +74,6 @@ class Campaña extends Conexion {
                 "id_sede"=>$this->id_sede,
                 "descuento_categorias_json"=>$this->descuento_categorias_json,
                 "id_usuario_registrado"=>$this->id_usuario_registrado,
-                "monto_minimo"=>$this->monto_minimo,
-                "monto_maximo"=>$this->monto_maximo,
                 "tipo_pago"=>$this->tipo_pago
             ];
 
@@ -129,7 +126,7 @@ class Campaña extends Conexion {
                         c.descuento_categorias_json,
                         c.fecha_fin,
                         c.fecha_inicio,
-                        monto_minimo, monto_maximo, tipo_pago
+                        tipo_pago
                     FROM campaña c
                     WHERE c.estado_mrcb AND c.id_campaña = :0";
                     

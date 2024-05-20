@@ -23,21 +23,25 @@
                         </div>
                         <div class="card-body overlay-wrapper">
                             <div class="overlay" id="overlay-tbl-campañas" style="display:none;"><i class="fas fa-3x fa-sync-alt fa-spin"></i><div class="text-bold pt-2">Cargando...</div></div>
-                            <table class="table table-sm" id="tbl-campañas">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 75px">Opc.</th>
-                                        <th>Sede</th>
-                                        <th>Nombre</th>
-                                        <th>Descripción</th>
-                                        <th>Fecha Inicio</th>
-                                        <th>Fecha Fin</th>
-                                        <th>Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbd-campañas">
-                                </tbody>
-                            </table>
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <table class="table table-sm" id="tbl-campañas">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 75px">Opc.</th>
+                                                <th>Sede</th>
+                                                <th>Nombre</th>
+                                                <th>Fecha Inicio</th>
+                                                <th>Fecha Fin</th>
+                                                <th>Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbd-campañas">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>

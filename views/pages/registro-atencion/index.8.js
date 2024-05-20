@@ -163,9 +163,9 @@ var RegistroAtencion = function() {
                 success: function(xhr){
                     if(xhr.rpt){
                         var objServicio = xhr.datos;
-
+                        console.log({objServicio});
                         if (objServicio.servicios_perfil){
-                            agregarServicio(objServicio.servicios_perfil);
+                            agregarServicio(objServicio.servicios_perfil, objServicio);
                         } else {
                             agregarServicio([objServicio]);
                         }
@@ -439,26 +439,94 @@ var RegistroAtencion = function() {
 
     };
 
-    var agregarServicio = function(data_servicios){
+    //Campaña
+    var agregarServicio = function(data_servicios, servicioPerfil = null){
         if (objCampaña != null){
             if (objCampaña.descuento_categorias_json){
-                data_servicios = data_servicios.map((servicio)=>{
-                    let precio_unitario = servicio.precio_unitario,
-                        precio_sin_IGV = servicio.precio_sin_IGV,
-                        real_precio_unitario = servicio.precio_unitario,
-                        real_precio_sin_IGV = servicio.precio_sin_IGV,
-                        cam_precio_unitario = servicio.precio_unitario,
-                        cam_precio_sin_IGV = servicio.precio_sin_IGV,
-                        posible_campaña = 0,
-                        con_campaña = false;
+                if (servicioPerfil != null){
 
-                    for (let index = 0; index < objCampaña.descuento_categorias_json.length; index++) {
-                        const element = objCampaña.descuento_categorias_json[index];
-                        if (element.tipo === 'categoria'){
-                            if (servicio.id_categoria_servicio == element.id){
-                                precio_unitario = element.porcentaje == 1
-                                                    ? parseFloat(servicio.precio_unitario * ( 1 - element.descuento)).toFixed(2)
-                                                    : parseFloat(servicio.precio_unitario - element.descuento).toFixed(2);
+                    const campañaDetalle = objCampaña.descuento_categorias_json.find( camp => {
+                        let pasaMontoMinimo = true, pasaMontoMaximo = true;
+
+                        if (Boolean(camp?.monto_minimo)){
+                            if (parseFloat(servicioPerfil.precio_unitario) < parseFloat(camp.monto_minimo)){
+                                pasaMontoMinimo = false;
+                            }
+                        }
+                        if (Boolean(camp?.monto_maximo)){
+                            if (parseFloat(servicioPerfil.precio_unitario) > parseFloat(camp.monto_maximo)){
+                                pasaMontoMaximo = false;
+                            }
+                        }
+
+                        const esIdCategoriaServicio = (camp.tipo === 'categoria' && servicioPerfil.id_categoria_servicio == camp.id) ||
+                                                    (camp.tipo === 'servicio' && servicioPerfil.id_servicio == camp.id);
+
+                        return pasaMontoMinimo && pasaMontoMaximo && esIdCategoriaServicio;
+                    });
+                    
+                    data_servicios = data_servicios.map((servicio)=>{
+                        let precio_unitario = servicio.precio_unitario,
+                            precio_sin_IGV = servicio.precio_sin_IGV,
+                            real_precio_unitario = servicio.precio_unitario,
+                            real_precio_sin_IGV = servicio.precio_sin_IGV,
+                            cam_precio_unitario = servicio.precio_unitario,
+                            cam_precio_sin_IGV = servicio.precio_sin_IGV,
+                            posible_campaña = 0,
+                            con_campaña = false;
+
+                        if (Boolean(campañaDetalle)){
+                            con_campaña = true;
+                            precio_unitario = campañaDetalle.porcentaje == 1
+                                                ? parseFloat(servicio.precio_unitario * ( 1 - campañaDetalle.descuento)).toFixed(2)
+                                                : parseFloat(servicio.precio_unitario - campañaDetalle.descuento).toFixed(2);
+                                precio_sin_IGV = parseFloat(precio_unitario * (1 - objCampaña.igv)).toFixed(2);
+                                cam_precio_unitario = precio_unitario;
+                                cam_precio_sin_IGV = precio_sin_IGV;
+                                posible_campaña = 1;
+                        }
+
+                        return {...servicio, 
+                                con_campaña,
+                                precio_unitario, precio_sin_IGV,
+                                real_precio_unitario, real_precio_sin_IGV,
+                                cam_precio_unitario, cam_precio_sin_IGV,
+                                posible_campaña
+                            };
+                    });
+
+                } else {
+
+                    data_servicios = data_servicios.map((servicio)=>{
+                        let precio_unitario = servicio.precio_unitario,
+                            precio_sin_IGV = servicio.precio_sin_IGV,
+                            real_precio_unitario = servicio.precio_unitario,
+                            real_precio_sin_IGV = servicio.precio_sin_IGV,
+                            cam_precio_unitario = servicio.precio_unitario,
+                            cam_precio_sin_IGV = servicio.precio_sin_IGV,
+                            posible_campaña = 0,
+                            con_campaña = false;
+    
+                        for (let index = 0; index < objCampaña.descuento_categorias_json.length; index++) {
+                            const campañaDetalle = objCampaña.descuento_categorias_json[index];
+                            let pasaMontoMinimo = true, pasaMontoMaximo = true;
+    
+                            if (Boolean(campañaDetalle?.monto_minimo)){
+                                if (parseFloat(precio_unitario) < parseFloat(campañaDetalle.monto_minimo)){
+                                    pasaMontoMinimo = false;
+                                }
+                            }
+                            if (Boolean(campañaDetalle?.monto_maximo)){
+                                if (parseFloat(precio_unitario) > parseFloat(campañaDetalle.monto_maximo)){
+                                    pasaMontoMaximo = false;
+                                }
+                            }
+    
+                            if (((campañaDetalle.tipo === 'categoria' && servicio.id_categoria_servicio == campañaDetalle.id) || (campañaDetalle.tipo === 'servicio' && servicio.id_servicio == campañaDetalle.id))
+                                    && (pasaMontoMinimo && pasaMontoMaximo)){
+                                precio_unitario = campañaDetalle.porcentaje == 1
+                                                    ? parseFloat(servicio.precio_unitario * ( 1 - campañaDetalle.descuento)).toFixed(2)
+                                                    : parseFloat(servicio.precio_unitario - campañaDetalle.descuento).toFixed(2);
                                 precio_sin_IGV = parseFloat(precio_unitario * (1 - objCampaña.igv)).toFixed(2);
                                 cam_precio_unitario = precio_unitario;
                                 cam_precio_sin_IGV = precio_sin_IGV;
@@ -466,30 +534,17 @@ var RegistroAtencion = function() {
                                 posible_campaña = 1;
                             }
                         }
+    
+                        return {...servicio, 
+                                con_campaña,
+                                precio_unitario, precio_sin_IGV,
+                                real_precio_unitario, real_precio_sin_IGV,
+                                cam_precio_unitario, cam_precio_sin_IGV,
+                                posible_campaña
+                            };
+                    });
+                }
 
-                        if (element.tipo === 'servicio'){
-                            if (servicio.id_servicio == element.id){
-                                precio_unitario = element.porcentaje == 1
-                                                    ? parseFloat(servicio.precio_unitario * ( 1 - element.descuento)).toFixed(2)
-                                                    : parseFloat(servicio.precio_unitario - element.descuento).toFixed(2);
-                                precio_sin_IGV = parseFloat(precio_unitario * (1 - objCampaña.igv)).toFixed(2);
-                                cam_precio_unitario = precio_unitario;
-                                cam_precio_sin_IGV = precio_sin_IGV;
-                                con_campaña = true;
-                                posible_campaña = 1;
-                            }
-                        }
-                    }
-
-
-                    return {...servicio, 
-                            con_campaña,
-                            precio_unitario, precio_sin_IGV,
-                            real_precio_unitario, real_precio_sin_IGV,
-                            cam_precio_unitario, cam_precio_sin_IGV,
-                            posible_campaña
-                        };
-                });
             }
         }
 
@@ -753,24 +808,8 @@ var RegistroAtencion = function() {
 
 var checkCampañaServicios = () => {
     if (objCampaña){
-
         let deboAplicar = true;
-        let totalReal = 0.00;
         let $cards =  Array.prototype.slice.call($(".blk-servicioagregado"));
-        let $descuento = $("#txt-descuentoenpago");
-        $cards.forEach((card)=>{
-            const $precioUnitario = card.querySelector('.precio-unitario');
-            totalReal += parseFloat($precioUnitario.dataset.real);
-        });
-        totalReal = totalReal - parseFloat($descuento.val());
-
-        if (objCampaña.monto_minimo){
-            deboAplicar = totalReal >= objCampaña.monto_minimo;
-        }
-
-        if (objCampaña.monto_maximo){
-            deboAplicar = totalReal < objCampaña.monto_maximo;
-        }
 
         if (OBJETO_ATENCION){
             if (objCampaña.tipo_pago == 0){
@@ -780,7 +819,6 @@ var checkCampañaServicios = () => {
 
         actualizarCampañaServicios(deboAplicar, $cards)
     }
-
 };
 
 var actualizarCampañaServicios = (deboAplicar,  $cards) => {
@@ -791,9 +829,9 @@ var actualizarCampañaServicios = (deboAplicar,  $cards) => {
         if (posibleCampaña == 1){
             const $precioUnitario = card.querySelector('.precio-unitario');
             const $nombre = card.querySelector('.nombre');
-
             card.dataset.concampana = deboAplicar ? "true" : "false";
             $precioUnitario.value = deboAplicar ? $precioUnitario.dataset.campana : $precioUnitario.dataset.real;
+
             if (deboAplicar){
                 $nombre.classList.add("text-primary");
                 $precioUnitario.classList.add("bg-primary");                
@@ -805,7 +843,6 @@ var actualizarCampañaServicios = (deboAplicar,  $cards) => {
     });
 
     if (OBJETO_ATENCION){
-
         let montoTotal  = 0.00;
 
         OBJETO_ATENCION.servicios = OBJETO_ATENCION.servicios.map(servicio=>{
