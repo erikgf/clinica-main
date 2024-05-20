@@ -1027,7 +1027,7 @@ class AtencionMedica extends Conexion {
                     (SELECT 
                     am.id_atencion_medica,
                     COALESCE(CONCAT(cim.serie_atencion,'-',cim.correlativo_atencion), '-') as numero_acto_medico, 
-                    COALESCE(de.fecha_emision,am.fecha_atencion) as fecha_raw
+                    COALESCE(de.fecha_emision,am.fecha_atencion) as fecha_raw,
                     DATE_FORMAT(COALESCE(de.fecha_emision,am.fecha_atencion), '%d/%m/%Y') as fecha_registro,
                     de.iddocumento_electronico,
                     COALESCE(CONCAT(de.serie,'-',LPAD(de.numero_correlativo,7,'0')),'S/C') as comprobante,

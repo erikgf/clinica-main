@@ -10,7 +10,7 @@ if ($objUsuario == null){
     exit;
 }
 
-if (!in_array($objUsuario["id_rol"], [Globals::$ID_ROL_ADMINISTRADOR])){
+if (!in_array($objUsuario["id_rol"], [Globals::$ID_ROL_ADMINISTRADOR, Globals::$ID_ROL_ASISTENTE_ADMINISTRADOR])){
     Funciones::imprimeJSON(Globals::$HTTP_NO_PERMISOS, "ERROR", "No tiene permisos para ver esto.");
     exit;
 }

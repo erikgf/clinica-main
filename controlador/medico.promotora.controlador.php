@@ -10,7 +10,7 @@ if ($objUsuario == null){
     exit;
 }
 
-if (!in_array($objUsuario["id_rol"], [Globals::$ID_ROL_PROMOTORA, Globals::$ID_ROL_ADMINISTRADOR])){
+if (!in_array($objUsuario["id_rol"], [Globals::$ID_ROL_PROMOTORA, Globals::$ID_ROL_ADMINISTRADOR,  Globals::$ID_ROL_ASISTENTE_ADMINISTRADOR])){
     Funciones::imprimeJSON(Globals::$HTTP_NO_PERMISOS, "ERROR", "No tiene permisos para ver esto.");
     exit;
 }
@@ -19,7 +19,7 @@ $obj = null;
 $op = "";
 try {
     require_once '../negocio/MedicoPromotoraTemporal.clase.php';
-    $obj = new MedicoPromotoraTemporal(Sesion::obtenerSesionId());
+    $obj = new MedicoPromotoraTemporal($objUsuario["id_usuario_registrado"]);
     $op = $_GET["op"];
 } catch (\Throwable $th) {
     Funciones::imprimeJSON(Globals::$HTTP_NO_PERMISOS, "ERROR", $th->getMessage());

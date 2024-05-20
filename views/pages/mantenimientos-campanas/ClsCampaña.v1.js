@@ -308,6 +308,7 @@ var Campaña = function(){
                 TABLA_CAMPAÑAS = $tblCampañas.DataTable({
                     "ordering":true,
                     "pageLength": 10,
+                    "scrollX": true
                     /*
                     "columns": [
                             { "width": "75px" },

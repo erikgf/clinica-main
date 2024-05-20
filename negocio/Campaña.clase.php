@@ -43,11 +43,13 @@ class Campaña extends Conexion {
                         c.id_campaña,
                         c.nombre,
                         c.descripcion,
+                        s.nombre as sede,
                         DATE_FORMAT(c.fecha_inicio, '%d-%m-%Y') as fecha_inicio,
                         DATE_FORMAT(c.fecha_fin, '%d-%m-%Y') as fecha_fin,
                         (CURRENT_DATE BETWEEN c.fecha_inicio AND c.fecha_fin) as estado,
                         monto_minimo, monto_maximo, tipo_pago
                     FROM campaña c
+                    INNER JOIN sede s ON s.id_sede = c.id_sede
                     WHERE c.estado_mrcb
                     ORDER BY fecha_inicio DESC, fecha_fin";
                     

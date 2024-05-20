@@ -2644,7 +2644,7 @@ class DocumentoElectronico extends Conexion {
             $_codigoCentroCosto = "";
             $_importeDolares = "";
             $_importeSoles = "";
-            $_codigoArea = "";
+            $_codigoArea = "010";
             $_codigoAnexoAuxiliar = "";
             $_medioPago = "";
             $_nroMaqRegistradorTipoDocRef = "";

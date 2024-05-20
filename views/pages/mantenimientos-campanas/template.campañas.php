@@ -11,6 +11,7 @@
                 </div>
             </div>
         </td>
+        <td>{{sede}}</td>
         <td>{{nombre}}</td>
         <td>{{descripcion}}</td>
         <td>{{fecha_inicio}}</td>

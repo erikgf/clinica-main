@@ -233,7 +233,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         );
     };
 
-    TABLA_MEDICOS  = null;
+    let TABLA_MEDICOS  = null;
     this.cargar = function(){
         $.ajax({ 
             url : VARS.URL_CONTROLADOR+"medico.controlador.php?op=listar",

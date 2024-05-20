@@ -172,8 +172,7 @@ class Usuario extends Conexion{
     public function getAlertas($id_rol){
         try {
             //Por ahora solo se trabajará alertas para MEDICOS POR EDITAR.
-
-            if (!in_array($id_rol, [Globals::$ID_ROL_ADMINISTRADOR])){
+            if (!in_array($id_rol, [Globals::$ID_ROL_ADMINISTRADOR, Globals::$ID_ROL_ASISTENTE_ADMINISTRADOR])){
                 return [];
             }
 

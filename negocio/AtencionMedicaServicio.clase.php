@@ -685,7 +685,7 @@ class AtencionMedicaServicio extends Conexion {
                         FROM atencion_medica_servicio ams
                         LEFT JOIN lab_examen le ON le.id_servicio = ams.id_servicio 
                         WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0 AND le.estado_mrcb
-                        ORDER BY le.id_lab_examen";
+                        ORDER BY le.orden_nuevo_orden";
                 
             $lab_examenes = $this->consultarFilas($sql,  [$this->id_atencion_medica_servicio]);
 

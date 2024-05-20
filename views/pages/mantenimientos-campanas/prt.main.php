@@ -27,6 +27,7 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 75px">Opc.</th>
+                                        <th>Sede</th>
                                         <th>Nombre</th>
                                         <th>Descripción</th>
                                         <th>Fecha Inicio</th>

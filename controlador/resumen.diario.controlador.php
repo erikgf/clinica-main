@@ -4,13 +4,15 @@ require_once '../negocio/ResumenDiario.clase.php';
 
 $op = $_GET["op"];
 $obj = new ResumenDiario();
-
+/*
 require_once '../negocio/Sesion.clase.php';
 $objUsuario = Sesion::obtenerSesion();
 if ($objUsuario == null){
     Funciones::imprimeJSON("401", "ERROR", utf8_decode("No hay credenciales válidas."));
 }
 $obj->id_usuario_registrado = Sesion::obtenerSesionId();
+
+*/
 
 try {
     switch($op){
