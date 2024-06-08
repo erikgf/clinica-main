@@ -81,7 +81,7 @@ class MedicoPromotoraTemporalAdmin extends Conexion {
             $objMedico->id_promotora = $medicoTemporal["id_promotora"];
             $objMedico->id_especialidad = $medicoTemporal["id_especialidad"];
             $objMedico->fecha_nacimiento = $medicoTemporal["fecha_nacimiento"];
-            $objMedico->domicilio = $medicoTemporal["direccion"];
+            $objMedico->domicilio = mb_strtoupper($medicoTemporal["direccion"], 'UTF-8');
             $objMedico->telefono_uno = $medicoTemporal["celular"];
             $objMedico->tipo_personal_medico = 0;
             $objMedico->es_informante = 0;

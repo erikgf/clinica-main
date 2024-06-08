@@ -725,14 +725,15 @@ class AtencionMedicaServicio extends Conexion {
                     COALESCE(le.metodo, '') as metodo,
                     le.valor_referencial
                     FROM atencion_medica_servicio ams
-                    LEFT JOIN lab_examen le ON le.id_servicio = ams.id_servicio 
+                    INNER JOIN lab_examen le ON le.id_servicio = ams.id_servicio 
                     WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0 AND le.estado_mrcb
                     ORDER BY  le.id_lab_examen, le.nivel";
     
                 $examen_principales = $this->consultarFilas($sql[0], [$this->id_atencion_medica_servicio]);
+
             } else {
                 $cadena_arreglo_perfil = $es_examen_perfil;
-    
+
                 $sql[0]  = "SELECT
                     le.id_lab_examen,
                     le.nivel,
@@ -816,19 +817,19 @@ class AtencionMedicaServicio extends Conexion {
                         WHERE le.estado_mrcb AND le.id_lab_examen = :0
                         ORDER BY le.numero_orden"; 
 
-            $examen_descripciones = $this->consultarFilas($sql[3], $examen_principal["id_lab_examen"]);
+            $examen_descripciones = $this->consultarFilas($sql[3], [$examen_principal["id_lab_examen"]]);
             if (count($examen_descripciones) > 0){
                 $examenes_registros = array_merge($examenes_registros, $examen_descripciones);
             }
 
-            $examenes_secundarios = $this->consultarFilas($sql[1], $examen_principal["id_lab_examen"]);
+            $examenes_secundarios = $this->consultarFilas($sql[1], [$examen_principal["id_lab_examen"]]);
 
             if (count($examenes_secundarios) > 0 ){
                 foreach ($examenes_secundarios as $k0 => $examen_secundario) {                
-                    $examenes_terciarios = $this->consultarFilas($sql[2], $examen_secundario["id_lab_examen"]);
+                    $examenes_terciarios = $this->consultarFilas($sql[2], [$examen_secundario["id_lab_examen"]]);
                     array_push($examenes_registros, $examen_secundario);
 
-                    $examen_descripciones = $this->consultarFilas($sql[3], $examen_secundario["id_lab_examen"]);
+                    $examen_descripciones = $this->consultarFilas($sql[3], [$examen_secundario["id_lab_examen"]]);
                     if (count($examen_descripciones) > 0){
                         $examenes_registros = array_merge($examenes_registros, $examen_descripciones);
                     }
@@ -836,7 +837,7 @@ class AtencionMedicaServicio extends Conexion {
                     if (count($examenes_terciarios) > 0){
                         foreach ($examenes_terciarios as $k1 => $examen_terciaria) {
                             array_push($examenes_registros, $examen_terciaria);
-                            $examen_descripciones = $this->consultarFilas($sql[3], $examen_terciaria["id_lab_examen"]);
+                            $examen_descripciones = $this->consultarFilas($sql[3], [$examen_terciaria["id_lab_examen"]]);
                             if (count($examen_descripciones) > 0){
                                 $examenes_registros = array_merge($examenes_registros, $examen_descripciones);
                             }

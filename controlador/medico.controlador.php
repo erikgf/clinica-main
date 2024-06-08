@@ -44,6 +44,7 @@ try {
             $obj->telefono_uno = isset($_POST["p_telefono_uno"]) ? $_POST["p_telefono_uno"] : NULL;
             $obj->telefono_dos = isset($_POST["p_telefono_dos"]) ? $_POST["p_telefono_dos"] : NULL;
             $obj->correo = isset($_POST["p_correo"]) ? $_POST["p_correo"] : NULL;
+            $obj->fecha_nacimiento = isset($_POST["p_fecha_nacimiento"]) ? $_POST["p_fecha_nacimiento"] : NULL;
 
             $obj->id_especialidad = isset($_POST["p_id_especialidad"]) ? $_POST["p_id_especialidad"] : NULL;
             $obj->domicilio = isset($_POST["p_domicilio"]) ? $_POST["p_domicilio"] : NULL;
