@@ -125,6 +125,18 @@
                         </div>
 
                         <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="txt-medico-puedetenerusuario">¿Puede tener usuario sistema?</label>
+                                    <select type="text" class="form-control" id="txt-medico-puedetenerusuario">
+                                        <option selected value="0">NO</option>
+                                        <option value="1">SÍ</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="txt-medico-observaciones">Observaciones</label>

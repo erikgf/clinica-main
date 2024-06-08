@@ -55,6 +55,8 @@ try {
             $obj->es_realizante = isset($_POST["p_es_realizante"]) ? $_POST["p_es_realizante"] : "0";
             $obj->id_sede = isset($_POST["p_id_sede"]) ? $_POST["p_id_sede"] : NULL;
 
+            $obj->puede_tener_usuario = isset($_POST["p_puede_tener_usuario"]) ? $_POST["p_puede_tener_usuario"] : "0";
+            
             $id_medico = isset($_POST["p_id_medico"]) ? $_POST["p_id_medico"] : NULL;
             $obj->id_medico = $id_medico;
             $data = $obj->guardar();
@@ -126,7 +128,7 @@ try {
             $fecha_fin = isset($_POST["p_fecha_fin"]) ? $_POST["p_fecha_fin"] : $hoy;
             $totales_mayores_a = isset($_POST["p_totales_mayores"]) ? $_POST["p_totales_mayores"] : "100";
 
-            $data = $obj->listarAtencionesComisionParaLiquidacionXMedicoImprimir($fecha_inicio, $fecha_fin, $totales_mayores_a);
+            $data = $obj->listarAtencionesComisionParaLiquidacionXMedicoImprimir($fecha_inicio, $fecha_fin, $totales_mayores_a, NULL);
             Funciones::imprimeJSON("200", "OK", $data);
         break;
         
@@ -176,6 +178,48 @@ try {
             $totales_mayores_a = Funciones::sanitizar($_POST["p_monto"]);
 
             $data = $obj->listarLiquidacionesSeguimientoMedico($fecha_inicio, $fecha_fin, $id_sede, $id_promotora, $id_area, $totales_mayores_a);
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        
+        case "listar_usuario":
+            $data = $obj->listarUsuario();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "guardar_usuario":
+            $id_medico = isset($_POST["p_id_medico"]) ? $_POST["p_id_medico"] : "";
+            if ($id_medico == ""){
+                throw new Exception("Médico a registrar no válida.", 1);
+            }
+
+            $obj->id_medico = $id_medico;
+            $obj->estado_acceso = isset($_POST["p_estado_acceso"]) ? $_POST["p_estado_acceso"] : NULL;
+            $data = $obj->guardarUsuario();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "leer_usuario":
+            $id_medico = isset($_POST["p_id_medico"]) ? $_POST["p_id_medico"] : "";
+            if ($id_medico == ""){
+                throw new Exception("Médico consultada no válida.", 1);
+            }
+            $obj->id_medico = $id_medico;
+
+            $data = $obj->leerUsuario();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "cambiar_clave":
+            $id_medico = isset($_POST["p_id_medico"]) ? $_POST["p_id_medico"] : NULL;
+            $obj->id_medico = $id_medico;
+
+            $obj->clave = isset($_POST["p_clave"]) ? $_POST["p_clave"] : NULL;
+            if ($obj->clave == "" || $obj->clave == NULL){
+                throw new Exception("Se debe ingresar una clave válida.", 1);
+            }
+
+            $data = $obj->cambiarClave();
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 

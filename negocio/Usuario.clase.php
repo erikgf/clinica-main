@@ -10,7 +10,7 @@ class Usuario extends Conexion{
         try {
             
             $sql = "SELECT u.id_usuario, u.clave, u.estado_acceso,
-                        COALESCE(pr.descripcion, CONCAT(c.nombres,' ',apellido_paterno,' ',apellido_materno)) as nombres_apellidos, 
+                        COALESCE(pr.descripcion, m.nombres_apellidos, CONCAT(c.nombres,' ',apellido_paterno,' ',apellido_materno)) as nombres_apellidos, 
                         r.id_rol,
                         r.descripcion as nombre_rol,
                         COALESCE((SELECT url from rol_interfaz ri
@@ -20,7 +20,8 @@ class Usuario extends Conexion{
                     FROM usuario u 
                     LEFT JOIN colaborador c ON c.id_colaborador = u.id_colaborador
                     LEFT JOIN promotora pr ON pr.id_promotora = u.id_promotora
-                    LEFT JOIN rol r ON r.id_rol = COALESCE(c.id_rol, pr.id_rol)
+                    LEFT JOIN medico m ON m.id_medico = u.id_medico
+                    LEFT JOIN rol r ON r.id_rol = COALESCE(c.id_rol, pr.id_rol, m.id_rol)
                     WHERE u.estado_mrcb AND u.nombre_usuario = :0";
             $usuario = $this->consultarFila($sql, [$this->nombre_usuario]);
 
@@ -148,6 +149,14 @@ class Usuario extends Conexion{
                 $sql  = "SELECT id_rol  
                         FROM promotora 
                         WHERE id_promotora IN (SELECT id_promotora FROM usuario WHERE id_usuario = :0)";
+                $id_rol = $this->consultarValor($sql, [$id_usuario_registro]);
+            }
+
+            //Médico
+            if ($id_rol == false){
+                $sql  = "SELECT id_rol  
+                        FROM medico 
+                        WHERE id_medico IN (SELECT id_medico FROM usuario WHERE id_usuario = :0)";
                 $id_rol = $this->consultarValor($sql, [$id_usuario_registro]);
             }
 

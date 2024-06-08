@@ -21,6 +21,10 @@ class Medico extends Conexion {
     public $es_realizante;
     public $id_sede;
     public $fecha_nacimiento;
+    public $puede_tener_usuario;
+    public $estado_acceso;
+
+    public $clave;
 
     public function __construct($objDB = null){
         if ($objDB != null){
@@ -69,7 +73,8 @@ class Medico extends Conexion {
                 "es_informante"=>$this->es_informante,
                 "tipo_personal_medico"=>$this->tipo_personal_medico,
                 "es_realizante"=>$this->es_realizante,
-                "id_sede"=>$this->id_sede
+                "id_sede"=>$this->id_sede,
+                "puede_tener_usuario"=>$this->puede_tener_usuario
             ];
 
             if ($this->id_medico == NULL){
@@ -100,6 +105,7 @@ class Medico extends Conexion {
                     es_informante,
                     es_realizante,
                     id_sede,
+                    puede_tener_usuario,
                     id_usuario_registrado,
                     fecha_hora_registrado)
                     SELECT  id_medico, 
@@ -118,6 +124,7 @@ class Medico extends Conexion {
                             es_informante,
                             es_realizante,
                             id_sede,
+                            puede_tener_usuario,
                             :0,
                             CURRENT_TIMESTAMP
                             FROM medico WHERE id_medico = :1 AND estado_mrcb";
@@ -218,7 +225,8 @@ class Medico extends Conexion {
                         es_informante,
                         tipo_personal_medico,
                         es_realizante,
-                        id_sede
+                        id_sede,
+                        puede_tener_usuario
                     FROM medico
                     WHERE estado_mrcb AND id_medico = :0";
                     
@@ -631,7 +639,6 @@ class Medico extends Conexion {
             $mesIterado = $dataMesAnioFechas["mes_inicio"];
             $anioIterado = $dataMesAnioFechas["anio_inicio"];
 
-            $seguirLoop = false;
             do {
                 array_push($fechas, $mesIterado.'-'.$anioIterado);
                 $detenerLoop = $mesIterado == $dataMesAnioFechas["mes_fin"] && $anioIterado == $dataMesAnioFechas["anio_fin"];
@@ -712,6 +719,106 @@ class Medico extends Conexion {
             return ["data"=>$data, "fechas"=>$fechas, "areas"=>$areas, "promotoras"=>$promotoras, "sedes"=>$sedes];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function listarUsuario(){
+        try {
+            $sql = "SELECT 
+                        m.id_medico,
+                        m.numero_documento,
+                        m.nombres_apellidos as nombres,
+                        COALESCE(u.estado_acceso,'I') as estado_acceso
+                    FROM medico m
+                    LEFT JOIN usuario u ON u.id_medico = m.id_medico AND u.estado_mrcb
+                    WHERE m.estado_mrcb AND m.numero_documento IS NOT NULL AND m.puede_tener_usuario
+                    ORDER BY m.nombres_apellidos";
+            $data =  $this->consultarFilas($sql);
+            return $data;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function guardarUsuario(){
+        try {
+            $this->beginTransaction();
+
+            $sql = "SELECT id_usuario FROM usuario WHERE id_medico = :0 AND estado_mrcb";
+            $idUsuario = $this->consultarValor($sql, [$this->id_medico]);
+
+            if ($idUsuario == NULL){
+                $sql = "SELECT numero_documento FROM medico WHERE id_medico = :0 AND estado_mrcb AND numero_documento IS NOT NULL";
+                $medico = $this->consultarFila($sql, [$this->id_medico]);
+
+                if (!$medico){
+                    throw new Exception("El médico a registrar debe tener NÚM. DOC.", 1);
+                }
+
+                $campos_valores = [
+                    "id_medico"=>$this->id_medico,
+                    "nombre_usuario"=>$medico["numero_documento"],
+                    "clave"=>md5($medico["numero_documento"]),
+                    "estado_acceso"=>$this->estado_acceso
+                ];  
+                $this->insert("usuario", $campos_valores);
+            } else {
+                $campos_valores = [
+                    "estado_acceso"=>$this->estado_acceso,
+                ];
+
+                $campos_valores_where = [
+                    "id_medico"=>$this->id_medico
+                ];
+
+                $this->update("usuario", $campos_valores, $campos_valores_where);
+            }
+
+            $this->commit();
+            return ["msj"=>"Registrado correctamente"];
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
+        }
+    }
+
+    public function leerUsuario(){
+        try {
+            $sql = "SELECT 
+                        m.id_medico,
+                        m.numero_documento,
+                        m.nombres_apellidos as nombres,
+                        COALESCE(u.estado_acceso, 'I') as estado_acceso
+                    FROM medico m
+                    LEFT JOIN usuario u ON u.id_medico = m.id_medico AND u.estado_mrcb
+                    WHERE m.estado_mrcb AND m.id_medico = :0 AND m.puede_tener_usuario AND m.numero_documento IS NOT NULL";
+            return $this->consultarFila($sql, [$this->id_medico]);
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function cambiarClave(){
+        try {
+            $this->beginTransaction();
+
+            if (strlen($this->clave) < 6){
+                throw new Exception("Clave no válida.", 1);
+            }
+
+            $campos_valores = [
+                "clave"=>md5($this->clave)
+            ];
+                
+            $campos_valores_where = [
+                "id_medico"=>$this->id_medico
+            ];
+
+            $this->update("usuario", $campos_valores, $campos_valores_where);
+
+            $this->commit();
+            return ["msj"=>"Registrado correctamente."];
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
         }
     }
     

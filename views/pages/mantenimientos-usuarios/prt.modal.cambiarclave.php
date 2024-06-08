@@ -1,5 +1,5 @@
-<div class="modal fade" id="mdl-colaboradorcambiarclave"  colaboradorcambiarclavecambiarclavee="dialog" aria-labelledby="mdl-colaboradorcambiarclavelabel">
-    <div class="modal-dialog" colaboradorcambiarclavee="document">
+<div class="modal fade" id="mdl-colaboradorcambiarclave"  role="dialog" aria-labelledby="mdl-colaboradorcambiarclavelabel">
+    <div class="modal-dialog" role="document">
         <form class="modal-content" id="frm-colaboradorcambiarclave">
             <div class="modal-header">
                 <h4 class="modal-title" id="mdl-colaboradorcambiarclavelabel">Cambiar Clave Colaborador</h4>

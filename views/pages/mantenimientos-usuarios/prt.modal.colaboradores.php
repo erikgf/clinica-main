@@ -1,5 +1,5 @@
-<div class="modal fade" id="mdl-colaborador"  colaboradore="dialog" aria-labelledby="mdl-colaboradorlabel">
-    <div class="modal-dialog modal-lg" colaboradore="document">
+<div class="modal fade" id="mdl-colaborador"  role="dialog" aria-labelledby="mdl-colaboradorlabel">
+    <div class="modal-dialog modal-lg" role="document">
         <form class="modal-content" id="frm-colaborador">
             <div class="modal-header">
                 <h4 class="modal-title" id="mdl-colaboradorlabel">Gestionar colaborador</h4>

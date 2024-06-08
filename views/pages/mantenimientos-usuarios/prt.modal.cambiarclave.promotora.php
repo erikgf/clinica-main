@@ -1,5 +1,5 @@
-<div class="modal fade" id="mdl-promotoracambiarclave"  promotoracambiarclavecambiarclavee="dialog" aria-labelledby="mdl-promotoracambiarclavelabel">
-    <div class="modal-dialog" promotoracambiarclavee="document">
+<div class="modal fade" id="mdl-promotoracambiarclave"  role="dialog" aria-labelledby="mdl-promotoracambiarclavelabel">
+    <div class="modal-dialog" role="document">
         <form class="modal-content" id="frm-promotoracambiarclave">
             <div class="modal-header">
                 <h4 class="modal-title" id="mdl-promotoracambiarclavelabel">Cambiar Clave Promotora</h4>

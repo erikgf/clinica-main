@@ -1,5 +1,5 @@
-<div class="modal fade" id="mdl-promotora"  promotorae="dialog" aria-labelledby="mdl-promotoralabel">
-    <div class="modal-dialog modal-lg" promotorae="document">
+<div class="modal fade" id="mdl-promotora"  role="dialog" aria-labelledby="mdl-promotoralabel">
+    <div class="modal-dialog modal-lg" role="document">
         <form class="modal-content" id="frm-promotora">
             <div class="modal-header">
                 <h4 class="modal-title" id="mdl-promotoralabel">Gestionar promotora</h4>

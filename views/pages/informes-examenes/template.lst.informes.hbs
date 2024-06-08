@@ -1,0 +1,22 @@
+{{#.}}
+    <tr  data-id="{{id_informe}}">
+        <td>
+            <button data-id="{{id_informe}}" type="button" title="Editar" class="btn btn-warning btn-sm on-edit"><i class="fa fa-edit"></i></button>
+            <button data-id="{{id_informe}}" type="button" title="Descargar" class="btn bg-primary btn-sm on-descargar"><i class="fa fa-print"></i></button>
+        </td>
+        <td>
+            <button title="Subir" type="button" class="btn bg-info btn-sm on-up"><i class="fa fa-arrow-circle-up"></i></button>
+            <button title="Bajar" type="button" class="btn bg-danger btn-sm on-down"><i class="fa fa-arrow-circle-down"></i></button>
+        </td>
+        <td>{{fecha}}</td>
+        <td>{{paciente}}</td>
+        <td>{{examen}}</td>
+        <td>{{area}}</td>
+        <td>{{ultima_modificacion}}</td>
+    </tr>
+{{/.}}
+{{^.}}
+    <tr>
+        <td colspan="10" class="text-center"><i>Sin registros</i></td>
+    </tr>
+{{/.}}

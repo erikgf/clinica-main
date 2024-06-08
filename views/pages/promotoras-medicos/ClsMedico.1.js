@@ -18,7 +18,8 @@ var Medico = function(_template, _$tabla, _$tbody){
 
     var $txtEsInformante,
         $txtTipoPersonalMedico,
-        $txtEsRealizante;
+        $txtEsRealizante,
+        $txtPuedeTenerUsuario;
 
     var tplMedicos,
         $tblMedicos,
@@ -64,6 +65,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtEsInformante = $("#txt-medico-esinformante");
         $txtTipoPersonalMedico = $("#txt-medico-tipomedico");
         $txtEsRealizante = $("#txt-medico-esrealizante");
+        $txtPuedeTenerUsuario = $("#txt-medico-puedetenerusuario");
     };
 
     this.setEventos = function () {
@@ -136,6 +138,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtEsInformante.val(dataMedico.es_informante);
         $txtTipoPersonalMedico.val(dataMedico.tipo_personal_medico);
         $txtEsRealizante.val(dataMedico.es_realizante);
+        $txtPuedeTenerUsuario.val(dataMedico.puede_tener_usuario);
         $txtSede.val(dataMedico.id_sede);
         
         $btnEliminar.show();
@@ -200,6 +203,7 @@ var Medico = function(_template, _$tabla, _$tbody){
                 p_es_informante: $txtEsInformante.val(),
                 p_tipo_personal_medico: $txtTipoPersonalMedico.val(),
                 p_es_realizante: $txtEsRealizante.val(),
+                p_puede_tener_usuario : $txtPuedeTenerUsuario.val(),
                 p_id_sede : $txtSede.val()
             },
             success: function(result){

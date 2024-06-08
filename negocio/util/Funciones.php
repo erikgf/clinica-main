@@ -42,13 +42,33 @@ class Funciones {
         }
     }
  
-    public static function fechaFormateada($fecha,$hora){        
+    public static function fechaFormateada($fecha, $hora = NULL){        
         
-    $dia = substr($fecha,8,2);
-    $mes = substr($fecha,5,2);
-    $año = substr($fecha,0,4);
-    //jddayofweek($fecha);
-    return Funciones::nombreDiaSemana(date('w', strtotime($fecha)))." ".$dia.'/'.$mes.'/'.$año.',a las '. Funciones::formatoHora($hora);        
+        $dia = substr($fecha,8,2);
+        $mes = substr($fecha,5,2);
+        $año = substr($fecha,0,4);
+
+        $parteFecha = Funciones::nombreDiaSemana(date('w', strtotime($fecha)))." ".$dia.'/'.$mes.'/'.$año;
+        
+        if (!$hora){
+            return $parteFecha;      
+        }
+
+        return $parteFecha.', a las '. Funciones::formatoHora($hora);        
+    }
+
+    public static function fechaFormateadaCompletaMes($fecha, $hora = NULL){        
+        
+        $dia = substr($fecha,8,2);
+        $año = substr($fecha,0,4);
+
+        $parteFecha = $dia.' de '.Funciones::getMes(date('m', strtotime($fecha)))." del ".$año;
+        
+        if (!$hora){
+            return $parteFecha;     
+        }
+
+        return $parteFecha.', a las '. Funciones::formatoHora($hora);        
     }
     
     public static function nombreDiaSemana($numDia){

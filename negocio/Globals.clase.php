@@ -24,4 +24,5 @@ class Globals{
     public static $ID_ROL_RECEPCION_DESCUENTOS = "13";
     public static $ID_ROL_VALIDADOR_LAB = "14";
     public static $ID_ROL_PROMOTORA = "15";
+    public static $ID_ROL_MEDICO = "16";
 }

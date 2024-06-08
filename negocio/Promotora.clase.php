@@ -262,7 +262,7 @@ class Promotora extends Conexion {
             }
 
             $this->commit();
-            return ["msj"=>"Registrado registrado correctamente"];
+            return ["msj"=>"Registrado correctamente"];
 
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage());

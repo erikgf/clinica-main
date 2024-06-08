@@ -182,7 +182,7 @@ class AtencionMedicaServicio extends Conexion {
             }
 
             if ($objAtencionMedicaServicio["monto_deuda"] > 0 && $this->fue_atendido != "2"){
-                throw new Exception("El examen pertence a un RECIBO que aún figura con una DEUDA PENDIENTE.", 1);
+                throw new Exception("El examen pertenece a un RECIBO que aún figura con una DEUDA PENDIENTE.", 1);
             }
 
             $fecha_hora_atendido = date("Y-m-d H:i:s");
@@ -225,6 +225,19 @@ class AtencionMedicaServicio extends Conexion {
 
             $this->insert("bitacora_atencion_medica_servicio_revision", $campos_valores);
 
+
+            require_once 'Informe.clase.php';
+
+            $objInforme = new Informe($this->getDB());
+            $objInforme->id_usuario_registrado = $this->id_usuario_registrado;
+
+            $hayMedicoInformante = $this->id_medico_atendido == "";
+            if ($hayMedicoInformante){
+                $objInforme->eliminar($this->id_atencion_medica_servicio);
+            } else {
+                $objInforme->registrar($this->id_atencion_medica_servicio);
+            }
+            
             $this->commit();
             return ["msj"=>"Atención actualizada.", "fecha_hora_atendido"=>$fecha_hora_atendido];
         } catch (Exception $exc) {

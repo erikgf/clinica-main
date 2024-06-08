@@ -17,7 +17,9 @@ include_once 'prt.modal.colaboradores.php';
 include_once 'prt.modal.cambiarclave.php';
 include_once 'prt.modal.roles.php';
 include_once 'prt.modal.promotoras.php';
-include_once 'prt.modal.cambiarclave.promotora.php'
+include_once 'prt.modal.medicos.php';
+include_once 'prt.modal.cambiarclave.promotora.php';
+include_once 'prt.modal.cambiarclave.medico.php';
 
 ?>
 
@@ -25,4 +27,5 @@ include_once 'prt.modal.cambiarclave.promotora.php'
 <script type="text/javascript" src="ClsColaborador.js" defer></script>
 <script type="text/javascript" src="ClsRol.js" defer></script>
 <script type="text/javascript" src="ClsPromotora.js" defer></script>
+<script type="text/javascript" src="ClsMedico.js" defer></script>
 <script type="text/javascript" src="index.js" defer></script>

@@ -20,6 +20,7 @@ class Servicio extends Conexion {
     public $se_modifico_detalle_lab_examen;
 
     public $ID_CATEGORIA_LABORATORIO = "14";
+    public $id_usuario_registro;
 
     public function __construct($objDB = null){
         if ($objDB != null){
