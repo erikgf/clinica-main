@@ -131,7 +131,7 @@ const InformeExamenes = function () {
                 };
             })))
 
-            if (data.length <= 1){
+            if (data.length === 1){
                 const id = data[0].id;
                 this.$txtMedico.val(data[0].id);
                 this.renderInformes(id);
