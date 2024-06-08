@@ -11,7 +11,7 @@ const MedicoAprobar = function({id}){
                             </div>
                         </div>`;
     
-    const TEMPLATE_NAME = "./template.lst.medicos.aprobar.hbs";
+    const TEMPLATE_NAME = "./template.lst.medicos.aprobar.1.hbs";
     let DT = null;
 
     let $cboEstado, $tblMain, $tbdMain;
@@ -93,7 +93,6 @@ const MedicoAprobar = function({id}){
     };
 
     this.render = (_data) => {
-        
         if (DT){
             DT.destroy();
             DT = null;
@@ -191,6 +190,7 @@ const MedicoAprobar = function({id}){
             });
 
             this.data = res;
+
             this.render(this.data);
 
             if ($cboEstado.val() == 'P'){

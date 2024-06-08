@@ -7,6 +7,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtRne,
         $txtTelefonoUno,
         $txtTelefonoDos,
+        $txtFechaNacimiento,
         $txtCorreo,
         $txtDomicilio,
         $txtArea,
@@ -18,8 +19,7 @@ var Medico = function(_template, _$tabla, _$tbody){
 
     var $txtEsInformante,
         $txtTipoPersonalMedico,
-        $txtEsRealizante,
-        $txtPuedeTenerUsuario;
+        $txtEsRealizante;
 
     var tplMedicos,
         $tblMedicos,
@@ -53,6 +53,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtRne = $("#txt-medico-rne");
         $txtTelefonoUno = $("#txt-medico-telefonouno");
         $txtTelefonoDos = $("#txt-medico-telefonodos");
+        $txtFechaNacimiento = $("#txt-medico-fechanacimiento");
         $txtCorreo = $("#txt-medico-correo");
         $txtDomicilio = $("#txt-medico-domicilio");
         $txtEspecialidadMedico = $("#txt-medico-especialidad");
@@ -65,7 +66,11 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtEsInformante = $("#txt-medico-esinformante");
         $txtTipoPersonalMedico = $("#txt-medico-tipomedico");
         $txtEsRealizante = $("#txt-medico-esrealizante");
-        $txtPuedeTenerUsuario = $("#txt-medico-puedetenerusuario");
+
+
+        const year = new Date().getFullYear();
+        $txtFechaNacimiento.attr("min", year + "-01-01");
+        $txtFechaNacimiento.attr("max", year + "-12-31");
     };
 
     this.setEventos = function () {
@@ -82,6 +87,14 @@ var Medico = function(_template, _$tabla, _$tbody){
         $mdl.on("hidden.bs.modal", function(e){
             $btnEliminar.hide();
             $mdl.find("form")[0].reset();
+        });
+
+        $('#tab-promotoras-medicos').on("shown.bs.tab", function(e) {
+            console.log("clicked tab");
+            if (TABLA_MEDICOS){
+                TABLA_MEDICOS
+                    .columns.adjust();
+            }
         });
     };
 
@@ -127,6 +140,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtApellidosNombres.val(dataMedico.apellidos_nombres);
         $txtColegiatura.val(dataMedico.colegiatura);
         $txtRne.val(dataMedico.rne);
+        $txtFechaNacimiento.val(dataMedico.fecha_nacimiento);
         $txtTelefonoUno.val(dataMedico.telefono_uno);
         $txtTelefonoDos.val(dataMedico.telefono_dos);
         $txtCorreo.val(dataMedico.correo);
@@ -138,7 +152,6 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtEsInformante.val(dataMedico.es_informante);
         $txtTipoPersonalMedico.val(dataMedico.tipo_personal_medico);
         $txtEsRealizante.val(dataMedico.es_realizante);
-        $txtPuedeTenerUsuario.val(dataMedico.puede_tener_usuario);
         $txtSede.val(dataMedico.id_sede);
         
         $btnEliminar.show();
@@ -196,6 +209,7 @@ var Medico = function(_template, _$tabla, _$tbody){
                 p_telefono_uno : $txtTelefonoUno.val(),
                 p_telefono_dos : $txtTelefonoDos.val(),
                 p_correo : $txtCorreo.val(),
+                p_fecha_nacimiento : $txtFechaNacimiento.val(),
                 p_domicilio : $txtDomicilio.val(),
                 p_id_especialidad : $txtEspecialidadMedico.val(),
                 p_id_promotora : $txtPromotora.val(),
@@ -203,7 +217,6 @@ var Medico = function(_template, _$tabla, _$tbody){
                 p_es_informante: $txtEsInformante.val(),
                 p_tipo_personal_medico: $txtTipoPersonalMedico.val(),
                 p_es_realizante: $txtEsRealizante.val(),
-                p_puede_tener_usuario : $txtPuedeTenerUsuario.val(),
                 p_id_sede : $txtSede.val()
             },
             success: function(result){

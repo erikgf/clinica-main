@@ -55,7 +55,13 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="txt-medico-fechanacimiento">Cumpleaños</label>
+                                    <input type="date" class="form-control"  id="txt-medico-fechanacimiento" style="">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="txt-medico-correo">Correo</label>
                                     <input type="email" class="form-control"  id="txt-medico-correo" style="">

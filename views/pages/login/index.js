@@ -46,11 +46,11 @@ var InicioSesion = function(){
                p_clave : $txtClave.val()
             },
             success: function(xhr){
-
+                console.log({xhr})
                 localStorage.setItem("cache_caja", "");
 
                 var url_inicio = xhr.interfaz_inicio_sesion;
-                window.location.href = "../"+url_inicio;                
+                window.location.href = "../"+url_inicio;  
             },
             error: function (request) {
                 iniciandoSesion = false;

@@ -319,6 +319,7 @@
                                     <tr>
                                         <th>OPC</th>
                                         <th>Estado</th>
+                                        <th>Promotora</th>
                                         <th>Médico</th>
                                         <th>CMP</th>
                                         <th>Cumpleaños</th>
