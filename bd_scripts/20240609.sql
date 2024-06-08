@@ -1,4 +1,4 @@
-DROP TABLE liquidacion;
+DROP TABLE IF EXISTS liquidacion;
 CREATE TABLE liquidacion(
 	id_liquidacion SERIAL PRIMARY KEY,
     anio CHAR(4) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE liquidacion(
     INDEX(id_sede)
 );
 
-DROP TABLE liquidacion_detalle;
+DROP TABLE IF EXISTS  liquidacion_detalle;
 CREATE TABLE liquidacion_detalle(
 	id_liquidacion_detalle SERIAL PRIMARY KEY,
     id_liquidacion INTEGER NOT NULL,
