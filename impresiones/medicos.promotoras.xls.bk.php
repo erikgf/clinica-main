@@ -3,85 +3,59 @@
 date_default_timezone_set('America/Lima');
 require_once '../datos/datos.empresa.php';
 require_once "../negocio/Sesion.clase.php";
-require_once "../negocio/Globals.clase.php";
-require_once "../negocio/util/Funciones.php";
+require "../negocio/util/Funciones.php";
 include_once "../plugins/phspreadsheet/vendor/autoload.php";
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-$objUsuario = Sesion::obtenerSesion();
-
-if (!$objUsuario){
-    echo "No tiene permisos suficentes para ver esto.";
-    exit;
-}
-
-if (!in_array($objUsuario["id_rol"], [Globals::$ID_ROL_ADMINISTRADOR, Globals::$ID_ROL_ASISTENTE_ADMINISTRADOR, Globals::$ID_ROL_PROMOTORA])){
-  echo "No tiene permisos para ver esto.";
+if (!Sesion::obtenerSesion()){
+  echo "No tiene permisos suficientes para ver esto.";
   exit;
 }
+$login = Sesion::obtenerSesion()["nombre_usuario"];
 
-$login = $objUsuario["nombre_usuario"];
+$id_promotora = isset($_GET["idp"]) ? $_GET["idp"] : "";
+$fecha_inicio = isset($_GET["fi"]) ? $_GET["fi"] : NULL;
+$fecha_fin = isset($_GET["ff"]) ? $_GET["ff"] : NULL;
 
-$id_promotora = NULL;
-if (in_array($objUsuario["id_rol"], [Globals::$ID_ROL_PROMOTORA])){
-  require "../negocio/Promotora.clase.php";
-  $objPromotora = new Promotora();
-  $objPromotora->id_usuario = $objUsuario["id_usuario_registrado"];
-  $promotora = $objPromotora->getPromotoraFromUsuario();
-  $id_promotora = $promotora["id_promotora"];
-} else {
-  $id_promotora = isset($_GET["idp"]) ? $_GET["idp"] : NULL;
-}
-
-if ($id_promotora == NULL){
-  echo "No se ha enviado ID promotora";
-  exit;
-}
-
-$mes = isset($_GET["m"]) ? $_GET["m"] : NULL;
-$año = isset($_GET["a"]) ? $_GET["a"] : NULL;
-
-if ($mes == NULL){
-    echo "No se ha ingresado parámetro de MES";
+if ($fecha_inicio == NULL){
+    echo "No se ha ingresado parámetro de FECHA DE INICIO";
     exit;
 }
 
-if ($año == NULL){
-    echo "No se ha ingresado parámetro de AÑO";
+if ($fecha_fin == NULL){
+    echo "No se ha ingresado parámetro de FECHA DE FIN";
     exit;
 }
-
 $fecha_impresion = date("d/m/Y");
 $hora_impresion = date("H:i:s");
 
-require "../negocio/Liquidacion.clase.php";
+require "../negocio/Medico.clase.php";
 
 $titulo_xls  = "";
-
 try {
-  $obj = new Liquidacion();
-  $data = $obj->obtenerLiquidacionesImprimir($id_promotora, $mes, $año);
+    $obj = new Medico();
+    $obj->id_promotora = $id_promotora;
+    $data = $obj->listarMedicosLiquidacionXPromotoraImprimir($fecha_inicio, $fecha_fin);
 
   if (count($data) <= 0){
-    echo "No se han encontrado LIQUIDACIONES calculadas.";
+    echo "Sin datos encontrado.";
     exit;
   }
-
-  $titulo_xls = "INFORLIQMED_".date("Ymd");
+  $titulo_xls = "INFORLIQMED_".str_replace("-","",$fecha_inicio).str_replace("-","",$fecha_fin);
 
 } catch (\Throwable $th) {
   echo $th->getMessage();
   exit;
 }
 
-function impresionSheet($spreadsheet, $liquidacion_sede){
+function impresionSheet($spreadsheet, $promotora,  $fecha_inicio, $fecha_fin, $sede){
   $alfabeto = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   $sheetActivo = $spreadsheet->getActiveSheet();
 
   $actualFila = 1;
-  $sheetActivo->setCellValue($alfabeto[0].$actualFila++, "INFORME DE LIQUIDACIÓN MÉDICOS: ".$liquidacion_sede["nombre_promotora"]. " - ".$liquidacion_sede["sede"]);	
-  $sheetActivo->setCellValue($alfabeto[0].$actualFila++, "Fechas : DEL ".$liquidacion_sede["fecha_inicio"]." AL ".$liquidacion_sede["fecha_fin"]);	
+  $sheetActivo->setCellValue($alfabeto[0].$actualFila++, "INFORME DE LIQUIDACIÓN MÉDICOS: ".$promotora["nombre_promotora"]. " - ".$sede["sede"]);	
+  $sheetActivo->setCellValue($alfabeto[0].$actualFila++, "Fechas : "."DEL ".$fecha_inicio." AL ".$fecha_fin);	
 
   $actualFila++;
 
@@ -93,8 +67,8 @@ function impresionSheet($spreadsheet, $liquidacion_sede){
                       ["ancho"=>20,"rotulo"=>"CANTIDAD SERVICIOS" ]
                   ];
 
-  foreach ($arregloCabecera as $i => $value) {
-      $columna = $alfabeto[$i];
+  foreach ($arregloCabecera as $key => $value) {
+      $columna = $alfabeto[$key];
       $sheetActivo->setCellValue($columna.$actualFila, $value["rotulo"]);			
       $sheetActivo->getColumnDimension($columna)->setWidth($value["ancho"]);
   }
@@ -108,23 +82,22 @@ function impresionSheet($spreadsheet, $liquidacion_sede){
 
   $primeraFila = $actualFila;
 
-  $registros = $liquidacion_sede["medicos"];
+  $registros = $sede["registros"];
 
-  foreach ($registros as $registro) {
+  foreach ($registros as $key => $registro) {
       $i = 0;
       $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["codigo"]);
-      $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["medico"]);
-      $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["monto_sin_igv"]);
+      $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["medicos"]);
+      $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["subtotal_sin_igv"]);
       $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["comision_sin_igv"]);
       $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["cantidad_servicios"]);
       $actualFila++;
   }
-
   $ultimaFila = $actualFila - 1;
   $actualFila = $actualFila + 3;
 
   $sheetActivo->setCellValue($alfabeto[1].$actualFila, "PAGO PROMOTORA");	
-  $sheetActivo->setCellValue($alfabeto[1].$actualFila + 1, ($liquidacion_sede["porcentaje_comision"] / 100));	
+  $sheetActivo->setCellValue($alfabeto[1].$actualFila + 1, ($promotora["porcentaje_comision"] / 100));	
   $sheetActivo->setCellValue($alfabeto[2].$actualFila, "TOTAL");	
   $sheetActivo->setCellValue($alfabeto[2].$actualFila + 1,"=SUM(C".$primeraFila.":C".$ultimaFila.")");	
   $sheetActivo->setCellValue($alfabeto[3].$actualFila, "COMISIÓN");	
@@ -136,14 +109,15 @@ function impresionSheet($spreadsheet, $liquidacion_sede){
 
   $sheetActivo->getStyle('A'.$actualFila.':'.$alfabeto[3].$actualFila)->applyFromArray($estilosFinales);
 
-  $spreadsheet->getActiveSheet()->setTitle($liquidacion_sede["sede"]);	
+  $spreadsheet->getActiveSheet()->setTitle($sede["sede"]);	
 }
 
 try {
     $spreadsheet = new Spreadsheet();
     $sheets = $spreadsheet->getSheetCount();
+    $sedes = $data["sedes"];
 
-    foreach ($data as $key => $liquidacion_sede) {
+    foreach ($sedes as $key => $sede) {
       if ($sheets > 1){
         $myWorkSheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($spreadsheet, 'My Data');
         $spreadsheet->addSheet($myWorkSheet, $sheets - 1);
@@ -151,7 +125,7 @@ try {
       }
 
       impresionSheet(
-        $spreadsheet, $liquidacion_sede
+        $spreadsheet, $data, $fecha_inicio, $fecha_fin, $sede
       );
       $sheets++;
     }

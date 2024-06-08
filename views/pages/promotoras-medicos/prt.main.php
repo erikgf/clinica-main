@@ -249,33 +249,34 @@
                                     </h4>
                                 </div>
                                 <div id="collapseOne" class="panel-collapse collapse in">
-                                <div class="card-body row">
-                                    <div class="col-md-4 col-sm-6">
-                                        <div class="form-group">
-                                            <label for="">Fecha Inicio</label>
-                                            <input type="date" id="txt-fechainicio-asignarmedico" class="form-control"/>
+                                    <div class="card-body row">
+                                        <div class="col-md-4 col-sm-6">
+                                            <div class="form-group">
+                                                <label for="txt-mes-asignarmedico">Mes</label>
+                                                <select name="txt-mes-asignarmedico" class="form-control" id="txt-mes-asignarmedico"></select>
+                                                <!--<input type="date" id="txt-fechainicio-asignarmedico" class="form-control"/> -->
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 col-sm-6">
+                                            <div class="form-group">
+                                                <label for="txt-anio-asignarmedico">Año</label>
+                                                <select name="txt-anio-asignarmedico" class="form-control" id="txt-anio-asignarmedico"></select>
+                                                <!-- <input type="date" id="txt-fechafin-asignarmedico" class="form-control"/> -->
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" type="button" class="btn btn-danger btn-block mb-1" id="btn-calcular-asignarmedico"><span class="fa fa-calculator"></span> CALCULAR</button>
+                                            <div class="btn-group btn-block">
+                                                <button id="btn-imprimir-asignarmedico" type="button" class="btn btn-info  dropdown-toggle dropdown-icon"  data-toggle="dropdown"><span class="fa fa-print"></span> IMPRIMIR</button>
+                                                    <span class="sr-only">Toggle Dropdown</span>
+                                                    <div class="dropdown-menu" role="menu">
+                                                        <button type="button" class="dropdown-item" id="btn-imprimir-asignarmedico-pdf"> PDF</button>
+                                                        <button type="button" class="dropdown-item" id="btn-imprimir-asignarmedico-excel"> EXCEL</button>
+                                                    </div>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4 col-sm-6">
-                                        <div class="form-group">
-                                            <label for="">Fecha Fin</label>
-                                            <input type="date" id="txt-fechafin-asignarmedico" class="form-control"/>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <br>
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-info  dropdown-toggle dropdown-icon"  data-toggle="dropdown"><span class="fa fa-print"></span> IMPRIMIR</button>
-                                                <span class="sr-only">Toggle Dropdown</span>
-                                                <div class="dropdown-menu" role="menu">
-                                                    <button class="dropdown-item" id="btn-imprimir-asignarmedico-pdf"> PDF</button>
-                                                    <button class="dropdown-item" id="btn-imprimir-asignarmedico-excel"> EXCEL</button>
-                                                </div>
-                                            </button>
-                                        </div>
-                                        
-                                    </div>
-                                </div>
                                 </div>
                             </div>
                         

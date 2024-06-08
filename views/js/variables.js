@@ -111,6 +111,39 @@ var Util = {
       }
       $element.html(number);
   },
+  getMeses : function () {
+    return [
+      { id: '01', descripcion: 'ENERO' },
+      { id: '02', descripcion: 'FEBRERO' },
+      { id: '03', descripcion: 'MARZO' },
+      { id: '04', descripcion: 'ABRIL' },
+      { id: '05', descripcion: 'MAYO' },
+      { id: '06', descripcion: 'JUNIO' },
+      { id: '07', descripcion: 'JULIO' },
+      { id: '08', descripcion: 'SETIEMBRE' },
+      { id: '09', descripcion: 'AGOSTO' },
+      { id: '10', descripcion: 'OCTUBRE' },
+      { id: '11', descripcion: 'NOVIEMBRE' },
+      { id: '12', descripcion: 'DICIEMBRE' },
+    ];
+  },
+  getAños : function (desdeAño = -1, haciaAdelante = 0) {
+    const año = new Date().getFullYear();
+    const añosAtras = [];
+    const añosAdelante = [];
+
+    const haciaAtras = desdeAño == -1 ? 0 : (año - desdeAño);
+
+    for (let index = 1; index <= haciaAtras; index++) {
+      añosAtras.unshift(año - index);
+    }
+
+    for (let index = 1; index <= haciaAdelante; index++) {
+      añosAdelante.push(año + index);
+    }
+
+    return [...añosAtras, año, ...añosAdelante];
+  }
 };
 
 // Conclusión

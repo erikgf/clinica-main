@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-sm-7">
+    <div class="col-sm-8">
         <div class="card collapsed-card" id="blk-medicos-pendientes" >
             <div class="card-header">
                 <h3 class="card-title">Mis Médicos: Pendientes por activar</h3>
@@ -35,7 +35,7 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-5">
+    <div class="col-sm-4">
         <div class="card" id="blk-generar-reporte-promotora">
             <div class="card-header">
                 <h3 class="card-title">Generar Reporte Promotora</h3>
@@ -46,6 +46,7 @@
                 </div>
             </div>
             <form class="card-body row">
+                <!--
                 <div class="col-md-4 col-sm-6">
                     <div class="form-group">
                         <label for="">Fecha Inicio</label>
@@ -58,9 +59,16 @@
                         <input type="date" required id="txt-fechafin"  class="form-control">
                     </div>
                 </div>
-                <div class="col-md-4">
+                -->
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label for="txt-mes">Mes y Año</label>
+                        <select name="txt-mes" class="form-control" id="txt-mesanio"></select>
+                    </div>
+                </div>
+                <div class="col-sm-6">
                     <br>
-                    <div class="btn-group">
+                    <div class="btn-group btn-block">
                         <button type="button" class="btn btn-info  dropdown-toggle dropdown-icon" data-toggle="dropdown"><span class="fa fa-print"></span> IMPRIMIR</button>
                             <span class="sr-only">Toggle Dropdown</span>
                             <div class="dropdown-menu" role="menu">

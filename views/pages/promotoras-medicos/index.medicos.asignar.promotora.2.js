@@ -10,6 +10,9 @@ var MedicosAsignarPromotora = function() {
         $btnImprimirPDF,
         $btnImprimirEXCEL;
 
+    var $txtMes, $txtAnio, 
+        $btnCalcular, $btnImprimir; 
+
     var $btnAsignar,
         $btnQuitar;
 
@@ -46,6 +49,12 @@ var MedicosAsignarPromotora = function() {
 
         $btnAsignar =  $("#btn-asignarmedico");
         $btnQuitar =  $("#btn-quitarmedico");
+
+        $txtMes = $("#txt-mes-asignarmedico");
+        $txtAnio = $("#txt-anio-asignarmedico");
+
+        $btnCalcular = $("#btn-calcular-asignarmedico");
+        $btnImprimir = $("#btn-imprimir-asignarmedico");
 
         /*
         $btnActualizarPromotoras  =  $("#btn-actualizar-promotoras");
@@ -85,14 +94,18 @@ var MedicosAsignarPromotora = function() {
             cargarMedicosPromotora();
         });
 
-        $btnImprimirPDF.on("click", function(e){
-            e.preventDefault();
-            window.open("../../../impresiones/medicos.promotoras.php?fi="+$txtFechaInicio.val()+"&ff="+$txtFechaFin.val()+"&idp="+$txtPromotoraAsignar.val(),"_blank")
+        $btnImprimirPDF.on("click", function(){
+            //window.open("../../../impresiones/medicos.promotoras.php?fi="+$txtFechaInicio.val()+"&ff="+$txtFechaFin.val()+"&idp="+$txtPromotoraAsignar.val(),"_blank")
+            window.open("../../../impresiones/medicos.promotoras.php?m="+$txtMes.val()+"&a="+$txtAnio.val()+"&idp="+$txtPromotoraAsignar.val(),"_blank")
         });
         
-        $btnImprimirEXCEL.on("click", function(e){
-            e.preventDefault();
-            window.open("../../../impresiones/medicos.promotoras.xls.php?fi="+$txtFechaInicio.val()+"&ff="+$txtFechaFin.val()+"&idp="+$txtPromotoraAsignar.val(),"_blank")
+        $btnImprimirEXCEL.on("click", function(){
+            window.open("../../../impresiones/medicos.promotoras.xls.php?m="+$txtMes.val()+"&a="+$txtAnio.val()+"&idp="+$txtPromotoraAsignar.val(),"_blank")
+            //window.open("../../../impresiones/medicos.promotoras.xls.php?fi="+$txtFechaInicio.val()+"&ff="+$txtFechaFin.val()+"&idp="+$txtPromotoraAsignar.val(),"_blank")
+        });
+
+        $btnCalcular.on("click", () => {
+            this.calcular();
         });
     };
 
@@ -264,7 +277,6 @@ var MedicosAsignarPromotora = function() {
         });
     };
 
-
     var obtenerIdMedicosDesdeTabla = function($tbl){
         var arregloIdMedicos = [];
         $tbl.find("tr.selected").each(function(i,o){
@@ -274,15 +286,71 @@ var MedicosAsignarPromotora = function() {
         return arregloIdMedicos;
     };
 
+    this.renderMesesAños = async () => {
+        const meses = Util.getMeses();
+        const años = Util.getAños(2023);
+
+        const resSelect = await $.get("template.select.hbs");
+        const templateSelect = Handlebars.compile(resSelect);
+
+        $txtMes.html(templateSelect(meses));
+        $txtAnio.html(templateSelect(años.map( año => ({ id: año, descripcion: año }) )));
+
+        const date = new Date();
+        let mesActualBase = date.getMonth();
+        let mesActual = mesActualBase === 0 ? 12 : mesActualBase;
+        const anioActual = mesActualBase === 0 ? date.getFullYear() - 1 : date.getFullYear();
+        mesActual = mesActual < 10 ? `0${mesActual}` : mesActual;
+
+        $txtMes.val(mesActual);
+        $txtAnio.val(anioActual);
+    };
+
+
+    this.calcular = async () => {
+        const mes = $txtMes.val();
+        const anio = $txtAnio.val();
+
+        $btnCalcular.prop("disabled" ,true);
+
+        try {
+            const data = await $.ajax({ 
+                url: VARS.URL_CONTROLADOR+"liquidacion.controlador.php?op=calcular",
+                type: "post",
+                dataType: 'json',
+                delay: 250,
+                data: {
+                   p_id_promotora : $txtPromotoraAsignar.val(),
+                   p_mes: mes,
+                   p_anio: anio
+                },
+                cache: true
+            });
+
+            if (data){
+                toastr.success("Liquidaciones registradas correctamente.");
+                return;
+            }
+
+            toastr.error("No se ha generado liquidaciones.");
+        } catch (error) {
+            toastr.error(error.responseText);
+        } finally {
+            $btnCalcular.prop("disabled", false);
+        }
+        
+    };
+
     this.getTemplates();
     this.setDOM();
     this.setEventos();
-
+    this.renderMesesAños();
+    /*
     var hoy = new Date();
     Util.setFecha($txtFechaInicio, hoy);
     Util.setFecha($txtFechaFin, hoy);
     hoy = null;
-
+    */
     
     return this;
 };

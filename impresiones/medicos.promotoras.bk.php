@@ -5,50 +5,27 @@ ob_start();
 date_default_timezone_set('America/Lima');
 require '../datos/datos.empresa.php';
 require "../negocio/Sesion.clase.php";
-require '../negocio/Globals.clase.php';
 require "../negocio/util/Funciones.php";
 require "PDF.clase.php";
 
-$objUsuario = Sesion::obtenerSesion();
+if (!Sesion::obtenerSesion()){
+  echo "No tiene permisos suficentes para ver esto.";
+  exit;
+}
 
-if (!$objUsuario){
-    echo "No tiene permisos suficentes para ver esto.";
+$login = Sesion::obtenerSesion()["nombre_usuario"];
+
+$id_promotora = isset($_GET["idp"]) ? $_GET["idp"] : "";
+$fecha_inicio = isset($_GET["fi"]) ? $_GET["fi"] : NULL;
+$fecha_fin = isset($_GET["ff"]) ? $_GET["ff"] : NULL;
+
+if ($fecha_inicio == NULL){
+    echo "No se ha ingresado parámetro de FECHA DE INICIO";
     exit;
 }
 
-if (!in_array($objUsuario["id_rol"], [Globals::$ID_ROL_ADMINISTRADOR, Globals::$ID_ROL_ASISTENTE_ADMINISTRADOR, Globals::$ID_ROL_PROMOTORA])){
-    echo "No tiene permisos para ver esto.";
-    exit;
-}
-
-$login = $objUsuario["nombre_usuario"];
-
-$id_promotora = NULL;
-if (in_array($objUsuario["id_rol"], [Globals::$ID_ROL_PROMOTORA])){
-    require "../negocio/Promotora.clase.php";
-    $objPromotora = new Promotora();
-    $objPromotora->id_usuario = $objUsuario["id_usuario_registrado"];
-    $promotora = $objPromotora->getPromotoraFromUsuario();
-    $id_promotora = $promotora["id_promotora"];
-} else {
-    $id_promotora = isset($_GET["idp"]) ? $_GET["idp"] : NULL;
-}
-
-if ($id_promotora == NULL){
-    echo "No se ha enviado ID promotora";
-    exit;
-}
-
-$mes = isset($_GET["m"]) ? $_GET["m"] : NULL;
-$año = isset($_GET["a"]) ? $_GET["a"] : NULL;
-
-if ($mes == NULL){
-    echo "No se ha ingresado parámetro de MES";
-    exit;
-}
-
-if ($año == NULL){
-    echo "No se ha ingresado parámetro de AÑO";
+if ($fecha_fin == NULL){
+    echo "No se ha ingresado parámetro de FECHA DE FIN";
     exit;
 }
 
@@ -58,14 +35,15 @@ $FONT = $FONT == 1 ? "Arial" : "Courier";
 $fecha_impresion = date("d/m/Y");
 $hora_impresion = date("H:i:s");
 
-require "../negocio/Liquidacion.clase.php";
+require "../negocio/Medico.clase.php";
 
 try {
-  $obj = new Liquidacion();
-  $data = $obj->obtenerLiquidacionesImprimir($id_promotora, $mes, $año);
+  $obj = new Medico();
+  $obj->id_promotora = $id_promotora;
+  $data = $obj->listarMedicosLiquidacionXPromotoraImprimir($fecha_inicio, $fecha_fin);
 
   if (count($data) <= 0){
-    echo "No se han encontrado LIQUIDACIONES calculadas.";
+    echo "Sin datos encontrado.";
     exit;
   }
 
@@ -90,7 +68,9 @@ $ANCHO_TICKET_FULL = $pdf->GetPageWidth();
 $ANCHO_TICKET = $ANCHO_TICKET_FULL - ($MARGENES_LATERALES * 2);
 $ANCHO_TICKET_MITAD = $ANCHO_TICKET / 2;
 
-foreach ($data as $key => $liquidacion_sede) {
+$sedes = $data["sedes"];
+
+foreach ($sedes as $key => $sede) {
     $pdf->AddPage();
     /*Init - Zona superior */
     $pdf->SetFont($FONT,'', 5 + $aumento_font); 
@@ -109,13 +89,13 @@ foreach ($data as $key => $liquidacion_sede) {
     $pdf->Cell($ANCHO_TICKET,$ALTO_LINEA + 1, utf8_decode("INFORME DE LIQUIDACIÓN DE MÉDICOS"),$BORDES,1,"C");
 
     $pdf->SetFont($FONT,'', 11.5+ $aumento_font); 
-    $pdf->Cell($ANCHO_TICKET,$ALTO_LINEA + 1, utf8_decode($liquidacion_sede["sede"]),$BORDES,1,"C");
+    $pdf->Cell($ANCHO_TICKET,$ALTO_LINEA + 1, utf8_decode($sede["sede"]),$BORDES,1,"C");
 
     $pdf->SetFont($FONT,'', 11.5+ $aumento_font);
-    $pdf->Cell($ANCHO_TICKET,$ALTO_LINEA + .75, utf8_decode($liquidacion_sede["nombre_promotora"]),$BORDES,1,"C");
+    $pdf->Cell($ANCHO_TICKET,$ALTO_LINEA + .75, utf8_decode($data["nombre_promotora"]),$BORDES,1,"C");
 
     $pdf->SetFont($FONT,'B', 7.5+ $aumento_font);
-    $pdf->Cell($ANCHO_TICKET,$ALTO_LINEA + .75, "DEL ".$liquidacion_sede["fecha_inicio"]." AL ".$liquidacion_sede["fecha_fin"],$BORDES,1,"C");
+    $pdf->Cell($ANCHO_TICKET,$ALTO_LINEA + .75, "DEL ".$fecha_inicio." AL ".$fecha_fin,$BORDES,1,"C");
 
     $pdf->Ln($SALTO_LINEA * 1.5);
     /*inicio - cabecera */
@@ -159,23 +139,23 @@ foreach ($data as $key => $liquidacion_sede) {
     $pdf->SetFont($FONT,'', 6.5 + $aumento_font); 
     $ALTO_LINEA = $ALTO_LINEA + 2;
 
-    $registros = $liquidacion_sede["medicos"];
+    $registros = $sede["registros"];
 
     $total_comisiones = 0.00;
     $total_medicos = count($registros);
     $total_subtotales =0.00;
-    $comision_promotora = $liquidacion_sede["porcentaje_comision"];
+    $comision_promotora = $data["porcentaje_comision"];
 
     foreach ($registros as $key => $value) {
         $i = 0;
         $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, $value["codigo"], $BORDES,0 ,"C");    
-        $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, utf8_decode($value["medico"]), $BORDES,0);    
-        $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, "S/ ".number_format(round($value["monto_sin_igv"], 2),2), $BORDES,0 ,"R");   
+        $pdf->CellFitScale($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, utf8_decode($value["medicos"]), $BORDES,0);    
+        $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, "S/ ".number_format(round($value["subtotal_sin_igv"], 2),2), $BORDES,0 ,"R");   
         $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, "S/ ".number_format(round($value["comision_sin_igv"], 2),2), $BORDES,0 ,"R");   
         $pdf->Cell($COLS_DETALLE[$i++]["ancho"], $ALTO_LINEA + 1.5, $value["cantidad_servicios"], $BORDES,1 ,"R");   
 
         $total_comisiones +=$value["comision_sin_igv"];
-        $total_subtotales += $value["monto_sin_igv"];
+        $total_subtotales += $value["subtotal_sin_igv"];
     }
 
     $pdf->Ln($SALTO_LINEA);
