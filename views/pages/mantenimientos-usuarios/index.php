@@ -28,4 +28,4 @@ include_once 'prt.modal.cambiarclave.medico.php';
 <script type="text/javascript" src="ClsRol.js" defer></script>
 <script type="text/javascript" src="ClsPromotora.js" defer></script>
 <script type="text/javascript" src="ClsMedico.js" defer></script>
-<script type="text/javascript" src="index.js" defer></script>
+<script type="text/javascript" src="index.1.js" defer></script>

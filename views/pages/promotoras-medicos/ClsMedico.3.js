@@ -19,7 +19,8 @@ var Medico = function(_template, _$tabla, _$tbody){
 
     var $txtEsInformante,
         $txtTipoPersonalMedico,
-        $txtEsRealizante;
+        $txtEsRealizante,
+        $txtPuedeTenerUsuario;
 
     var tplMedicos,
         $tblMedicos,
@@ -66,6 +67,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtEsInformante = $("#txt-medico-esinformante");
         $txtTipoPersonalMedico = $("#txt-medico-tipomedico");
         $txtEsRealizante = $("#txt-medico-esrealizante");
+        $txtPuedeTenerUsuario  = $("#txt-medico-puedetenerusuario")
 
 
         const year = new Date().getFullYear();
@@ -153,6 +155,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtTipoPersonalMedico.val(dataMedico.tipo_personal_medico);
         $txtEsRealizante.val(dataMedico.es_realizante);
         $txtSede.val(dataMedico.id_sede);
+        $txtPuedeTenerUsuario.val(dataMedico.puede_tener_usuario);
         
         $btnEliminar.show();
     };
@@ -217,7 +220,8 @@ var Medico = function(_template, _$tabla, _$tbody){
                 p_es_informante: $txtEsInformante.val(),
                 p_tipo_personal_medico: $txtTipoPersonalMedico.val(),
                 p_es_realizante: $txtEsRealizante.val(),
-                p_id_sede : $txtSede.val()
+                p_id_sede : $txtSede.val(),
+                p_puede_tener_usuario : $txtPuedeTenerUsuario.val()
             },
             success: function(result){
                 toastr.success(result.msj);
@@ -229,13 +233,11 @@ var Medico = function(_template, _$tabla, _$tbody){
 
                 if (TABLA_MEDICOS){
                     if (TR_FILA){ 
-                        console.log("update", dataNuevaFila);
                         TABLA_MEDICOS
                             .row(TR_FILA)
                             .data(dataNuevaFila)
                             .draw();  
                     } else {
-                        console.log("insertum", dataNuevaFila);
                         TABLA_MEDICOS.row.add(dataNuevaFila).draw(false);     
                     }
                 }
