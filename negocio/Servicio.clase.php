@@ -320,7 +320,7 @@ class Servicio extends Conexion {
                             '1' as eliminar
                             FROM lab_examen le
                             WHERE le.estado_mrcb AND le.id_servicio = :0
-                            ORDER BY orden_niveluno, orden_niveldos";
+                            ORDER BY orden_nuevo_orden";
 
                 $lab_examenes = $this->consultarFilas($sql, [$this->id_servicio]); 
 

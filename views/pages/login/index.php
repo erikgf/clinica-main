@@ -113,7 +113,7 @@ $ruta_base = "../../../";
 <script src="<?php echo $ruta_base; ?>template/dist/js/adminlte.min.js"></script>
 <script src="<?php echo $ruta_base; ?>/views/js/toastr.min.js"></script>
 
-<script type="text/javascript" src="<?php echo $ruta_base; ?>/views/js/variables.js"></script>
+<script type="text/javascript" src="<?php echo $ruta_base; ?>/views/js/variables.1.js"></script>
 
 
 <script src="index.js"></script>
