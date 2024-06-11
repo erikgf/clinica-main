@@ -99,7 +99,7 @@ const GenerarReportePromotora = function({id}){
     this.renderMesesAños = async () => {
         const date = new Date();
         const CANTIDAD_MESES = 3;
-        const mesActualBase = date.getMonth();
+        const mesActualBase = date.getMonth() + 1;
         const añoActualBase = date.getFullYear();
         const mesesAños = [];
         let añoActual, mesActual;
