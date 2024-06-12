@@ -1,0 +1,31 @@
+{{#.}}
+    <tr data-id="{{id}}" class="{{#es_eliminar}}bg-danger{{/es_eliminar}}">
+        <td class="text-center"><input type="checkbox" {{#es_eliminar}}checked{{/es_eliminar}} class="chk-eliminar"></td>
+        <td>
+            {{index}}
+        </td>
+        <td>{{medico}}</td>
+        <td>{{promotora}}</td>
+        <td class="text-right">
+            <span>S/ {{acumulado}}</span>
+            <button data-id="{{id}}" type="button" class="btn btn-xs btn-primary on-verdetalle mr-2 ml-2"><i class="fa fa-eye"></i></button>
+        </td>
+        <td style="width:200px">
+            <input data-id="{{id}}" type="date" name="txt-fechaentregado" class="form-control txt-fechaentregado" value="{{fecha_entregado}}"/>
+        </td>
+        <td style="display:flex;gap:10px;width:200px">
+            <input data-id="{{id}}" type="checkbox" class="chk-fechaaceptado"  {{#checked_aceptado}}checked{{/checked_aceptado}} />
+            <input data-id="{{id}}" type="date" {{#disabled_aceptado}}disabled{{/disabled_aceptado}} name="txt-fechaaceptado" class="form-control txt-fechaaceptado" value="{{fecha_aceptado}}"/>
+        </td>
+        <td>
+            <textarea data-id="{{id}}" name="txt-observaciones" rows="1" class="form-control txt-observaciones">{{observaciones}}</textarea>
+        </td>
+    </tr>
+{{/.}}
+{{^.}}
+    <tr>
+        <td colspan="99">
+            <p class="text-center">No hay registros que mostrar.</p>
+        </td>
+    </tr>
+{{/.}}

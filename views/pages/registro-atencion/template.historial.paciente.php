@@ -14,7 +14,7 @@
                         </h4>
                     </div>
                     <div id="blk-historial-{{id_area}}" class="collapse" data-parent="#blk-historial-accordion">
-                        <div class="card-body">
+                        <div class="card-body overflow-auto">
                             <table class="table table-sm">
                                 <thead>
                                     <tr>

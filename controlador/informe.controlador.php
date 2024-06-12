@@ -1,6 +1,5 @@
 <?php
 require_once '../datos/local_config_web.php';
-require_once '../negocio/Informe.clase.php';
 require_once '../negocio/Sesion.clase.php';
 require_once '../negocio/Globals.clase.php';
 

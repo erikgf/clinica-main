@@ -55,17 +55,6 @@ var MedicosAsignarPromotora = function() {
 
         $btnCalcular = $("#btn-calcular-asignarmedico");
         $btnImprimir = $("#btn-imprimir-asignarmedico");
-
-        /*
-        $btnActualizarPromotoras  =  $("#btn-actualizar-promotoras");
-        $tblMedicos =  $("#tbl-medicos");
-        $tbbMedicos =  $("#tbd-medicos");
-        $btnActualizarMedicos =  $("#btn-actualizar-medicos");
-        $tblEspecialidades = $("#tbl-especialidades");
-        $tbbEspecialidades  = $("#tbd-especialidades");
-        $btnActualizarEspecialidades =  $("#btn-actualizar-especialidades");
-        */
-        
     };
     
     this.setEventos = function(){

@@ -20,13 +20,26 @@ class Liquidacion extends Conexion {
 
             $fecha_inicio =  $anio.'-'.$mes.'-01'; 
             $fecha_fin  = date("Y-m-t", strtotime($fecha_inicio)); 
+            $fecha_hoy = date("Y-m-d");
+
+            if ($fecha_hoy < $fecha_fin){
+                $fecha_fin = $fecha_hoy;
+            }
             
             $this->beginTransaction();
 
-            $sql = "SELECT id_liquidacion as id FROM liquidacion WHERE mes = :0 AND anio = :1 AND id_promotora = :2";
+            $sql = "SELECT id_liquidacion as id, (SELECT COUNT(id_liquidacion_detalle) 
+                        FROM liquidacion_detalle WHERE id_liquidacion = l.id_liquidacion AND entregado = 1) as existe_entregados 
+                    FROM liquidacion l 
+                    WHERE mes = :0 AND anio = :1 AND id_promotora = :2";
             $liquidacionesAntiguas = $this->consultarFilas($sql, [$mes, $anio, $id_promotora]);
-
+            
             foreach ($liquidacionesAntiguas as $liquidacion) {
+                if ($liquidacion["existe_entregados"] == 1){
+                    $this->rollBack();
+                    throw new Exception("No puedo recalcular una liquidación de la que ya se entregaron SOBRES.", 500);
+                }
+
                 $this->delete("liquidacion", ["id_liquidacion"=>$liquidacion["id"]]);
                 $this->delete("liquidacion_detalle", ["id_liquidacion"=>$liquidacion["id"]]);
             }
@@ -159,6 +172,7 @@ class Liquidacion extends Conexion {
         }
     }
 
+    /*
     public function calcularHastaMayo2024(){
         try {
             
@@ -184,6 +198,7 @@ class Liquidacion extends Conexion {
             throw new Exception($exc->getMessage(), 1);
         }
     }
+    */
 
 }
 

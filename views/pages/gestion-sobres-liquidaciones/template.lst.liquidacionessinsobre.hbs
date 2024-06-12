@@ -1,0 +1,28 @@
+{{#.}}
+    <tr data-id="{{id}}">
+        <td>
+            {{id}}
+        </td>
+        <td>{{medico}}</td>
+        <td>{{promotora}}</td>
+        <td class="text-right">S/ {{monto}}</td>
+        <td class="text-right">
+            <span>S/ {{acumulado}}</span>
+            <button data-id="{{id}}" type="button" class="btn btn-xs btn-primary on-verdetalle mr-2 ml-2"><i class="fa fa-eye"></i></button>
+        </td>
+        <td style="display:flex;gap:10px;width:200px">
+            <input data-id="{{id}}" type="checkbox" class="chk-fechaentrega"  {{#checked}}checked{{/checked}} />
+            <input data-id="{{id}}" type="date" {{#disabled}}disabled{{/disabled}} name="txt-fechaentrega" class="form-control txt-fechaentrega" value="{{fecha_entrega}}"/>
+        </td>
+        <td>
+            <textarea data-id="{{id}}" name="txt-observaciones"  {{#disabled}}disabled{{/disabled}} rows="1" class="form-control txt-observaciones">{{observaciones}}</textarea>
+        </td>
+    </tr>
+{{/.}}
+{{^.}}
+    <tr>
+        <td colspan="99">
+            <p class="text-center">No hay registros que mostrar.</p>
+        </td>
+    </tr>
+{{/.}}

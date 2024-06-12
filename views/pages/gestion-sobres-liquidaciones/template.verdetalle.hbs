@@ -1,0 +1,16 @@
+<h5>
+    Viendo Detalle 
+    <button type="button" class="btn btn-danger btn-xs float-right on-cerrardetalle"><span>Cerrar </span><i class="fa fa-close"></i></button>
+</h5>
+<h6><strong>Médico: </strong>{{medico}}</h6>
+<h6><strong>Promotora: </strong>{{promotora}}</h6>
+<table class="table table-sm">
+    <tbody>
+        {{#meses}}
+            <tr {{#es_registro_principal}}class="bg-info"{{/es_registro_principal}}>
+                <td class="text-center">{{mes_nombre}} {{anio}}</td>
+                <td class="text-right">S/ {{monto}}</td>
+            </tr>
+        {{/meses}}
+    </tbody>
+</table>
