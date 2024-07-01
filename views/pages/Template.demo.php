@@ -15,11 +15,11 @@ class Template{
     function __construct(){
         $this->usuario = Sesion::obtenerSesion();
 
+        $this->interfazActual = basename($_SERVER['REQUEST_URI']);
+
         if ($this->usuario == null){
             $this->mostrarSesionNoActiva();
         }
-
-        $this->interfazActual = basename($_SERVER['REQUEST_URI']);
         //$id_rol = isset( $this->usuario) ?  $this->usuario["id_rol"] : "";
         $actualDir = getcwd();
         chdir("../../");
@@ -238,11 +238,13 @@ class Template{
     */
 
     public function mostrarAccesoNoValido(){
-        '<script> alert("No tiene permiso para ver esto"); history.back() </script>';
+        echo '<script> alert("No tiene permiso para ver esto"); history.back() </script>';
+        exit;
     }
 
     public function mostrarSesionNoActiva(){
-        echo '<script> alert("Permisos de sesión no validados o ha pasado mucho tiempo de inactividad."); </script>';
+        setcookie("_last_basename_", $this->interfazActual);
+        echo '<script> alert("No tiene permiso para ver esto");</script>';
         header("Location: ../login");
         exit;
     }

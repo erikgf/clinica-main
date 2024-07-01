@@ -85,41 +85,6 @@ try {
             Funciones::imprimeJSON("200", "OK", $obj->generarTodos());
         break;
 
-        case "generar_firmar_resumenes_diarios":
-            $fecha_inicio = $_POST["p_fi"];
-            if ($fecha_inicio == ""){
-                throw new Exception("No se ha enviado FECHA INICIO para procesar.", 1);
-            }
-
-            $fecha_final = $_POST["p_ff"];
-            if ($fecha_final == ""){
-                throw new Exception("No se ha enviado FECHA FINAL para procesar.", 1);
-            }
-
-            $obj->registrar_en_bbdd = (isset($_POST["p_registrar"]) ? $_POST["p_registrar"] : "0") == "1";
-            $obj->generar_xml = true;
-            $obj->firmar_comprobante = true;
-
-            Funciones::imprimeJSON("200", "OK", $obj->generarResumenDiario($fecha_inicio, $fecha_final));
-        break;
-
-        case "generar_firmar_resumenes_diarios_bajas":
-            $fecha_inicio = $_POST["p_fi"];
-            if ($fecha_inicio == ""){
-                throw new Exception("No se ha enviado FECHA INICIO para procesar.", 1);
-            }
-
-            $fecha_final = $_POST["p_ff"];
-            if ($fecha_final == ""){
-                throw new Exception("No se ha enviado FECHA FINAL para procesar.", 1);
-            }
-
-            $obj->registrar_en_bbdd = (isset($_POST["p_registrar"]) ? $_POST["p_registrar"] : "0") == "1";
-            $obj->generar_xml = true;
-            $obj->firmar_comprobante = true;
-
-            Funciones::imprimeJSON("200", "OK", $obj->generarResumenDiarioBajas($fecha_inicio, $fecha_final));
-        break;
             
         case "crear_notas_comprobantes_anulados":
             $fecha_inicio = $_POST["p_fecha_inicio"];
@@ -311,6 +276,22 @@ try {
            
             $obj->id_documento_electronico_previo = $id_documento_electronico;
             $data = $obj->copiarComprobante();
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "reemplazar_nota_credito_factura":
+            $id_documento_electronico = Funciones::sanitizar($_POST["p_id"]);
+            if ($id_documento_electronico == ""){
+                throw new Exception("No se ha enviado ID Comprobante.", 1);
+            }
+
+            $motivo =  isset($_POST["p_motivo"]) ? Funciones::sanitizar($_POST["p_motivo"]) : NULL; 
+            $fecha_emision =  isset($_POST["p_fecha_emision"]) ? Funciones::sanitizar($_POST["p_fecha_emision"]) : NULL; 
+            
+            $obj->generar_xml = true;
+            $obj->firmar_comprobante = true;
+           
+            $data = $obj->reemplazarNotaCreditoFactura($id_documento_electronico, $fecha_emision, $motivo);
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 

@@ -747,6 +747,8 @@ class DocumentoElectronico extends Conexion {
         try {
             $this->beginTransaction();
 
+            $fechaEmisionNC = $this->fecha_emision == NULL ? "CURRENT_DATE" : "'".$this->fecha_emision."'";
+
             $sql = "INSERT INTO documento_electronico(
                 idcliente,
                 idtipo_documento_cliente,
@@ -793,8 +795,8 @@ class DocumentoElectronico extends Conexion {
                     '01',
                     :1,
                     idtipo_operacion,
-                    CURRENT_DATE as fe,
-                    CURRENT_DATE as fv,
+                    $fechaEmisionNC as fe,
+                    $fechaEmisionNC as fv,
                     idtipo_moneda,
                     '07',
                     :2,
@@ -2556,8 +2558,6 @@ class DocumentoElectronico extends Conexion {
 
     public function generarComprobanteFechas($fechaInicio, $fechaFin){
         try {
-            
-
             $this->beginTransaction();
 
             $sql = "SELECT iddocumento_electronico as id, idtipo_comprobante as idtipocomprobante
@@ -2725,5 +2725,46 @@ class DocumentoElectronico extends Conexion {
             throw new Exception($exc->getMessage());
         }
     }
-    
+
+    public function reemplazarNotaCreditoFactura(string $iddocumento_electronico, string $fecha_emision = null, string $motivo = null){
+        try {
+            /*
+            0.01.- soy factura
+            0.1.- Verificar si existe una NC asoaciada
+            0.2.- Existe? NO => Error esta factura no tiene uan nota de credito previa.
+            0.1- if (motivo == null ) usar el existente en la nota credito, ergo usar nuevo motivo
+            1.- Crea la nota de credito forzadamente (iddoc, usar tipo nota previa, motivo_diem,forzado 1)
+            1.1.- obtener el ID nuevo
+            2.-  actualizar campos en DE_NOTA_ID, DE_NOTA_SERIE, DE_NOTA_NUMERO_CORRELATIVO, DE_NOTA_dESCROPTION_MOTIVO, DE_NOTA_FECHA_EMISION (enganchar a nuevo docu_)
+            3.- Profit
+            */
+            $sql = "SELECT serie_documento_modifica, idcod_tipo_motivo_nota, descripcion_motivo_nota FROM documento_electronico WHERE id_documento_electronico_previo = :0 AND idtipo_comprobante = '07' AND estado_mrcb";
+            $notaAsociada = $this->consultarFila($sql, [$iddocumento_electronico]);
+
+            if ($notaAsociada == false){
+                throw new Exception("Este comprobante no tiene una Nota Crédito previa", 404);
+            }
+
+            $inicialSerieNC = substr($notaAsociada["serie_documento_modifica"], 0, 1);
+
+            if ($inicialSerieNC != "F"){
+                throw new Exception("Este comprobante no es una FACTURA", 422);
+            }
+
+            if  ($motivo == null){
+                $motivo = $notaAsociada["descripcion_motivo_nota"];
+            }
+
+            $this->fecha_emision = $fecha_emision;
+
+            $this->beginTransaction();
+            $obj = $this->crearNotaCreditoDesdeComprobante($iddocumento_electronico, $notaAsociada["idcod_tipo_motivo_nota"], $motivo, 1);
+            $this->commit();
+
+            return $obj;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage());
+        }
+    }
+
 }

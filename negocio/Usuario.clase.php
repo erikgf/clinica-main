@@ -43,6 +43,13 @@ class Usuario extends Conexion{
                             "id_rol"=>$usuario["id_rol"],
                             "interfaz_inicio_sesion"=>$usuario["interfaz_inicio_sesion"]];
 
+
+            if (isset($_COOKIE["_last_basename_"])){
+                $objUsuario["interfaz_inicio_sesion"] = $_COOKIE["_last_basename_"];
+                unset($_COOKIE['_last_basename_']);
+                setcookie('_last_basename_', '', time() - 3600, '/');
+            }
+
             require_once 'Sesion.clase.php';
             Sesion::setSesion($objUsuario);
             
