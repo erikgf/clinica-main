@@ -1,8 +1,13 @@
 <?php
+include_once 'config.php';
 
-$URL = "http://localhost/sistema_dpi/controlador/resumen.diario.controlador.php?op=generar_firmar_resumenes_diarios";
+$endPoint = "resumen.diario.controlador.php?op=generar_firmar_resumenes_diarios";
+$URL = BASE_URL_CONTROLADOR.$endPoint;
+$baseRoute = DIR_ROBOTLOG;
+$fileNameBase = "generar_firmar_resumenes_diarios";
+$fileNameError = $baseRoute."error_".$fileNameBase."_{0}.txt";
+$fileName = $baseRoute.$fileNameBase."_{0}.txt";
 
-//$hoy = date("Y-m-d", strtotime("-1 days")); //ayer
 $hoy = date("Y-m-d"); 
 $numero_dia = date("N", time());
 
@@ -19,9 +24,9 @@ curl_close($ch);
 
 $respuestafirmaDecode = json_decode($respuestafirma);
 if (json_last_error()){
-    $fileRespuesta = fopen("error_generar_firmar_resumenes_diarios_boletas_".$numero_dia.".txt", "w") or die("Unable to open file!");
+    $fileRespuesta = fopen(str_replace("{0}", $numero_dia, $fileNameError), "w") or die("Unable to open file!");
 } else {
-    $fileRespuesta = fopen("generar_firmar_resumenes_diarios_boletas_".$numero_dia.".txt", "w") or die("Unable to open file!");
+    $fileRespuesta = fopen(str_replace("{0}", $numero_dia, $fileName), "w") or die("Unable to open file!");
 }
 
 fwrite($fileRespuesta, $respuestafirma);

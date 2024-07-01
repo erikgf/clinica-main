@@ -1,1 +1,0 @@
- {"respuestas":[{"respuesta":"error","cod_sunat":"0000","mensaje":false,"hash_cdr":"","id":"1312"},{"respuesta":"error","cod_sunat":"0000","mensaje":false,"hash_cdr":"","id":"1313"}]}

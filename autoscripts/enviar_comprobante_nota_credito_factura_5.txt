@@ -1,1 +1,0 @@
- {"respuestas":[{"respuesta":"ok","cod_sunat":"-1","mensaje":"SUNAT no devolvio el CDR correctamente. Verificar validez manualmente.","observaciones":"La consulta devolvi\u00f3 el c\u00f3digo: 0","hash_cdr":"","signature_value":"","id":"98728"}]}

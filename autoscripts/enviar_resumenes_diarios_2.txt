@@ -1,1 +1,0 @@
- {"respuestas":[{"respuesta":"ok","cod_ticket":"500000118310914","id":"1314"},{"respuesta":"ok","cod_ticket":"500000118313728","id":"1315"}]}

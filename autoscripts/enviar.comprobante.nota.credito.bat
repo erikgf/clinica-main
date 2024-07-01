@@ -1,2 +1,2 @@
-cd  "D:\SYS\htdocs\sistema_dpi\autoscripts"
-php -f enviar.comprobante.nota.credito.php
+cd  "C:\xampp\htdocs\sistema_dpi\autoscripts"
+C:\xampp\php\php -f enviar.comprobante.nota.credito.php

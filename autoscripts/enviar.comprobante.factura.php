@@ -1,6 +1,13 @@
 <?php
 
-$URL = "http://localhost/sistema_dpi/controlador/documento.electronico.controlador.php?op=enviar_comprobante_factura";
+include_once 'config.php';
+
+$endPoint = "documento.electronico.controlador.php?op=enviar_comprobante_factura";
+$URL = BASE_URL_CONTROLADOR.$endPoint;
+$baseRoute = DIR_ROBOTLOG;
+$fileNameBase = "enviar_comprobante_factura";
+$fileNameError = $baseRoute."error_".$fileNameBase."_{0}.txt";
+$fileName = $baseRoute.$fileNameBase."_{0}.txt";
 
 $hoy = date("Y-m-d");
 $numero_dia = date("N", time());
@@ -17,18 +24,27 @@ $respuestafirma  = curl_exec($ch);
 curl_close($ch);
 
 $respuestafirmaDecode = json_decode($respuestafirma);
-if (json_last_error()){
-    $fileRespuesta = fopen("error_enviar_comprobante_factura_".$numero_dia.".txt", "w") or die("Unable to open file!");
+$jsonLastError = json_last_error();
+$fileNameToWrite = $fileNameError;
+
+if ($jsonLastError){
+    $respuesta = $jsonLastError;
 } else {
-    $respuesta = $respuestafirmaDecode->respuestas[0];
-    if ($respuesta->respuesta == "error"){
-        $fileRespuesta = fopen("error_enviar_comprobante_factura_".$numero_dia.".txt", "w") or die("Unable to open file!");
-        $respuestafirma = $respuesta->mensaje;
+    if (count($respuestafirmaDecode->respuestas) > 0){
+        $respuesta = $respuestafirmaDecode->respuestas[0];
+        
+        if ($respuesta && $respuesta->respuesta != "error"){
+            $fileNameToWrite = $fileName;
+            $respuestaFinal = $respuestafirma;
+        } else {
+            $respuestaFinal = $respuesta->mensaje;
+        }
     } else {
-        $fileRespuesta = fopen("enviar_comprobante_factura_".$numero_dia.".txt", "w") or die("Unable to open file!");
+        $fileNameToWrite = $fileName;
+        $respuestaFinal = "No hay registros para enviar.";
     }
 }
 
-fwrite($fileRespuesta, $respuestafirma);
+$fileRespuesta = fopen(str_replace("{0}",$numero_dia, $fileNameToWrite), "w") or die("Unable to open file!");
+fwrite($fileRespuesta, $respuestaFinal);
 fclose($fileRespuesta);
-
