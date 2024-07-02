@@ -34,24 +34,24 @@ class EntregaSobre extends Conexion {
                     ld.comision_sin_igv as monto,
                     l.mes as mes,
                     l.anio as anio,
-                    ((SELECT SUM(_ld.comision_sin_igv) From liquidacion _l
+                    COALESCE(((SELECT SUM(_ld.comision_sin_igv) From liquidacion _l
                         INNER JOIN liquidacion_detalle _ld ON _l.id_liquidacion = _ld.id_liquidacion
                         WHERE CONCAT(_l.mes,_l.anio) < CONCAT(l.mes,l.anio) AND _ld.entregado = '0'
                         AND _l.id_sede = l.id_sede AND _l.id_promotora = l.id_promotora AND _ld.id_medico = ld.id_medico
                         ORDER BY _l.anio,_l.mes
-                    ) + ld.comision_sin_igv) as acumulado,
-                    (SELECT GROUP_CONCAT(CONCAT(_l.mes,'|',_l.anio,'|',_ld.comision_sin_igv)) From liquidacion _l
+                    ) + ld.comision_sin_igv),0) as acumulado,
+                    COALESCE((SELECT GROUP_CONCAT(CONCAT(_l.mes,'|',_l.anio,'|',_ld.comision_sin_igv)) From liquidacion _l
                         INNER JOIN liquidacion_detalle _ld ON _l.id_liquidacion = _ld.id_liquidacion
                         WHERE CONCAT(_l.mes,_l.anio) < CONCAT(l.mes,l.anio) AND _ld.entregado = '0'
                         AND _l.id_sede = l.id_sede AND _l.id_promotora = l.id_promotora AND _ld.id_medico = ld.id_medico
                         ORDER BY CONCAT(_l.anio,_l.mes)
-                    ) as liquidaciones_anteriores
+                    ),0) as liquidaciones_anteriores
                     FROM liquidacion l
                     INNER JOIN liquidacion_detalle ld ON ld.id_liquidacion = l.id_liquidacion
                     INNER JOIN medico m ON m.id_medico = ld.id_medico
                     INNER JOIN promotora pr ON pr.id_promotora = l.id_promotora
                     WHERE l.mes = :0 and l.anio = :1 $sqlPromotora AND ld.entregado = '0'
-                    HAVING acumulado > :2
+                    HAVING acumulado >= :2
                     ORDER BY m.nombres_apellidos";
 
             return $this->consultarFilas($sql, $params);

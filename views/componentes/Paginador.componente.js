@@ -114,6 +114,7 @@ const Paginador = function(initData){
         this._maxPages  = Math.ceil(cantidadTotal / this.registrosPorPagina);
 
         if (this._maxPages <= 0 ){
+            this.$paginador.empty();
             return;
         }
 

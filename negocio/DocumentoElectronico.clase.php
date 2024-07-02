@@ -2738,11 +2738,15 @@ class DocumentoElectronico extends Conexion {
             2.-  actualizar campos en DE_NOTA_ID, DE_NOTA_SERIE, DE_NOTA_NUMERO_CORRELATIVO, DE_NOTA_dESCROPTION_MOTIVO, DE_NOTA_FECHA_EMISION (enganchar a nuevo docu_)
             3.- Profit
             */
-            $sql = "SELECT serie_documento_modifica, idcod_tipo_motivo_nota, descripcion_motivo_nota FROM documento_electronico WHERE id_documento_electronico_previo = :0 AND idtipo_comprobante = '07' AND estado_mrcb";
+            $sql = "SELECT serie_documento_modifica, idcod_tipo_motivo_nota, descripcion_motivo_nota, estado_anulado FROM documento_electronico WHERE id_documento_electronico_previo = :0 AND idtipo_comprobante = '07' AND estado_mrcb";
             $notaAsociada = $this->consultarFila($sql, [$iddocumento_electronico]);
 
             if ($notaAsociada == false){
                 throw new Exception("Este comprobante no tiene una Nota Crédito previa", 404);
+            }
+
+            if ($notaAsociada["estado_anulado"] != "1"){
+                throw new Exception("La Nota Crédito previo NO está anulada.", 1);
             }
 
             $inicialSerieNC = substr($notaAsociada["serie_documento_modifica"], 0, 1);

@@ -156,6 +156,7 @@ const LiquidacionesSinSobre = function (){
                 disabled: true,
                 fecha_entregado: null,
                 observaciones: null,
+                mostrando_acumulado : r.acumulado > 0,
                 liquidaciones_mes
             }
         });
