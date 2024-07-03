@@ -183,7 +183,7 @@ const EntregasSobres = function (){
     };
 
     this.guardar = async () => {
-        if (!confirm("¿Estás RECONTRASEGURA nena?")){
+        if (!confirm("¿Estás seguro de guardar los datos?")){
             return;
         }
 

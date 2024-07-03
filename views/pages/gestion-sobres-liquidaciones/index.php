@@ -16,6 +16,6 @@ include_once "../../template.php";
 ?>
 
 <script type="text/javascript" src="../../componentes/Paginador.componente.js" defer></script>
-<script type="text/javascript" src="EntregasSobres.js" defer></script>
+<script type="text/javascript" src="EntregasSobres.1.js" defer></script>
 <script type="text/javascript" src="LiquidacionesSinSobre.1.js" defer></script>
 <script type="text/javascript" src="index.js" defer></script>

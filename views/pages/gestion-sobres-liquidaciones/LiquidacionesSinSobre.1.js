@@ -165,7 +165,7 @@ const LiquidacionesSinSobre = function (){
     };
 
     this.guardar = async () => {
-        if (!confirm("¿Estás RECONTRASEGURA nena?")){
+        if (!confirm("¿Estás seguro de guardar los datos?")){
             return;
         }
         
@@ -189,12 +189,11 @@ const LiquidacionesSinSobre = function (){
                 delay: 250,
                 data: {
                     p_registros: JSON.stringify(dataEnviar.map(({id_medico, id_promotora, mes, 
-                            anio, monto, fecha_entregado, observaciones, liquidaciones_mes}) => {
+                            anio, fecha_entregado, observaciones, liquidaciones_mes}) => {
                         return {
                             mes, anio,
                             id_promotora, id_medico,
                             fecha_entregado,
-                            monto,
                             observaciones,
                             meses : liquidaciones_mes.map ( ({mes, año, monto}) => {
                                 return {

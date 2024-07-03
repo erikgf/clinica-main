@@ -22,36 +22,39 @@ class EntregaSobre extends Conexion {
 
             if ($id_promotora != NULL){
                 array_push($params, $id_promotora);
-                $sqlPromotora = " AND l.id_promotora = :3 ";
+                $sqlPromotora = " AND pr.id_promotora = :3 ";
             }
 
             $sql = "SELECT  
-                    CONCAT(ld.id_medico,pr.id_promotora,l.mes,l.anio) as id,
+                    CONCAT(m.id_medico,pr.id_promotora) as id,
                     m.id_medico,
                     m.nombres_apellidos as medico,
                     pr.id_promotora,
                     pr.descripcion as promotora,
-                    ld.comision_sin_igv as monto,
-                    l.mes as mes,
-                    l.anio as anio,
+                    :0 as mes,
+                    :1 as anio,
+                    COALESCE(((SELECT _ld.comision_sin_igv From liquidacion _l
+                        INNER JOIN liquidacion_detalle _ld ON _l.id_liquidacion = _ld.id_liquidacion
+                        WHERE CONCAT(_l.mes,_l.anio) = CONCAT(:0,:1) AND _ld.entregado = '0'
+                        AND  _l.id_promotora = m.id_promotora AND _ld.id_medico = m.id_medico
+                        ORDER BY _l.anio,_l.mes
+                    )),0) as mes_actual,
                     COALESCE(((SELECT SUM(_ld.comision_sin_igv) From liquidacion _l
                         INNER JOIN liquidacion_detalle _ld ON _l.id_liquidacion = _ld.id_liquidacion
-                        WHERE CONCAT(_l.mes,_l.anio) < CONCAT(l.mes,l.anio) AND _ld.entregado = '0'
-                        AND _l.id_sede = l.id_sede AND _l.id_promotora = l.id_promotora AND _ld.id_medico = ld.id_medico
+                        WHERE CONCAT(_l.mes,_l.anio) <= CONCAT(:0,:1) AND _ld.entregado = '0'
+                        AND  _l.id_promotora = m.id_promotora AND _ld.id_medico = m.id_medico
                         ORDER BY _l.anio,_l.mes
-                    ) + ld.comision_sin_igv),0) as acumulado,
+                    )),0) as acumulado, -- previo
                     COALESCE((SELECT GROUP_CONCAT(CONCAT(_l.mes,'|',_l.anio,'|',_ld.comision_sin_igv)) From liquidacion _l
                         INNER JOIN liquidacion_detalle _ld ON _l.id_liquidacion = _ld.id_liquidacion
-                        WHERE CONCAT(_l.mes,_l.anio) < CONCAT(l.mes,l.anio) AND _ld.entregado = '0'
-                        AND _l.id_sede = l.id_sede AND _l.id_promotora = l.id_promotora AND _ld.id_medico = ld.id_medico
+                        WHERE CONCAT(_l.mes,_l.anio) <= CONCAT(:0,:1) AND _ld.entregado = '0'
+                        AND  _l.id_promotora = m.id_promotora AND _ld.id_medico = m.id_medico
                         ORDER BY CONCAT(_l.anio,_l.mes)
-                    ),0) as liquidaciones_anteriores
-                    FROM liquidacion l
-                    INNER JOIN liquidacion_detalle ld ON ld.id_liquidacion = l.id_liquidacion
-                    INNER JOIN medico m ON m.id_medico = ld.id_medico
-                    INNER JOIN promotora pr ON pr.id_promotora = l.id_promotora
-                    WHERE l.mes = :0 and l.anio = :1 $sqlPromotora AND ld.entregado = '0'
-                    HAVING acumulado >= :2
+                    ),0) as liquidaciones_anteriores -- liquidaciones antetiroes
+                    FROM medico m
+                    INNER JOIN promotora pr ON pr.id_promotora = m.id_promotora
+                    WHERE true $sqlPromotora
+                    HAVING acumulado >= :2 AND (acumulado > 0 OR mes_actual > 0)
                     ORDER BY m.nombres_apellidos";
 
             return $this->consultarFilas($sql, $params);
@@ -84,8 +87,8 @@ class EntregaSobre extends Conexion {
                 $this->insert("entrega_sobre", $campos_valores);
                 $id_entrega_sobre = $this->getLastId();
 
-                $mesesAniosMarcarEntregados = [];
                 $mesesSobre = $sobre["meses"];
+                /*
                 $campos_valores_detalle = [
                     "id_entrega_sobre"=>$id_entrega_sobre,
                     "mes"=>$sobre["mes"],
@@ -96,17 +99,21 @@ class EntregaSobre extends Conexion {
 
                 $this->insert("entrega_sobre_detalle", $campos_valores_detalle);
                 array_push($mesesAniosMarcarEntregados, $sobre["anio"].$sobre["mes"]);
+                */
+                $mesesAniosMarcarEntregados = [];
 
                 foreach ($mesesSobre as $mesSobre) {
-                    $campos_valores_detalle = [
-                        "id_entrega_sobre"=>$id_entrega_sobre,
-                        "mes"=>$mesSobre["mes"],
-                        "anio"=>$mesSobre["anio"],
-                        "monto"=>$mesSobre["monto"],
-                        "es_registro_principal"=>0
-                    ];
-                    $this->insert("entrega_sobre_detalle", $campos_valores_detalle);
-                    array_push($mesesAniosMarcarEntregados, $mesSobre["anio"].$mesSobre["mes"]);
+                    if ($mesSobre["monto"] > 0) {
+                        $campos_valores_detalle = [
+                            "id_entrega_sobre"=>$id_entrega_sobre,
+                            "mes"=>$mesSobre["mes"],
+                            "anio"=>$mesSobre["anio"],
+                            "monto"=>$mesSobre["monto"],
+                            "es_registro_principal"=>($mesSobre["mes"] == $sobre["mes"] && $mesSobre["anio"] == $sobre["anio"]) ? 1 : 0
+                        ];
+                        $this->insert("entrega_sobre_detalle", $campos_valores_detalle);
+                        array_push($mesesAniosMarcarEntregados, $mesSobre["anio"].$mesSobre["mes"]);
+                    }
                 }
 
                 $fueEntregado = 1;
