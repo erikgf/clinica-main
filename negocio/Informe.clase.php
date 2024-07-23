@@ -295,7 +295,7 @@ class Informe extends Conexion {
                 throw new Exception("Codigo de informe inválido", 404);
             }
 
-            $nombre_archivo = $informe["examen"]."-".$fecha.".doc";
+            $nombre_archivo = $informe["examen"]."-".$fecha;
 
             $paciente = $informe["paciente"];
             $edad_paciente = $informe["edad_paciente"];
