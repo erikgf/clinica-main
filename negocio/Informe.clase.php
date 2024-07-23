@@ -94,7 +94,7 @@ class Informe extends Conexion {
                             INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio
                             INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                             INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio 
-                            INNER JOIN medico m ON m.id_medico = ams.id_medico_realizado
+                            INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
                             INNER JOIN paciente p ON am.id_paciente = p.id_paciente
                             WHERE i.fecha_hora_eliminado IS NULL AND ams.id_medico_atendido = :0 AND i.id_informe = :1";
 
@@ -126,7 +126,7 @@ class Informe extends Conexion {
                         INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio
                         INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                         INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio 
-                        INNER JOIN medico m ON m.id_medico = ams.id_medico_realizado
+                        INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
                         INNER JOIN paciente p ON am.id_paciente = p.id_paciente
                         WHERE i.fecha_hora_eliminado IS  NULL AND i.id_informe = :0";
 
@@ -285,7 +285,7 @@ class Informe extends Conexion {
                     INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio
                     INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                     INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio 
-                    INNER JOIN medico m ON m.id_medico = ams.id_medico_realizado
+                    INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
                     INNER JOIN paciente p ON am.id_paciente = p.id_paciente
                     WHERE i.id_informe = :0 AND i.fecha_hora_eliminado IS NULL";
 
