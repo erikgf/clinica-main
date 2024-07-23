@@ -94,7 +94,7 @@ class Informe extends Conexion {
                             INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio
                             INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                             INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio 
-                            INNER JOIN medico m ON m.id_medico = ams.id_medico_atendido
+                            INNER JOIN medico m ON m.id_medico = ams.id_medico_realizado
                             INNER JOIN paciente p ON am.id_paciente = p.id_paciente
                             WHERE i.fecha_hora_eliminado IS NULL AND ams.id_medico_atendido = :0 AND i.id_informe = :1";
 
@@ -116,7 +116,7 @@ class Informe extends Conexion {
 
             $sql = "SELECT 
                         i.id_informe,
-                       i.contenido_informe,
+                        i.contenido_informe,
                         nombre_paciente as paciente,
                         fecha_atencion as fecha,
                         ser.descripcion as examen,
@@ -126,7 +126,7 @@ class Informe extends Conexion {
                         INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio
                         INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                         INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio 
-                        INNER JOIN medico m ON m.id_medico = ams.id_medico_atendido
+                        INNER JOIN medico m ON m.id_medico = ams.id_medico_realizado
                         INNER JOIN paciente p ON am.id_paciente = p.id_paciente
                         WHERE i.fecha_hora_eliminado IS  NULL AND i.id_informe = :0";
 
@@ -144,14 +144,14 @@ class Informe extends Conexion {
 
             }
 
-            return $informe;;
+            return $informe;
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }
     }
 
     private function getContenidoPorDefecto (){
-        $contenido_informe = "<br><br><br><br><br><br><br><br><p><b>DIAGNÓSTICO POR IMAGEN:</b></p><ul><li></li></ul>";
+        $contenido_informe = "<br/><br/><p><b>DIAGNÓSTICO POR IMAGEN:</b></p><ul><li></li></ul>";
         return $contenido_informe;
     }
 
@@ -285,7 +285,7 @@ class Informe extends Conexion {
                     INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio
                     INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                     INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio 
-                    INNER JOIN medico m ON m.id_medico = ams.id_medico_atendido
+                    INNER JOIN medico m ON m.id_medico = ams.id_medico_realizado
                     INNER JOIN paciente p ON am.id_paciente = p.id_paciente
                     WHERE i.id_informe = :0 AND i.fecha_hora_eliminado IS NULL";
 
@@ -304,54 +304,47 @@ class Informe extends Conexion {
             $medico = $informe["medico"];
             $contenido_informe = $informe["contenido_informe"];
 
-            $contenido_informe = str_replace("></p>", "><br></p>", $contenido_informe);
+           // $contenido_informe = str_replace("></p>", "><br></p>", $contenido_informe);
 
             $contenido_word = <<<EOD
-                <html>
                 <head>
-                    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
-                    <style>
-                        body{   
-                            font-family: Arial;
-                            font-size: 11pt;
-                        }
+                <style>
+                    .body{   
+                        font-family: Arial;
+                        font-size: 11pt;
+                    }
 
-                        table {
-                            font-family: Arial;
-                            font-size: 11pt;
-                            width: 100%;
-                        }
+                    .table {
+                        font-family: Arial;
+                        font-size: 11pt;
+                        width: 70%;
+                    }
 
-                        p {
-                            font-size: 11pt;
-                        }
+                    p {
+                        font-size: 11pt;
+                    }
 
-                        .ql-align-right {
-                            text-align: right;
-                        }
+                    .ql-align-right {
+                        text-align: right;
+                    }
 
-                        .ql-align-justify {
-                            text-align: justify;
-                        }
+                    .ql-align-justify {
+                        text-align: justify;
+                    }
 
-                        .ql-align-center {
-                            text-align: center;
-                        }
+                    .ql-align-center {
+                        text-align: center;
+                    }
 
-                        .ql-align-left {
-                            text-align: left;
-                        }
-
-                    </style>
+                    .ql-align-left {
+                        text-align: left;
+                    }
+                </style>
                 </head>
-                <body>
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                    <table>
+                <body class="body">
+                    <br/>
+                    <br/>
+                    <table class="table">
                         <tbody>
                             <tr>
                                 <td>PACIENTE</td>
@@ -375,11 +368,8 @@ class Informe extends Conexion {
                             </tr>
                         </tbody>
                     </table>
-                    <br>
-                    <br>
                     $contenido_informe
-                </body>
-                </html>
+                 </body>
                 EOD;
             
             return [ "contenido"=>$contenido_word, "nombre_archivo"=>$nombre_archivo];

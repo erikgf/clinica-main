@@ -28,6 +28,7 @@ const InformeExamenes = function () {
         this.$blkInformeCabecera = $("#blk-informecabecera");
         this.$editor = $("#editor");
         this.$btnInformeGuardar = $("#btn-informeguardar");
+        this.$mdlInformeLogo = $("#mdl-informelogo");
 
         const hoy = new Date();
         Util.setFecha(this.$txtFechaInicio, hoy);
@@ -73,7 +74,10 @@ const InformeExamenes = function () {
         });
 
         this.$tbdInformes.on("click", ".on-descargar", (e)=>{
-            this.descargar(e.currentTarget.dataset.id);
+            const {id, logo} = e.currentTarget.dataset;
+            this.descargar(id, logo);
+            //this.$mdlInformeLogo.modal("show");
+            //this.$mdlInformeLogo.find("#txt-informelogo-seleccionado").val(e.currentTarget.dataset.id);
         });
 
         this.$btnGuardarOrden.on("click", ()=>{
@@ -82,6 +86,15 @@ const InformeExamenes = function () {
 
         this.$btnInformeGuardar.on("click", () => {
             this.informeGuardar();
+        });
+
+        this.$mdlInformeLogo.on("submit", "form", (e) => {
+            console.log({e});
+            const $form = e.currentTarget;
+            const id = $form["txt-informlogo-seleccionado"].value;
+            const conLogo = $form["radlogo"].value;
+
+            this.descargar(id, conLogo);
         });
     };
 
@@ -227,8 +240,8 @@ const InformeExamenes = function () {
 
     };
 
-    this.descargar = (id_informe) => {
-        window.open(`../../../impresiones/informe.medico.doc.php?id=${id_informe}`, "_blank");
+    this.descargar = (id_informe, conLogo) => {
+        window.open(`../../../impresiones/informe.medico.doc.php?id=${id_informe}&l=${conLogo}`, "_blank");
     };
 
     this.leer = async(id_informe) => {

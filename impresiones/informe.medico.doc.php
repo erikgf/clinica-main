@@ -12,41 +12,62 @@ if (!Sesion::obtenerSesion()){
 $login = Sesion::obtenerSesion()["nombre_usuario"];
 
 $id_informe = isset($_GET["id"]) ? $_GET["id"] : NULL;
+$logo = isset($_GET["l"]) ? $_GET["l"] : "0";
 
 if ($id_informe == NULL){
     echo "No se ha ingresado el ID del informe..";
     exit;
 }
 
+require '../vendor/autoload.php';
+use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\Shared\Html;
+use PhpOffice\PhpWord\IOFactory;
+
+$phpWord = new PhpWord;
+
+$section = $phpWord->addSection();
+if ($logo === "1"){
+  $header = $section->addHeader();
+  $header->addWatermark('../icon/fondo_impresionword.jpeg', 
+    array(
+      'width' => 596, 
+      'marginTop' => -36,
+      'marginLeft' => -75,
+      'posHorizontal' => 'absolute',
+      'posVertical' => 'absolute',
+    )
+  );
+}
+
 require "../negocio/Informe.clase.php";
 
-$titulo_xls  = "";
 try {
   $obj = new Informe();
-
   $data = $obj->obtenerContenidoParaWord($id_informe);
 
   if (count($data) <= 0){
     echo "Sin datos encontrados.";
     exit;
   }
+$contenido = $data["contenido"];
+$contenido = str_replace("<br>", '<br/>', $contenido);
+$nombre_archivo = $data["nombre_archivo"];
 
-  $contenido = $data["contenido"];
-  $nombre_archivo = $data["nombre_archivo"];
+Html::addHtml($section, $contenido);
+
+$fileName = "{$nombre_archivo}.docx";
+
+$objWriter = IOFactory::createWriter($phpWord, 'Word2007');
+$objWriter->save($fileName);
+
+header("Content-Disposition: attachment; filename=$fileName");
+$objWriter->save("php://output");
+flush();
+unlink($fileName);
+
 
 } catch (\Throwable $th) {
   echo $th->getMessage();
   exit;
 }
-
-try {
-    header("Content-Type: application/application/vnd.ms-word");
-    header("Expires: 0");
-    header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-    header('Content-Disposition: attachment; filename="'.$nombre_archivo.'"');
-    echo $contenido;
-
-} catch (Exception $exc) {
-    print_r(["state"=>500,"msj"=>$exc->getMessage()]);
-}   
-

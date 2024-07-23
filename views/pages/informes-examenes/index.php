@@ -15,8 +15,6 @@ include_once "../../template.php";
 
 include_once 'prt.modal.informe.php';
 /*
-
-include_once 'prt.modal.servicio.examen.php';
 include_once 'prt.modal.servicio.perfil.examen.php';
 */
 ?>
@@ -31,4 +29,4 @@ include_once 'prt.modal.servicio.perfil.examen.php';
 <script type="text/javascript" src="ClsServicioPerfilExamen.js" defer></script>
 -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
-<script type="text/javascript" src="index.js" defer></script>
+<script type="text/javascript" src="index.1.js" defer></script>

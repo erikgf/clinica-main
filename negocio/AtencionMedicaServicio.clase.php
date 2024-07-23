@@ -21,7 +21,6 @@ class AtencionMedicaServicio extends Conexion {
     public $ID_TIPO_ACCION_VALIDADO = 4;
     public $ID_TIPO_ACCION_CANCELAR_VALIDADO = 5;
     
-    
     public function listarExamenesAdministrador($fecha_inicio, $fecha_fin, $id_area = "*"){
         try {
             $sqlEstado = " ";

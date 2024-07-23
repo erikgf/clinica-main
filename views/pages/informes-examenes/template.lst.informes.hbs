@@ -2,7 +2,16 @@
     <tr  data-id="{{id_informe}}">
         <td>
             <button data-id="{{id_informe}}" type="button" title="Editar" class="btn btn-warning btn-sm on-edit"><i class="fa fa-edit"></i></button>
-            <button data-id="{{id_informe}}" type="button" title="Descargar" class="btn bg-primary btn-sm on-descargar"><i class="fa fa-print"></i></button>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown" aria-expanded="false">
+                    <span class="fa fa-print"></span></button>
+                    <span class="sr-only">Toggle Dropdown</span>
+                    <div class="dropdown-menu" role="menu" style="">
+                        <button data-id="{{id_informe}}" data-logo="1" class="dropdown-item btn-imprimir-liquidaciontotal-pdf on-descargar"  title="Descargar CON LOGO"> CON LOGO</button>
+                        <button data-id="{{id_informe}}" data-logo="0" class="dropdown-item btn-imprimir-liquidaciontotal-excel on-descargar"  title="Descargar SIN LOGO"> SIN LOGO</button>
+                    </div>
+            </div>
+            <!-- <button data-id="{{id_informe}}" type="button" title="Descargar" class="btn bg-primary btn-sm on-descargar"><i class="fa fa-print"></i></button> -->
         </td>
         <td>
             <button title="Subir" type="button" class="btn bg-info btn-sm on-up"><i class="fa fa-arrow-circle-up"></i></button>
