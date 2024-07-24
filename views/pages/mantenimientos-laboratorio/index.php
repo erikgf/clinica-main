@@ -15,6 +15,7 @@ include_once "../../template.php";
 
 include_once 'prt.modal.servicio.examen.php';
 include_once 'prt.modal.servicio.perfil.examen.php';
+include_once 'prt.modal.servicio.paquete.php';
 include_once 'prt.modal.seccion.php';
 include_once 'prt.modal.unidad.php';
 include_once 'prt.modal.abreviatura.php';
@@ -29,7 +30,8 @@ include_once 'prt.modal.metodo.php';
 
 <script type="text/javascript" src="ClsServicioExamen.js" defer></script>
 <script type="text/javascript" src="ClsServicioPerfilExamen.js" defer></script>
-<script type="text/javascript" src="index.servicios.js" defer></script>
+<script type="text/javascript" src="ClsServicioPaquete.js" defer></script>
+<script type="text/javascript" src="index.servicios.1.js" defer></script>
 
 <script type="text/javascript" src="ClsLabAbreviatura.js" defer></script>
 <script type="text/javascript" src="ClsLabUnidad.js" defer></script>

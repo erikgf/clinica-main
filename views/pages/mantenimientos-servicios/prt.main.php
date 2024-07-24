@@ -27,6 +27,7 @@
                                 <option selected  value="1">Servicio</option>
                                 <option value="2">Examen Lab.</option>
                                 <option value="3">Perfil Lab.</option>
+                                <option value="4">Paquetes</option>
                             </select>
                         </div>
                     </div>
@@ -47,6 +48,7 @@
                                             <button class="dropdown-item" id="btn-nuevoservicio"> SERVICIO</button>
                                             <button class="dropdown-item" id="btn-nuevoexamenlab"> EXAMEN LAB.</button>
                                             <button class="dropdown-item" id="btn-nuevoperfillab"> PERFIL LAB.</button>
+                                            <button class="dropdown-item" id="btn-nuevopaquete"> PAQUETE</button>
                                         </div>
                                     </button>
                                 </div>

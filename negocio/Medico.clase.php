@@ -319,7 +319,7 @@ class Medico extends Conexion {
                     SUM(ams.monto_comision_categoria_sin_igv) as sin_igv
                     FROM atencion_medica am 
                     INNER JOIN medico me ON me.id_medico = am.id_medico_ordenante
-                    INNER JOIN atencion_medica_servicio ams  ON am.id_atencion_medica = ams.id_atencion_medica
+                    INNER JOIN atencion_medica_servicio ams  ON am.id_atencion_medica = ams.id_atencion_medica  AND ams.id_am_paquete IS NULL
                     WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) $sqlSede
                     GROUP BY am.id_medico_ordenante, me.nombres_apellidos
                     HAVING sin_igv >= :2
@@ -360,7 +360,7 @@ class Medico extends Conexion {
                             ROUND(SUM(ams.monto_comision_categoria),2) as con_igv, 
                             ROUND(SUM(ams.monto_comision_categoria_sin_igv),2) as sin_igv
                         FROM atencion_medica am 
-                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
+                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb  AND ams.id_am_paquete IS NULL
                         WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND $sqlMedico AND $sqlSede
                         GROUP BY ams.id_servicio, ams.nombre_servicio
                         $sqlMayoresA
@@ -399,7 +399,7 @@ class Medico extends Conexion {
                         COUNT(distinct(am.id_paciente)) as total_pacientes
                     FROM atencion_medica am 
                     INNER JOIN medico me ON me.id_medico = am.id_medico_ordenante
-                    INNER JOIN atencion_medica_servicio ams  ON am.id_atencion_medica = ams.id_atencion_medica
+                    INNER JOIN atencion_medica_servicio ams  ON am.id_atencion_medica = ams.id_atencion_medica  AND ams.id_am_paquete IS NULL
                     INNER JOIN sede s ON s.id_sede = am.id_sede_ordenante
                     WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND $sqlMedico AND $sqlSede
                     GROUP BY am.id_medico_ordenante, am.id_sede_ordenante, s.nombre, me.nombres_apellidos
@@ -410,7 +410,7 @@ class Medico extends Conexion {
             $sql = "SELECT cs.descripcion as categoria, 
                             cs.id_categoria_servicio
                     FROM atencion_medica am 
-                    INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
+                    INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb  AND ams.id_am_paquete IS NULL
                     INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio
                     INNER JOIN categoria_servicio cs ON cs.id_categoria_servicio = ser.id_categoria_servicio
                     WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND am.id_medico_ordenante = :2 AND am.id_sede_ordenante = :3
@@ -427,7 +427,7 @@ class Medico extends Conexion {
                                     SUM(ams.monto_comision_categoria_sin_igv) as sin_igv,
                                     porcentaje_comision_categoria
                         FROM atencion_medica am 
-                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
+                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb  AND ams.id_am_paquete IS NULL
                         INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio
                         WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) 
                                 AND am.id_medico_ordenante = :2 
@@ -469,7 +469,7 @@ class Medico extends Conexion {
                         m.nombres_apellidos as medicos,
                         ROUND(SUM(ams.monto_comision_categoria_sin_igv),2) as comision_sin_igv
                         FROM atencion_medica am 
-                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
+                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb  AND ams.id_am_paquete IS NULL
                         INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
                         INNER JOIN sede ON sede.id_sede = am.id_sede_ordenante
                         WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND am.id_medico_ordenante NOT IN (1,2) $sqlSede
@@ -500,7 +500,7 @@ class Medico extends Conexion {
                         ROUND(SUM(ams.monto_comision_categoria_sin_igv),2) as comision_sin_igv,
                         se.nombre as sede
                         FROM atencion_medica am 
-                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
+                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb  AND ams.id_am_paquete IS NULL
                         INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
                         INNER JOIN sede se ON se.id_sede = am.id_sede_ordenante
                         WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND id_medico_ordenante NOT IN (1,2) AND $sqlSede
@@ -542,7 +542,7 @@ class Medico extends Conexion {
                         ROUND(SUM(ams.monto_comision_categoria),2) as monto_comision_con_igv,
                         s.nombre as sede
                         FROM atencion_medica am 
-                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
+                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb  AND ams.id_am_paquete IS NULL
                         INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
                         INNER JOIN sede s ON s.id_sede = am.id_sede_ordenante
                         WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) 
@@ -683,7 +683,7 @@ class Medico extends Conexion {
                         CONCAT(MONTH(am.fecha_atencion),'-',YEAR(am.fecha_atencion)) as mes_anio_atencion,
                         ROUND(SUM(ams.monto_comision_categoria_sin_igv),2) as comision_sin_igv
                         FROM atencion_medica am 
-                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
+                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb  AND ams.id_am_paquete IS NULL
                         LEFT JOIN servicio s ON s.id_servicio = ams.id_servicio
                         INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
                         LEFT JOIN promotora pr ON pr.id_promotora = am.id_promotora_ordenante

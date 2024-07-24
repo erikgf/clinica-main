@@ -20,6 +20,7 @@ var Servicio = function() {
                 objServicioGeneral = new ServicioGeneral();
                 objServicioExamen = new ServicioExamen();
                 objServicioPerfilExamen = new ServicioPerfilExamen();
+                objServicioPaquete = new ServicioPaquete();
                 self.listar();
             })
             .fail(function(error){
@@ -65,6 +66,12 @@ var Servicio = function() {
             objServicioPerfilExamen.nuevoRegistro();
         });
 
+        $("#btn-nuevopaquete").on("click", function(e){
+            e.preventDefault();
+            TR_FILA = null;
+            objServicioPaquete.nuevoRegistro();
+        });
+
         $tbbServicios.on("click", ".btn-editar", function (e) {
             e.preventDefault();
             self.leer(this.dataset.id, this.dataset.idtiposervicio, $(this).parents("tr"));
@@ -89,6 +96,10 @@ var Servicio = function() {
             case "3":
                 TR_FILA = $tr_fila;
                 objServicioPerfilExamen.leer(id);
+            break;
+            case "4":
+                TR_FILA = $tr_fila;
+                objServicioPaquete.leer(id);
             break;
         }
     };

@@ -22,7 +22,7 @@ class HistorialPaciente extends Conexion {
                             cs.descripcion as area,
                             cs.id_categoria_servicio as id_area
                     FROM atencion_medica am
-                    INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica = am.id_atencion_medica
+                    INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica = am.id_atencion_medica and ams.es_atendible
                     INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio
                     INNER JOIN categoria_servicio cs ON cs.id_categoria_servicio = ser.id_categoria_servicio
                     LEFT JOIN medico m ON m.id_medico = ams.id_medico_atendido

@@ -55,12 +55,6 @@ try {
             
             Funciones::imprimeJSON("200", "OK", $data);
         break;
-        case "leer":
-            $obj->id_servicio = isset($_POST["id_servicio"]) ? $_POST["id_servicio"] : NULL;
-            $data = $obj->leer();
-            
-            Funciones::imprimeJSON("200", "OK", $data);
-        break;
 
         case "leer_servicio_general":
             $obj->id_servicio = isset($_POST["p_id_servicio"]) ? $_POST["p_id_servicio"] : NULL;
@@ -171,6 +165,36 @@ try {
 
             $data = $obj->registrarPerfilExamen();
 
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "registrar_paquete":
+            $obj->id_servicio = isset($_POST["p_id_servicio"]) ? Funciones::sanitizar($_POST["p_id_servicio"]): NULL;
+            $obj->descripcion = isset($_POST["p_descripcion"]) ? Funciones::sanitizar($_POST["p_descripcion"]): "";
+
+            if ($obj->descripcion  == NULL || $obj->descripcion == ""){
+                throw new Exception("No se puede regisrar un servicio sin nombre.", 1);
+            }
+
+            $obj->precio_unitario = isset($_POST["p_precio_venta"]) ? Funciones::sanitizar($_POST["p_precio_venta"]): "0.00";
+
+            if ($obj->precio_unitario < 0.00){
+                throw new Exception("No se puede registrar un servicio con precio negativo.", 1);
+            }
+            $obj->idtipo_afectacion = "10";
+            $obj->precio_unitario_sin_igv = round(($obj->precio_unitario / (1.00 + IGV)), 4);
+            
+            $obj->comision = "0.00";
+            $obj->arreglo_detalle = isset($_POST["p_detalle"]) ? $_POST["p_detalle"] : NULL;
+
+            $data = $obj->registrarPaquete();
+
+            Funciones::imprimeJSON("200", "OK", $data);
+        break;
+
+        case "leer_servicio_paquete":
+            $obj->id_servicio = isset($_POST["p_id_servicio"]) ? $_POST["p_id_servicio"] : NULL;
+            $data = $obj->leerServicioPaquete();
             Funciones::imprimeJSON("200", "OK", $data);
         break;
 

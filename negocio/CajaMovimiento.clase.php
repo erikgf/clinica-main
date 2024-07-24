@@ -302,7 +302,7 @@ class CajaMovimiento extends Conexion {
                 $sql = "SELECT ams.id_servicio, ams.nombre_servicio, ams.precio_unitario, 
                             s.idunidad_medida, s.idtipo_afectacion, ams.cantidad
                         FROM atencion_medica_servicio ams
-                        INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
+                        INNER JOIN servicio s ON s.id_servicio = ams.id_servicio AND id_am_paquete IS NULL
                         WHERE ams.id_atencion_medica = :0 AND ams.estado_mrcb";
 
                 $servicios = json_decode(json_encode($this->consultarFilas($sql, [$this->id_registro_atencion_relacionada])));

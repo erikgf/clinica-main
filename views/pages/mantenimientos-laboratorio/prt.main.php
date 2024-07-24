@@ -30,6 +30,7 @@
                             <select class="form-control" id="txt-filtro-tiposervicio">
                                 <option selected value="2">Examen Lab.</option>
                                 <option value="3">Perfil Lab.</option>
+                                <option value="4">Paquete</option>
                             </select>
                         </div>
                     </div>
@@ -49,6 +50,7 @@
                                         <div class="dropdown-menu" role="menu">
                                             <button class="dropdown-item" id="btn-nuevoexamenlab"> EXAMEN LAB.</button>
                                             <button class="dropdown-item" id="btn-nuevoperfillab"> PERFIL LAB.</button>
+                                            <button class="dropdown-item" id="btn-nuevopaquete"> PAQUETE</button>
                                         </div>
                                     </button>
                                 </div>

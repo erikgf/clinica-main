@@ -96,6 +96,7 @@ class AtencionMedicaServicio extends Conexion {
                     LEFT JOIN colaborador col ON col.id_colaborador = u.id_colaborador
                     WHERE am.estado_mrcb AND amd.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) 
                             AND cs.es_mostrado_asistentes = 1
+                            AND amd.es_atendible
                             $sqlEstado
                             $sqlMedicoAtendido
                             $sqlMedicoRealizante
@@ -115,6 +116,7 @@ class AtencionMedicaServicio extends Conexion {
                         INNER JOIN categoria_servicio cs ON cs.id_categoria_servicio = s.id_categoria_servicio
                         WHERE am.estado_mrcb AND amd.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) 
                                 AND cs.es_mostrado_asistentes = 1
+                                 AND amd.es_atendible
                                 $sqlEstado
                                 $sqlMedicoAtendido
                                 $sqlMedicoRealizante
@@ -153,7 +155,7 @@ class AtencionMedicaServicio extends Conexion {
                     INNER JOIN caja_instancia_movimiento cim ON am.id_atencion_medica = cim.id_registro_atencion
                     INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
                     INNER JOIN caja ca oN ca.id_caja = ci.id_caja
-                    WHERE am.estado_mrcb AND amd.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND cs.id_categoria_servicio = :2
+                    WHERE am.estado_mrcb AND amd.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND cs.id_categoria_servicio = :2 AND amd.es_atendible
                     ORDER BY am.numero_acto_medico DESC";
             $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin, $id_area]);
 
@@ -173,7 +175,7 @@ class AtencionMedicaServicio extends Conexion {
                                     WHERE cim.id_tipo_movimiento IN (4) AND cim.estado_mrcb AND cim.id_registro_atencion_relacionada = am.id_atencion_medica)) as monto_deuda
                         FROM atencion_medica_servicio ams
                         INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
-                        WHERE ams.id_atencion_medica_servicio = :0 AND ams.estado_mrcb";
+                        WHERE ams.id_atencion_medica_servicio = :0 AND ams.estado_mrcb AND ams.es_atendible";
             $objAtencionMedicaServicio = $this->consultarFila($sql, [$this->id_atencion_medica_servicio]);
 
             if ($objAtencionMedicaServicio == false){
@@ -253,7 +255,7 @@ class AtencionMedicaServicio extends Conexion {
                         nuevo_modo_orden
                         FROM atencion_medica_servicio ams
                         LEFT JOIN lab_examen le ON le.id_servicio = ams.id_servicio
-                        WHERE ams.id_atencion_medica_servicio = :0";
+                        WHERE ams.id_atencion_medica_servicio = :0 AND ams.es_atendible";
             $datos = $this->consultarFila($sql, [$this->id_atencion_medica_servicio]);
 
             if ($datos["tiene_resultados"] == "1"){
@@ -337,16 +339,15 @@ class AtencionMedicaServicio extends Conexion {
                         FROM atencion_medica_servicio
                         WHERE id_atencion_medica IN (SELECT ams.id_atencion_medica
                             FROM atencion_medica_servicio ams
-                            WHERE ams.id_atencion_medica_servicio = :0 AND ams.estado_mrcb) AND estado_mrcb";
+                            WHERE ams.id_atencion_medica_servicio = :0 AND ams.estado_mrcb AND ams.es_atendible) AND estado_mrcb AND es_atendible";
                 $fila = $this->consultarFila($sql, [$value["id_atencion_medica_servicio"]]);
 
                 $this->id_atencion_medica = $fila["id_atencion_medica"];
                 if ($fila["cantidad_servicios_muestra_incompleta"] <= 0){
-                    $campos_valores_where = [
-                        "id_atencion_medica"=>$this->id_atencion_medica
-                    ];
-
-                    $this->update("atencion_medica", ["fecha_hora_muestra"=>$fecha_hora_registrado, "id_usuario_muestra"=>$this->id_usuario_registrado], ["id_atencion_medica"=>$this->id_atencion_medica]);
+                    $this->update("atencion_medica", 
+                                ["fecha_hora_muestra"=>$fecha_hora_registrado, "id_usuario_muestra"=>$this->id_usuario_registrado],
+                                ["id_atencion_medica"=>$this->id_atencion_medica]
+                            );
                 }
 
             }
@@ -426,7 +427,7 @@ class AtencionMedicaServicio extends Conexion {
                     FROM atencion_medica_servicio
                     WHERE id_atencion_medica IN (SELECT ams.id_atencion_medica
                         FROM atencion_medica_servicio ams
-                        WHERE ams.id_atencion_medica_servicio = :0 AND ams.estado_mrcb) AND estado_mrcb";
+                        WHERE ams.id_atencion_medica_servicio = :0 AND ams.estado_mrcb AND  ams.es_atendible) AND estado_mrcb AND es_atendible";
             $fila = $this->consultarFila($sql, [$this->id_atencion_medica_servicio]);
             $this->id_atencion_medica = $fila["id_atencion_medica"];
 
@@ -598,7 +599,7 @@ class AtencionMedicaServicio extends Conexion {
                         INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
                         INNER JOIN lab_examen le ON ams.id_servicio = le.id_servicio
                         INNER JOIN lab_seccion ls ON ls.id_lab_seccion = le.id_lab_seccion
-                        WHERE s.id_categoria_servicio IN (14) AND am.estado_mrcb AND ams.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1)
+                        WHERE s.id_categoria_servicio IN (14) AND am.estado_mrcb AND ams.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) AND ams.es_atendible
                         GROUP BY ls.id_lab_seccion, ls.descripcion";
 
             $datos = $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin]);
@@ -625,7 +626,7 @@ class AtencionMedicaServicio extends Conexion {
                     INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                     INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
                     INNER JOIN lab_examen le ON ams.id_servicio = le.id_servicio
-                    WHERE s.id_categoria_servicio IN (14) AND am.estado_mrcb AND ams.estado_mrcb AND le.nivel = 0 AND (am.fecha_atencion BETWEEN :0 AND :1) AND le.id_lab_seccion = :2
+                    WHERE s.id_categoria_servicio IN (14) AND am.estado_mrcb AND ams.estado_mrcb AND le.nivel = 0 AND (am.fecha_atencion BETWEEN :0 AND :1) AND le.id_lab_seccion = :2 AND ams.es_atendible 
                     GROUP BY ams.nombre_servicio, ams.precio_unitario, le.nivel
                     ORDER BY ams.nombre_servicio, le.nivel";
 
@@ -665,7 +666,7 @@ class AtencionMedicaServicio extends Conexion {
 
             $sql = "UPDATE atencion_medica_servicio 
                     SET numero_impresiones_laboratorio = numero_impresiones_laboratorio + 1 
-                    WHERE id_atencion_medica_servicio IN ($cadenaIdExamenLaboratorio)";
+                    WHERE id_atencion_medica_servicio IN ($cadenaIdExamenLaboratorio) AND es_atendible";
 
             $this->consultaRaw($sql);
 
@@ -696,7 +697,7 @@ class AtencionMedicaServicio extends Conexion {
                         le.valor_referencial
                         FROM atencion_medica_servicio ams
                         LEFT JOIN lab_examen le ON le.id_servicio = ams.id_servicio 
-                        WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0 AND le.estado_mrcb
+                        WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0 AND le.estado_mrcb AND ams.es_atendible
                         ORDER BY le.orden_nuevo_orden";
                 
             $lab_examenes = $this->consultarFilas($sql,  [$this->id_atencion_medica_servicio]);
@@ -738,7 +739,7 @@ class AtencionMedicaServicio extends Conexion {
                     le.valor_referencial
                     FROM atencion_medica_servicio ams
                     INNER JOIN lab_examen le ON le.id_servicio = ams.id_servicio 
-                    WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0 AND le.estado_mrcb
+                    WHERE ams.estado_mrcb AND ams.id_atencion_medica_servicio = :0 AND le.estado_mrcb AND ams.es_atendible
                     ORDER BY  le.id_lab_examen, le.nivel";
     
                 $examen_principales = $this->consultarFilas($sql[0], [$this->id_atencion_medica_servicio]);
@@ -1121,6 +1122,7 @@ class AtencionMedicaServicio extends Conexion {
                     WHERE am.estado_mrcb AND amd.estado_mrcb
                             AND DATE(am.fecha_atencion) BETWEEN :0 AND :1
                             AND (cs.es_mostrado_asistentes = 1 OR cs.id_categoria_servicio iN (10))
+                            AND amd.es_atendible
                             $sqlWhereSede
                             $sqlWhereEstado
                             $sqlWhereAreas

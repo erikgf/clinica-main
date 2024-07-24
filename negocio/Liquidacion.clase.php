@@ -116,7 +116,7 @@ class Liquidacion extends Conexion {
                         ROUND(SUM(ams.monto_comision_categoria),2) as comision_con_igv,
                         am.id_sede_ordenante
                         FROM atencion_medica am 
-                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb
+                        INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb AND ams.id_am_paquete IS NULL
                         WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) 
                                 AND id_medico_ordenante NOT IN (1,2) AND id_promotora_ordenante = :2  AND am.id_sede_ordenante IS NOT NULL
                         GROUP BY am.id_sede_ordenante, am.id_medico_ordenante

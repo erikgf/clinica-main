@@ -1,9 +1,15 @@
 {{#.}}
-<div class="blk-servicioagregado" data-posiblecam="{{posible_campaña}}" data-concampana="{{con_campaña}}" style="width: calc(100% - 1em);" tabindex="0" data-serviciojson= '{"id_servicio":"{{id_servicio}}","nombre_servicio":"{{nombre_servicio}}","idtipo_afectacion":"{{idtipo_afectacion}}","idunidad_medida":"{{idunidad_medida}}","descripcion":"{{descripcion}}"}'>
+<div class="blk-servicioagregado" data-posiblecam="{{posible_campaña}}" data-concampana="{{con_campaña}}" style="width: calc(100% - 1em);" 
+        tabindex="0" data-serviciojson= '{{servicio_json}}'>
         <div class="row callout callout-warning">
             <div class="nombre col-sm-12 col-md-7 {{#if con_campaña}}text-primary{{/if}}">
                 <h5>{{nombre_servicio}}</h5>
                 <small>{{descripcion}}</small>
+                <div style="font-size:14px;padding-left:22px">
+                    {{#servicios_paquete}}
+                        <div><i class="fa fa-check"></i> {{nombre_servicio}}</div>
+                    {{/servicios_paquete}}
+                </div>
             </div>
             <div class="col-sm-6 col-md-2">
                 <label>P. Unitario: </label>

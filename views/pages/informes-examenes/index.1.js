@@ -76,8 +76,6 @@ const InformeExamenes = function () {
         this.$tbdInformes.on("click", ".on-descargar", (e)=>{
             const {id, logo} = e.currentTarget.dataset;
             this.descargar(id, logo);
-            //this.$mdlInformeLogo.modal("show");
-            //this.$mdlInformeLogo.find("#txt-informelogo-seleccionado").val(e.currentTarget.dataset.id);
         });
 
         this.$btnGuardarOrden.on("click", ()=>{
@@ -89,7 +87,6 @@ const InformeExamenes = function () {
         });
 
         this.$mdlInformeLogo.on("submit", "form", (e) => {
-            console.log({e});
             const $form = e.currentTarget;
             const id = $form["txt-informlogo-seleccionado"].value;
             const conLogo = $form["radlogo"].value;

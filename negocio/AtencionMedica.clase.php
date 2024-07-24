@@ -256,7 +256,7 @@ class AtencionMedica extends Conexion {
 
             $objCreditoValido = $this->validarMontoCreditoValido();
             if ($objCreditoValido["r"] == false){
-                throw new Exception("Esta atencion contiene un monto de credito SUPERIOR al ".($this->MAX_CREDITO * 100)."% del total de la venta. Maximo permitido: ".number_format($objCreditoValido["monto_maximo"],2)." soles");
+                throw new Exception("Esta atención contiene un monto de crédito SUPERIOR al ".($this->MAX_CREDITO * 100)."% del total de la venta. Máximo permitido: ".number_format($objCreditoValido["monto_maximo"],2)." soles");
             }
 
             if ($campaña == false){
@@ -317,26 +317,12 @@ class AtencionMedica extends Conexion {
             $this->insert("atencion_medica",  $campos_valores);
             $this->id_atencion_medica = $this->getLastID();
 
-
-            $campos_servicios = [
-                "id_atencion_medica",
-                "id_servicio",
-                "nombre_servicio",
-                "precio_unitario",
-                "cantidad",
-                "sub_total",
-                "porcentaje_comision_categoria",
-                "monto_comision_categoria",
-                "monto_comision_categoria_sin_igv"
-            ];
-
-            $valores_servicios = [];
-
             $posible_descuento = NULL;
             if ($cantidad_servicios <= 1){
                 $posible_descuento = $this->monto_descuento;
             }
-            for ($i=0; $i < $cantidad_servicios; $i++) { 
+
+            for ($i=0; $i < $cantidad_servicios; $i++) {
                 $objServicio = $this->servicios[$i];
                 $objServicio->cantidad = $objServicio->cantidad == NULL ? "1" : $objServicio->cantidad;
                 $subtotal = $objServicio->precio_unitario * $objServicio->cantidad;
@@ -350,21 +336,59 @@ class AtencionMedica extends Conexion {
                 
                 $monto_comision_categoria_sin_igv = round($monto_comision_categoria / (1+IGV),3);
 
-                array_push($valores_servicios,
-                    [
-                        $this->id_atencion_medica,
-                        $objServicio->id_servicio,
-                        $objServicio->nombre_servicio,
-                        $objServicio->precio_unitario,
-                        $objServicio->cantidad,
-                        $subtotal,
-                        $objCategoriaComision["porcentaje_comision"],
-                        $monto_comision_categoria,
-                        $monto_comision_categoria_sin_igv
-                    ]);
+                $esUnServicioPaquete = count($objServicio->servicios_paquete) > 0;
+
+                $campos_valores_am = [
+                    "id_atencion_medica" => $this->id_atencion_medica,
+                    "id_servicio" => $objServicio->id_servicio,
+                    "nombre_servicio" => $objServicio->nombre_servicio,
+                    "precio_unitario" => $objServicio->precio_unitario,
+                    "cantidad" => $objServicio->cantidad,
+                    "sub_total" => $subtotal,
+                    "porcentaje_comision_categoria" => $objCategoriaComision["porcentaje_comision"],
+                    "monto_comision_categoria" => $monto_comision_categoria,
+                    "monto_comision_categoria_sin_igv" => $monto_comision_categoria_sin_igv,
+                    "es_atendible" => $esUnServicioPaquete ? "1" : "0"
+                ];
+
+                //servicios_paquete
+                $this->insert("atencion_medica_servicio", $campos_valores_am);
+                $id_atencion_medica_servicio  = $this->getLastID();
+
+                if ($esUnServicioPaquete){
+                    //obtener examenes asociados al paquete para ser registrados como examenes de lab
+                    $id_servicios_concantenados = join(",", array_map(function($item){
+                        return $item->id_servicio;
+                    }, $objServicio->servicios_paquete ));
+                    $sql = "SELECT id_servicio, descripcion FROM servicio WHERE estado_mrcb AND id_servicio IN ({$id_servicios_concantenados})";
+                    $examenesPaquete = $this->consultarFilas($sql);
+
+                    $campos = [
+                        "id_atencion_medica",
+                        "id_servicio",
+                        "nombre_servicio",
+                        "precio_unitario",
+                        "cantidad",
+                        "sub_total",
+                        "id_am_paquete",
+                    ];
+
+                    $valores = [];
+                    foreach ($examenesPaquete as $servicioExamenPaquete) {
+                        array_push($valores, [
+                            $this->id_atencion_medica,
+                            $servicioExamenPaquete["id_servicio"],
+                            $servicioExamenPaquete["descripcion"],
+                            "0.00",
+                            "1",
+                            "0.00",
+                            $id_atencion_medica_servicio
+                        ]);
+                    }
+
+                    $this->insertMultiple("atencion_medica_servicio", $campos, $valores);
+                }
             }
-            
-            $this->insertMultiple("atencion_medica_servicio", $campos_servicios, $valores_servicios);
 
             if ($this->monto_descuento > 0.00 && 
                 ($this->pago_tarjeta > 0.00 || $this->pago_deposito > 0.00 || $this->pago_credito > 0.00) &&
@@ -511,7 +535,7 @@ class AtencionMedica extends Conexion {
                         ams.precio_unitario,
                         ams.cantidad
                         FROM atencion_medica_servicio ams
-                        WHERE ams.estado_mrcb AND ams.id_atencion_medica  = :0";
+                        WHERE ams.estado_mrcb AND ams.id_atencion_medica  = :0 AND ams.id_am_paquete IS NULL";
             $datos["servicios"] = $this->consultarFilas($sql, [$id_atencion_medica]);
             return  $datos;
         } catch (Exception $exc) {
@@ -807,7 +831,7 @@ class AtencionMedica extends Conexion {
                                 FROM 
                                 atencion_medica_servicio ams
                                 INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
-                                WHERE ams.id_atencion_medica = :0 AND ams.estado_mrcb";
+                                WHERE ams.id_atencion_medica = :0 AND ams.estado_mrcb AND ams.id_am_paquete IS NULL";
 
                         $objComprobante->detalle = $this->consultarFilas($sql, [$this->id_atencion_medica]);
                         $objComprobante->detalle = json_decode(json_encode($objComprobante->detalle), FALSE);
@@ -931,7 +955,7 @@ class AtencionMedica extends Conexion {
                             sub_total as subtotal 
                             FROM atencion_medica_servicio ams 
                             LEFT JOIN servicio s ON s.id_servicio = ams.id_servicio
-                            WHERE ams.id_atencion_medica = :0 AND ams.estado_mrcb";
+                            WHERE ams.id_atencion_medica = :0 AND ams.estado_mrcb AND ams.id_am_paquete IS NULL";
             $datos["servicios"] = $this->consultarFilas($sql, [$this->id_atencion_medica]);
 
             return  $datos;
@@ -1189,12 +1213,12 @@ class AtencionMedica extends Conexion {
                         FROM atencion_medica_servicio ams
                         INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
                         INNER JOIN categoria_servicio cs ON cs.id_categoria_servicio = s.id_categoria_servicio
-                        WHERE ams.id_atencion_medica = am.id_atencion_medica AND cs.id_grupo_servicio IN (2)) as servicios_lab,
+                        WHERE ams.es_atendible AND ams.id_atencion_medica = am.id_atencion_medica AND cs.id_grupo_servicio IN (2)) as servicios_lab,
                     (SELECT COUNT(*) 
                         FROM atencion_medica_servicio ams
                         INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
                         INNER JOIN categoria_servicio cs ON cs.id_categoria_servicio = s.id_categoria_servicio
-                        WHERE ams.id_atencion_medica = am.id_atencion_medica AND cs.id_grupo_servicio IN (2) AND ams.numero_impresiones_laboratorio <= 0) as servicios_lab_no_impresos,
+                        WHERE ams.es_atendible AND ams.id_atencion_medica = am.id_atencion_medica AND cs.id_grupo_servicio IN (2) AND ams.numero_impresiones_laboratorio <= 0) as servicios_lab_no_impresos,
                     p.sexo,
                     TIMESTAMPDIFF(YEAR, p.fecha_nacimiento, CURDATE()) as edad
                     FROM atencion_medica am
@@ -1259,7 +1283,7 @@ class AtencionMedica extends Conexion {
                     LEFT JOIN colaborador c_res ON c_res.id_colaborador = u_res.id_colaborador
                     LEFT JOIN usuario u_val ON u_val.id_usuario = ams.id_usuario_validado
                     LEFT JOIN colaborador c_val ON c_val.id_colaborador = u_val.id_colaborador
-                    WHERE ams.estado_mrcb AND ams.id_atencion_medica = :0";
+                    WHERE ams.es_atendible AND ams.estado_mrcb AND ams.id_atencion_medica = :0";
             $datos["detalle"] = $this->consultarFilas($sql, [$this->id_atencion_medica]);
 
             return $datos;
@@ -1273,7 +1297,7 @@ class AtencionMedica extends Conexion {
             if (count($arregloAtencionesServicios) <= 0){
                 $sqlAtencionesServicios = " true ";
             } else {
-                $sqlAtencionesServicios = "ams.id_atencion_medica_servicio IN (".implode(",", $arregloAtencionesServicios).")";
+                $sqlAtencionesServicios = "ams.es_atendible AND ams.id_atencion_medica_servicio IN (".implode(",", $arregloAtencionesServicios).")";
             }
 
             $sql  = "SELECT
@@ -1302,7 +1326,7 @@ class AtencionMedica extends Conexion {
                     INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
                     INNER JOIN lab_examen le ON le.id_servicio = s.id_servicio AND le.estado_mrcb
                     INNER JOIN lab_seccion ls ON ls.id_lab_seccion = le.id_lab_seccion
-                    WHERE ams.id_atencion_medica = :0  AND le.estado_mrcb AND ams.fecha_hora_validado IS NOT NULL AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.") AND $sqlAtencionesServicios
+                    WHERE ams.es_atendible AND ams.id_atencion_medica = :0  AND le.estado_mrcb AND ams.fecha_hora_validado IS NOT NULL AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.") AND $sqlAtencionesServicios
                     GROUP BY le.id_lab_seccion";
             $secciones = $this->consultarFilas($sql, [$this->id_atencion_medica]);
 
@@ -1311,7 +1335,7 @@ class AtencionMedica extends Conexion {
                         FROM atencion_medica_servicio ams
                         INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
                         INNER JOIN lab_examen le ON le.id_servicio = s.id_servicio 
-                        WHERE le.id_lab_seccion = :0  AND le.estado_mrcb AND ams.id_atencion_medica = :1 AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.") AND $sqlAtencionesServicios";
+                        WHERE ams.es_atendible AND le.id_lab_seccion = :0  AND le.estado_mrcb AND ams.id_atencion_medica = :1 AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.") AND $sqlAtencionesServicios";
                 $muestras = $this->consultarFilas($sql, [$seccion["id_lab_seccion"], $this->id_atencion_medica ]);
                 
                 foreach ($muestras as $key2 => $muestra) {
@@ -1319,7 +1343,7 @@ class AtencionMedica extends Conexion {
                             FROM atencion_medica_servicio ams
                             INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
                             INNER JOIN lab_examen le ON le.id_servicio = s.id_servicio 
-                            WHERE le.id_lab_seccion = :0 AND le.estado_mrcb AND id_lab_muestra = :1 AND ams.id_atencion_medica = :2 AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.")  AND $sqlAtencionesServicios";
+                            WHERE ams.es_atendible AND le.id_lab_seccion = :0 AND le.estado_mrcb AND id_lab_muestra = :1 AND ams.id_atencion_medica = :2 AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.")  AND $sqlAtencionesServicios";
                     $servicios = $this->consultarFilas($sql, [$seccion["id_lab_seccion"], $muestra["id_lab_muestra"], $this->id_atencion_medica ]);
 
                     foreach ($servicios as $key3 => $servicio) {
@@ -1364,12 +1388,12 @@ class AtencionMedica extends Conexion {
                         (SELECT COUNT(ams_1.id_atencion_medica_servicio) 
                             FROM atencion_medica_servicio ams_1 
                             INNER JOIN servicio s ON s.id_servicio = ams_1.id_servicio
-                            WHERE ams_1.id_atencion_medica = am.id_atencion_medica AND ams_1.estado_mrcb AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.")) as cantidad_total,
+                            WHERE ams_1.es_atendible AND ams_1.id_atencion_medica = am.id_atencion_medica AND ams_1.estado_mrcb AND s.id_categoria_servicio IN ({$this->ID_CATEGORIA_LABORATORIO})) as cantidad_total,
                         (SELECT COUNT(ams_2.id_atencion_medica_servicio) 
                             FROM atencion_medica_servicio ams_2 
                             INNER JOIN servicio s ON s.id_servicio = ams_2.id_servicio
-                            WHERE ams_2.id_atencion_medica = am.id_atencion_medica AND ams_2.estado_mrcb AND 
-                            s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.")
+                            WHERE ams_2.es_atendible AND ams_2.id_atencion_medica = am.id_atencion_medica AND ams_2.estado_mrcb AND 
+                            s.id_categoria_servicio IN ({$this->ID_CATEGORIA_LABORATORIO})
                             AND ams_2.fecha_hora_validado IS NOT NULL) as cantidad_validados
                         FROM atencion_medica am
                         INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
@@ -1397,7 +1421,7 @@ class AtencionMedica extends Conexion {
                         numero_impresiones_laboratorio
                         FROM atencion_medica_servicio ams
                         INNER JOIN servicio s ON s.id_servicio = ams.id_servicio
-                        WHERE ams.estado_mrcb  AND ams.id_atencion_medica = :0 
+                        WHERE ams.es_atendible AND ams.estado_mrcb  AND ams.id_atencion_medica = :0 
                                 AND s.id_categoria_servicio IN (".$this->ID_CATEGORIA_LABORATORIO.")";
             $datos = $this->consultarFilas($sql, [$this->id_atencion_medica]);
             return $datos;
@@ -1422,7 +1446,7 @@ class AtencionMedica extends Conexion {
                                 '' as descripcion,
                                 sub_total  as subtotal
                         FROM atencion_medica_servicio
-                        WHERE id_atencion_medica = :0";
+                        WHERE id_atencion_medica = :0 AND id_am_paquete IS NULL";
                 $datos["servicios"] = $this->consultarFilas($sql, [$this->id_atencion_medica]);
             }
 
@@ -1616,7 +1640,7 @@ class AtencionMedica extends Conexion {
                     precio_unitario as precio,
                     cantidad 
                     FROM atencion_medica_servicio 
-                    WHERE id_atencion_medica = :0 AND estado_mrcb";
+                    WHERE id_atencion_medica = :0 AND estado_mrcb AND id_am_paquete IS NULL";
             $detalle = $this->consultarFilas($sql, [$registro["id_atencion_medica"]]);
             $registro["detalle"] = $detalle;
 

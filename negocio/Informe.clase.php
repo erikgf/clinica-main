@@ -38,7 +38,7 @@ class Informe extends Conexion {
                         m.nombres_apellidos as descripcion,
                         COUNT(i.id_informe) as cantidad
                         FROM informe i
-                        INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio
+                        INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio AND ams.es_atendible
                         INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                         INNER JOIN medico m ON m.id_medico = ams.id_medico_atendido
                         WHERE i.fecha_hora_eliminado IS NULL AND am.fecha_atencion BETWEEN :0 AND :1 $strMedicoFiltro
@@ -56,7 +56,7 @@ class Informe extends Conexion {
                         cat.descripcion as area,
                         DATE_FORMAT(COALESCE(i.fecha_hora_actualizado, i.fecha_hora_registrado),'%d-%m-%Y %H:%i:%s') as ultima_modificacion
                         FROM informe i
-                        INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio
+                        INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio AND ams.es_atendible
                         INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                         INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio
                         INNER JOIN categoria_servicio cat ON cat.id_categoria_servicio = ser.id_categoria_servicio
@@ -91,7 +91,7 @@ class Informe extends Conexion {
                             m.nombres_apellidos as medico,
                             IF (p.fecha_nacimiento IS NOT NULL, DATE_FORMAT(FROM_DAYS(DATEDIFF(NOW(), p.fecha_nacimiento)), '%Y') + 0, '') as edad_paciente
                             FROM informe i
-                            INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio
+                            INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio AND ams.es_atendible
                             INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                             INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio 
                             INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
@@ -123,7 +123,7 @@ class Informe extends Conexion {
                         m.nombres_apellidos as medico,
                         IF (p.fecha_nacimiento IS NOT NULL, DATE_FORMAT(FROM_DAYS(DATEDIFF(NOW(), p.fecha_nacimiento)), '%Y') + 0, '') as edad_paciente
                         FROM informe i
-                        INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio
+                        INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio AND ams.es_atendible
                         INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                         INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio 
                         INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante
@@ -282,7 +282,7 @@ class Informe extends Conexion {
                     m.nombres_apellidos as medico,
                     IF (p.fecha_nacimiento IS NOT NULL, DATE_FORMAT(FROM_DAYS(DATEDIFF(NOW(), p.fecha_nacimiento)), '%Y') + 0, '') as edad_paciente
                     FROM informe i
-                    INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio
+                    INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio AND ams.es_atendible
                     INNER JOIN atencion_medica am ON am.id_atencion_medica = ams.id_atencion_medica
                     INNER JOIN servicio ser ON ser.id_servicio = ams.id_servicio 
                     INNER JOIN medico m ON m.id_medico = am.id_medico_ordenante

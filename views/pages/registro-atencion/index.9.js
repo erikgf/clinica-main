@@ -20,7 +20,7 @@ var RegistroAtencion = function() {
         });
     };
 
-    var setDOM = function(){
+    var setDOM = function(){  
         $content = $(".content");
 
         $txtFechaAtencion = $("#txt-fechaatencion");
@@ -270,7 +270,6 @@ var RegistroAtencion = function() {
                     objServicio.posible_campaña = $o.data("posiblecam");
                     objServicio.con_campaña = $o.data("concampana");
                     objServicio.descuento_total  = 0.00;
-
                     total += parseFloat(Math.round10(objServicio.subtotal, -2));
                     arregloServicios.push(objServicio);
                 });
@@ -548,7 +547,12 @@ var RegistroAtencion = function() {
             }
         }
 
-        $blkServicios.append(tplServicioAgregado(data_servicios));
+        $blkServicios.append(tplServicioAgregado(data_servicios.map( servicio =>{
+            return {
+                ...servicio,
+                servicio_json : JSON.stringify(servicio)
+            }
+        })));
         checkCampañaServicios();
     };
 
