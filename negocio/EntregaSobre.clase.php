@@ -6,6 +6,8 @@ class EntregaSobre extends Conexion {
     public int $id_entrega_sobre;
     public int $id_usuario_registrado;
 
+    const MESES_ENTRE_ENTREGAS = 3;
+
     public function __construct($objDB = null){
         if ($objDB != null){
             parent::__construct($objDB);
@@ -16,13 +18,23 @@ class EntregaSobre extends Conexion {
 
     public function listarParaRegistrar(string $mes, string $año, $id_promotora = NULL, $monto_minimo) {
         try {
+
+            $mesTopInferior = (int) $mes - EntregaSobre::MESES_ENTRE_ENTREGAS;
+            $añoTopInferior = $año;
             
-            $params = [$mes, $año, $monto_minimo];
+            if ($mesTopInferior <= 0){
+                $mesTopInferior+=12;
+                $añoTopInferior--;
+            }
+
+            $mesTopInferior = $mesTopInferior <= 9 ? "0{$mesTopInferior}" : $mesTopInferior;
+
+            $params = [$mes, $año, (string) $mesTopInferior, (string) $añoTopInferior, $monto_minimo];
             $sqlPromotora = "";
 
             if ($id_promotora != NULL){
                 array_push($params, $id_promotora);
-                $sqlPromotora = " AND pr.id_promotora = :3 ";
+                $sqlPromotora = " AND pr.id_promotora = :5 ";
             }
 
             $sql = "SELECT  
@@ -35,26 +47,26 @@ class EntregaSobre extends Conexion {
                     :1 as anio,
                     COALESCE(((SELECT _ld.comision_sin_igv From liquidacion _l
                         INNER JOIN liquidacion_detalle _ld ON _l.id_liquidacion = _ld.id_liquidacion
-                        WHERE CONCAT(_l.mes,_l.anio) = CONCAT(:0,:1) AND _ld.entregado = '0'
+                        WHERE CONCAT(_l.anio,_l.mes) = CONCAT(:1,:0) AND _ld.entregado = '0'
                         AND  _l.id_promotora = m.id_promotora AND _ld.id_medico = m.id_medico
                         ORDER BY _l.anio,_l.mes
                     )),0) as mes_actual,
                     COALESCE(((SELECT SUM(_ld.comision_sin_igv) From liquidacion _l
                         INNER JOIN liquidacion_detalle _ld ON _l.id_liquidacion = _ld.id_liquidacion
-                        WHERE CONCAT(_l.mes,_l.anio) <= CONCAT(:0,:1) AND _ld.entregado = '0'
+                        WHERE (CONCAT(_l.anio,_l.mes) <= CONCAT(:1,:0) AND CONCAT(_l.anio,_l.mes) > CONCAT(:3,:2)) AND _ld.entregado = '0'
                         AND  _l.id_promotora = m.id_promotora AND _ld.id_medico = m.id_medico
                         ORDER BY _l.anio,_l.mes
                     )),0) as acumulado, -- previo
                     COALESCE((SELECT GROUP_CONCAT(CONCAT(_l.mes,'|',_l.anio,'|',_ld.comision_sin_igv)) From liquidacion _l
                         INNER JOIN liquidacion_detalle _ld ON _l.id_liquidacion = _ld.id_liquidacion
-                        WHERE CONCAT(_l.mes,_l.anio) <= CONCAT(:0,:1) AND _ld.entregado = '0'
+                        WHERE (CONCAT(_l.anio,_l.mes) <= CONCAT(:1,:0) AND CONCAT(_l.anio,_l.mes) > CONCAT(:3,:2)) AND _ld.entregado = '0'
                         AND  _l.id_promotora = m.id_promotora AND _ld.id_medico = m.id_medico
                         ORDER BY CONCAT(_l.anio,_l.mes)
                     ),0) as liquidaciones_anteriores -- liquidaciones antetiroes
                     FROM medico m
                     INNER JOIN promotora pr ON pr.id_promotora = m.id_promotora
                     WHERE true $sqlPromotora
-                    HAVING acumulado >= :2 AND (acumulado > 0 OR mes_actual > 0)
+                    HAVING acumulado >= :4 AND (acumulado > 0 OR mes_actual > 0)
                     ORDER BY m.nombres_apellidos";
 
             return $this->consultarFilas($sql, $params);
