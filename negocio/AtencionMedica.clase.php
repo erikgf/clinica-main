@@ -348,7 +348,7 @@ class AtencionMedica extends Conexion {
                     "porcentaje_comision_categoria" => $objCategoriaComision["porcentaje_comision"],
                     "monto_comision_categoria" => $monto_comision_categoria,
                     "monto_comision_categoria_sin_igv" => $monto_comision_categoria_sin_igv,
-                    "es_atendible" => $esUnServicioPaquete ? "1" : "0"
+                    "es_atendible" => $esUnServicioPaquete ? "0" : "1"
                 ];
 
                 //servicios_paquete

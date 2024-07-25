@@ -104,7 +104,7 @@ var Area = function(_template, _$tabla, _$tbody){
     };
 
     this.render = function(data){
-        $mdl.find(".modal-title").html("Editando Area");
+        $mdl.find(".modal-title").html("Editando Área");
 
         $txtIdArea.val(data.id_categoria_servicio);
         $txtDescripcion.val(data.descripcion);
