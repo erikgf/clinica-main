@@ -55,6 +55,7 @@ try {
     $arregloCabecera = [
                         ["ancho"=>55,"rotulo"=>"NOMBRES Y APELLIDOS"],
                         ["ancho"=>18,"rotulo"=>"TELF / CELULAR"],
+                        ["ancho"=>35,"rotulo"=>"PROMOTORA"],
                         ["ancho"=>10,"rotulo"=>"DÍA"],
                     ];
 
@@ -74,6 +75,7 @@ try {
         $i = 0;
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["nombres"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["telefono"]);
+        $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["promotora"]);
         $sheetActivo->setCellValue($alfabeto[$i++].$actualFila, $registro["dia"]);
         $actualFila++;
     }

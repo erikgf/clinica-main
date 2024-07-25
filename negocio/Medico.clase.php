@@ -831,8 +831,10 @@ class Medico extends Conexion {
             $sql = "SELECT 
                         m.nombres_apellidos as nombres,
                         COALESCE(m.telefono_uno, m.telefono_dos, '') as telefono,
-                        DAY(fecha_nacimiento) as dia
+                        DAY(fecha_nacimiento) as dia,
+                        pr.descripcion as promotora
                     FROM medico m
+                    LEFT JOIN promotora pr ON pr.id_promotora = m.id_promotora
                     WHERE m.estado_mrcb AND MONTH(fecha_nacimiento) = :0 
                     ORDER BY 3";
             return $this->consultarFilas($sql, [(int) $mes]);
