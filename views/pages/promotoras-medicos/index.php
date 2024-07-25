@@ -10,11 +10,14 @@ $objTemplate = new Template();
 
 $objTemplate->setTitle(NOMBRE_SISTEMA);
 
+/*
 if ($objUsuario["id_rol"] == Globals::$ID_ROL_ASISTENTE_ADMINISTRADOR){
 	$objTemplate->loadContent("prt.main.asistente.administrador.php");
 } else {
 	$objTemplate->loadContent("prt.main.php");	
 }
+*/
+$objTemplate->loadContent("prt.main.php");	
 
 $_HOY = date("Y-m-d");
 
