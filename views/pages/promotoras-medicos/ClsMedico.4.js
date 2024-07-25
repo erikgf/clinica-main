@@ -26,6 +26,8 @@ var Medico = function(_template, _$tabla, _$tbody){
         $tblMedicos,
         $tbbMedicos;
 
+    var $btnCumpleaños, $txtMesesCumpleaños, $mdlCumpleaños;
+
     var TR_FILA = null;
 
     this._sedes = [];
@@ -69,10 +71,15 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtEsRealizante = $("#txt-medico-esrealizante");
         $txtPuedeTenerUsuario  = $("#txt-medico-puedetenerusuario")
 
+        $btnCumpleaños = $("#btn-imprimir-fc-medicos");
+        $txtMesesCumpleaños = $("#txt-medico-cumpleaños-mes");
+        $mdlCumpleaños = $("#mdl-medico-cumpleaños");
 
         const year = new Date().getFullYear();
         $txtFechaNacimiento.attr("min", year + "-01-01");
         $txtFechaNacimiento.attr("max", year + "-12-31");
+
+        this.cargarMesesModalCumpleaños();
     };
 
     this.setEventos = function () {
@@ -97,6 +104,16 @@ var Medico = function(_template, _$tabla, _$tbody){
                 TABLA_MEDICOS
                     .columns.adjust();
             }
+        });
+
+        $btnCumpleaños.on("click", () => {
+            $mdlCumpleaños.modal("show");
+        });
+
+        $mdlCumpleaños.on("submit", "form", (e)=>{
+            e.preventDefault();
+            const params = new URLSearchParams({ m : $txtMesesCumpleaños.val() });
+            window.open(`../../../impresiones/medicos.cumpleaños.mes.xls.php?${params.toString()}`,"_blank")
         });
     };
 
@@ -343,6 +360,14 @@ var Medico = function(_template, _$tabla, _$tbody){
             }
         );
     };
+
+    this.cargarMesesModalCumpleaños = () => {
+        let $html = `<option value="">Seleccionar</option>`;
+        Util.getMeses().forEach(item => {
+            $html += `<option value="${item.id}">${item.descripcion}</option>`
+        });
+        $txtMesesCumpleaños.html($html);
+    }
 
     return this.setInit();
 };

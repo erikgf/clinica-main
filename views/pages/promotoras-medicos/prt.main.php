@@ -351,9 +351,9 @@
                         <div class="card-header">
                             <h3 class="card-title">Médicos</h3>
                             <div class="card-tools m-0">
-                                <button id="btn-imprimir-fc-medicos" class="btn btn-sm btn-danger"><span class="fa fa-calendar"></span> *CUMPLEAÑOS* </button>
-                                <button id="btn-actualizar-medicos" class="btn btn-sm btn-success"><span class="fa fa-refresh"></span> ACTUALIZAR </button>
-                                <button id="btn-nuevo-medicos" class="btn btn-sm bg-gradient-blue"><span class="fa fa-plus"></span> NUEVO </button>
+                                <button type="button" id="btn-imprimir-fc-medicos" class="btn btn-sm btn-danger"><span class="fa fa-calendar"></span> *CUMPLEAÑOS* </button>
+                                <button type="button" id="btn-actualizar-medicos" class="btn btn-sm btn-success"><span class="fa fa-refresh"></span> ACTUALIZAR </button>
+                                <button type="button" id="btn-nuevo-medicos" class="btn btn-sm bg-gradient-blue"><span class="fa fa-plus"></span> NUEVO </button>
                             </div>
                         </div>
                         <div class="card-body">

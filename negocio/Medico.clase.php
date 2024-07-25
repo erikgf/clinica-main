@@ -825,6 +825,23 @@ class Medico extends Conexion {
             throw new Exception($exc->getMessage());
         }
     }
+
+    public function listarCumpleañosPorMes(string $mes){
+        try {
+            $sql = "SELECT 
+                        m.nombres_apellidos as nombres,
+                        COALESCE(m.telefono_uno, m.telefono_dos, '') as telefono,
+                        DAY(fecha_nacimiento) as dia
+                    FROM medico m
+                    WHERE m.estado_mrcb AND MONTH(fecha_nacimiento) = :0 
+                    ORDER BY 3";
+            return $this->consultarFilas($sql, [(int) $mes]);
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    
     
 
 }

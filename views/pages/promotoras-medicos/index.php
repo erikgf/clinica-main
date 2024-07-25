@@ -23,6 +23,7 @@ include_once "../../template.php";
 include_once 'prt.modal.medicos.php';
 include_once 'prt.modal.promotoras.php';
 include_once 'prt.modal.areas.php';
+include_once 'prt.modal.medico.cumpleaños.php';
 
 ?>
 
@@ -33,7 +34,7 @@ include_once 'prt.modal.areas.php';
 	}
 </style>
 
-<script type="text/javascript" src="ClsMedico.3.js" defer></script>
+<script type="text/javascript" src="ClsMedico.4.js" defer></script>
 <script type="text/javascript" src="ClsMedicoAprobar.3.js" defer></script>
 <script type="text/javascript" src="ClsArea.js" defer></script>
 <script type="text/javascript" src="ClsPromotora.js" defer></script>

@@ -533,10 +533,14 @@ class AtencionMedica extends Conexion {
             $sql = "SELECT  
                         ams.nombre_servicio, 
                         ams.precio_unitario,
-                        ams.cantidad
+                        ams.cantidad,
+                        (SELECT GROUP_CONCAT(nombre_servicio)
+                            FROM atencion_medica_servicio 
+                            WHERE id_am_paquete = ams.id_atencion_medica_SERVICIO AND estado_mrcb) as servicios_paquete
                         FROM atencion_medica_servicio ams
                         WHERE ams.estado_mrcb AND ams.id_atencion_medica  = :0 AND ams.id_am_paquete IS NULL";
             $datos["servicios"] = $this->consultarFilas($sql, [$id_atencion_medica]);
+
             return  $datos;
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);

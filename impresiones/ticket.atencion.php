@@ -231,6 +231,15 @@ foreach ($servicios as $key => $value) {
   $pdf->CellFitScale($ANCHO_COLS_DETALLE[1] + $ANCHO_COLS_DETALLE[2], $ALTO_LINEA + .5,  utf8_decode($value["nombre_servicio"]), $BORDES,0);
   $pdf->Cell($ANCHO_COLS_DETALLE[3], $ALTO_LINEA + .5, number_format($subtotal,2) , $BORDES,1,"R");
 
+  if (isset($value["servicios_paquete"])){
+    $serviciosPaquete = explode(",", $value["servicios_paquete"]);
+    $pdf->SetFont($FONT,'', 5.5 + $aumento_font); 
+    foreach ($serviciosPaquete as $i => $servPaquete) {
+      $pdf->SetX($pdf->GetX()+ 5.00);
+      $pdf->CellFitScale($ANCHO_COLS_DETALLE[1], $ALTO_LINEA + .25,  "* ".utf8_decode($servPaquete), $BORDES, 1);
+    }
+  }
+
   $total += $subtotal;
 }
 

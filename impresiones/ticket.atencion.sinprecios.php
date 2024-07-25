@@ -175,9 +175,19 @@ $pdf->Cell($ANCHO_TICKET - ($MARGENES_LATERALES * 2), .15, "--------------------
 $pdf->Ln($SALTO_LINEA * 2.5); 
 
 foreach ($servicios as $key => $value) {
+  $pdf->SetFont($FONT,'', 6.5 + $aumento_font); 
   $subtotal = round($value["precio_unitario"] * $value["cantidad"],2);
   $pdf->Cell($ANCHO_COLS_DETALLE[0], $ALTO_LINEA + .5, $value["cantidad"], $BORDES,0 ,"C");
   $pdf->CellFitScale($ANCHO_COLS_DETALLE[1], $ALTO_LINEA + .5,  utf8_decode($value["nombre_servicio"]), $BORDES,1);
+
+  if (isset($value["servicios_paquete"])){
+    $serviciosPaquete = explode(",", $value["servicios_paquete"]);
+    $pdf->SetFont($FONT,'', 5.5 + $aumento_font); 
+    foreach ($serviciosPaquete as $i => $servPaquete) {
+      $pdf->SetX($pdf->GetX()+ 5.00);
+      $pdf->CellFitScale($ANCHO_COLS_DETALLE[1], $ALTO_LINEA + .25,  "* ".utf8_decode($servPaquete), $BORDES, 1);
+    }
+  }
 }
 
 $pdf->SetFont($FONT,'', 6 + $aumento_font); 
