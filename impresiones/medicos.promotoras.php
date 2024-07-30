@@ -34,11 +34,6 @@ if (in_array($objUsuario["id_rol"], [Globals::$ID_ROL_PROMOTORA])){
     $id_promotora = isset($_GET["idp"]) ? $_GET["idp"] : NULL;
 }
 
-if ($id_promotora == NULL){
-    echo "No se ha enviado ID promotora";
-    exit;
-}
-
 $mes = isset($_GET["m"]) ? $_GET["m"] : NULL;
 $año = isset($_GET["a"]) ? $_GET["a"] : NULL;
 

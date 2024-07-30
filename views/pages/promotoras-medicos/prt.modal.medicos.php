@@ -134,7 +134,7 @@
                                     <input type="file" id="img-medico-firma" accept="image/*"/>
                                     <div id="blk-medico-firma"  style="display:none">
                                         <img  class="img-fluid p-2" src=""  alt="Firma"/>
-                                        <a href="#"><small>Limpiar Imagen</small></a>
+                                        <a href="#no"><small>Limpiar Imagen</small></a>
                                     </div>
                                     
                                 </div>

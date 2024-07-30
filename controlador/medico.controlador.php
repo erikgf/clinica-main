@@ -57,6 +57,7 @@ try {
             $obj->id_sede = isset($_POST["p_id_sede"]) ? $_POST["p_id_sede"] : NULL;
 
             $obj->puede_tener_usuario = isset($_POST["p_puede_tener_usuario"]) ? $_POST["p_puede_tener_usuario"] : "0";
+            $obj->limpiar_firma = isset($_POST["p_limpiar_firma"]) ? $_POST["p_limpiar_firma"] : "0";
 
             $imagenes_invalidas = 0;
             foreach ($_FILES as $i => $value) {
@@ -117,11 +118,7 @@ try {
 
         case "listar_medicos_x_promotora":
             $id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : "";
-
-            if ($id_promotora == ""){
-                throw new Exception("Promotora ingresada no válida.", 1);
-            }
-            $obj->id_promotora = $id_promotora;
+            $obj->id_promotora = $id_promotora == "" ? NULL : $id_promotora;
             $data = $obj->listarMedicosXPromotora();
             Funciones::imprimeJSON("200", "OK", $data);
         break;

@@ -14,7 +14,7 @@ class Liquidacion extends Conexion {
         }
     }
 
-    public function calcular(int $id_promotora, string $mes, string $anio){
+    public function calcular($id_promotora, string $mes, string $anio){
         try {
             $ahora = date("Y-m-d H:i:s");
 
@@ -25,14 +25,22 @@ class Liquidacion extends Conexion {
             if ($fecha_hoy < $fecha_fin){
                 $fecha_fin = $fecha_hoy;
             }
-            
+
+            $sqlPromotora = " AND id_promotora IS NULL ";
+            $params = [$mes, $anio];
+
+            if ($id_promotora != NULL){
+                $sqlPromotora = " AND id_promotora = :2 ";
+                array_push($params, $id_promotora);
+            }
+
             $this->beginTransaction();
 
             $sql = "SELECT id_liquidacion as id, (SELECT COUNT(id_liquidacion_detalle) 
                         FROM liquidacion_detalle WHERE id_liquidacion = l.id_liquidacion AND entregado = 1) as existe_entregados 
                     FROM liquidacion l 
-                    WHERE mes = :0 AND anio = :1 AND id_promotora = :2";
-            $liquidacionesAntiguas = $this->consultarFilas($sql, [$mes, $anio, $id_promotora]);
+                    WHERE mes = :0 AND anio = :1 $sqlPromotora";
+            $liquidacionesAntiguas = $this->consultarFilas($sql, $params);
             
             foreach ($liquidacionesAntiguas as $liquidacion) {
                 if ($liquidacion["existe_entregados"] == 1){
@@ -99,13 +107,25 @@ class Liquidacion extends Conexion {
     private function obtenerMedicosLiquidacionXPromotoraXFechas($id_promotora, $fecha_inicio, $fecha_fin){
         try {
 
-            $sql = "SELECT porcentaje_comision 
-                    FROM promotora_porcentaje_comision
-                    WHERE estado_validez = 'A' AND estado_mrcb AND fecha_fin IS NULL AND id_promotora = :0";
-            $cabecera = $this->consultarFila($sql, [$id_promotora]);
-
+            $cabecera = false;
+            if ($id_promotora  != NULL){
+                $sql = "SELECT porcentaje_comision
+                        FROM promotora_porcentaje_comision
+                        WHERE estado_validez = 'A' AND estado_mrcb AND fecha_fin IS NULL AND id_promotora = :0";
+                $cabecera = $this->consultarFila($sql, [$id_promotora]);
+            }
+            
             if ($cabecera == false){
-                throw new Exception("ID Promotora no encontrado.", 404);
+                $cabecera = [
+                    "porcentaje_comision" => "0.00"
+                ];
+            }
+            
+            $sqlPromotoraOrdenante = " AND id_promotora_ordenante IS NULL ";
+            $params = [$fecha_inicio, $fecha_fin];
+            if ($id_promotora != NULL){
+                $sqlPromotoraOrdenante = " AND id_promotora_ordenante = :2 ";
+                array_push($params, $id_promotora);
             }
 
             $sql = "SELECT 
@@ -118,11 +138,11 @@ class Liquidacion extends Conexion {
                         FROM atencion_medica am 
                         INNER JOIN atencion_medica_servicio ams ON am.id_atencion_medica = ams.id_atencion_medica AND ams.estado_mrcb AND ams.id_am_paquete IS NULL
                         WHERE am.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) 
-                                AND id_medico_ordenante NOT IN (1,2) AND id_promotora_ordenante = :2  AND am.id_sede_ordenante IS NOT NULL
+                                AND id_medico_ordenante NOT IN (1,2) $sqlPromotoraOrdenante  AND am.id_sede_ordenante IS NOT NULL
                         GROUP BY am.id_sede_ordenante, am.id_medico_ordenante
                         HAVING comision_sin_igv > 0.00
                         ORDER BY am.id_sede_ordenante, am.id_medico_ordenante";
-            $registros =  $this->consultarFilas($sql, [$fecha_inicio, $fecha_fin, $id_promotora]);
+            $registros =  $this->consultarFilas($sql, $params);
 
             $cabecera["sedes"] = Funciones::reagruparArregloPorKeys($registros, ["id_sede_ordenante"], "medicos");
 
@@ -132,22 +152,30 @@ class Liquidacion extends Conexion {
         }
     }
 
-    public function obtenerLiquidacionesImprimir(int $id_promotora, string $mes, string $anio){
+    public function obtenerLiquidacionesImprimir($id_promotora, string $mes, string $anio){
         try {
+
+            $sqlPromotora = " AND l.id_promotora IS NULL ";
+            $params = [$mes, $anio];
+
+            if ($id_promotora != NULL){
+                $sqlPromotora = " AND l.id_promotora = :2 ";
+                array_push($params, $id_promotora);
+            }
             
             $sql = "SELECT 
                         l.id_liquidacion,
-                        pr.descripcion as nombre_promotora,
+                        COALESCE(pr.descripcion,'SIN PROMOTORA') as nombre_promotora,
                         porcentaje_promotora as porcentaje_comision,
                         s.nombre as sede,
                         DATE_FORMAT(fecha_inicio, '%d-%m-%Y') as fecha_inicio,
                         DATE_FORMAT(fecha_fin, '%d-%m-%Y') as fecha_fin
                         FROM liquidacion l
                         INNER JOIN sede s ON s.id_sede = l.id_sede
-                        INNER JOIN promotora pr ON pr.id_promotora = l.id_promotora
-                        WHERE mes = :0 AND anio = :1 AND l.id_promotora = :2";
+                        LEFT JOIN promotora pr ON pr.id_promotora = l.id_promotora
+                        WHERE mes = :0 AND anio = :1 $sqlPromotora";
 
-            $resultados = $this->consultarFilas($sql, [$mes, $anio, $id_promotora]);
+            $resultados = $this->consultarFilas($sql, $params);
 
             foreach ($resultados as $key => $liquidacion_sede) {
                 

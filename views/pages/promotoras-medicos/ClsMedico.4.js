@@ -35,6 +35,8 @@ var Medico = function(_template, _$tabla, _$tbody){
 
     this._sedes = [];
     this._especialidades = [];
+
+    let limpiarFirma = false;
     
     this.setInit = function(){
         tplMedicos  = _template;
@@ -195,6 +197,7 @@ var Medico = function(_template, _$tabla, _$tbody){
             $blkFirma.show();
         }
 
+        limpiarFirma = false
         
         $btnEliminar.show();
     };
@@ -260,6 +263,7 @@ var Medico = function(_template, _$tabla, _$tbody){
         data.append("p_es_realizante", $txtEsRealizante.val());
         data.append("p_id_sede", $txtSede.val());
         data.append("p_puede_tener_usuario", $txtPuedeTenerUsuario.val());
+        data.append("p_limpiar_firma", limpiarFirma ? "1" : "0");
 
         $.ajax({ 
             url : VARS.URL_CONTROLADOR+"medico.controlador.php?op=guardar",
@@ -409,12 +413,14 @@ var Medico = function(_template, _$tabla, _$tbody){
         let fileReader = new FileReader();
         fileReader.readAsDataURL(file);
         fileReader.onload = function (){
+            limpiarFirma = false;
             $blkFirma.find("img").prop("src", fileReader.result);
             $blkFirma.show();
         }
     };
 
     this.cleanImagenFirma = () => {
+        limpiarFirma = true;
         $blkFirma.find("img").prop("src", null);
         $blkFirma.hide();
         $imgFirma.val(null);

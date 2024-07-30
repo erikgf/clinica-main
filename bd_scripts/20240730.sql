@@ -1,0 +1,1 @@
+ALTER TABLE `liquidacion` CHANGE `id_promotora` `id_promotora` INT(11) NULL DEFAULT NULL;

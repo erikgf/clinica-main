@@ -28,6 +28,14 @@ class Promotora extends Conexion {
                     ORDER BY descripcion";
                     
             $data =  $this->consultarFilas($sql);
+
+            array_push($data, [
+                "id"=>"",
+                "numero_documento"=>"",
+                "descripcion"=>"SIN PROMOTORA",
+                "porcentaje_comision"=>"0.00"
+            ]);
+
             return $data;
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);

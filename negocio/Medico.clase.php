@@ -24,6 +24,7 @@ class Medico extends Conexion {
     public $puede_tener_usuario;
     public $estado_acceso;
     public $firma;
+    public $limpiar_firma;
 
     public $clave;
 
@@ -156,8 +157,9 @@ class Medico extends Conexion {
                 $this->ejecutarSimple($sql, [$this->id_usuario_registrado, $this->id_medico]);
                 $this->update("medico", $campos_valores, $campos_valores_where);
                 
+                $nombreCarpetaImg = "../impresiones/medicos-firmas";
+
                 if ($this->firma){
-                    $nombreCarpetaImg = "../impresiones/medicos-firmas";
                     if (!file_exists($nombreCarpetaImg)) { 
                         mkdir($nombreCarpetaImg, 0777, true); 
                     }
@@ -170,6 +172,17 @@ class Medico extends Conexion {
                     }
 
                     $this->update("medico", ["firma"=>$nombreArchivoFirma], ["id_medico" => $this->id_medico]);
+                } else {
+                    if ($this->limpiar_firma == "1"){
+                        $sql = "SELECT firma FROM medico WHERE id_medico = :0";
+                        $archivo = $this->consultarValor($sql, [$this->id_medico]);
+                        $rutaArchivo = $nombreCarpetaImg."/".$archivo;
+                        if (file_exists($rutaArchivo)) { 
+                            unlink($rutaArchivo);
+                        }
+
+                        $this->update("medico", ["firma"=>NULL], ["id_medico" => $this->id_medico]);
+                    }
                 }
             }
 
@@ -315,13 +328,20 @@ class Medico extends Conexion {
 
     public function listarMedicosXPromotora(){
         try {
+
+            $sqlPromotora = " AND id_promotora = :0";
+            $params = [$this->id_promotora];
+            if ($this->id_promotora == NULL){
+                $sqlPromotora = " AND id_promotora IS NULL";
+                $params = [];
+            }
             $sql = "SELECT 
                     id_medico as id,
                     TRIM(COALESCE(nombres_apellidos,'')) as text
                     FROM medico
-                    WHERE estado_mrcb AND id_medico NOT IN (1,2) AND id_promotora = :0";
+                    WHERE estado_mrcb AND id_medico NOT IN (1,2) $sqlPromotora";
                     
-            $data =  $this->consultarFilas($sql, [$this->id_promotora]);
+            $data =  $this->consultarFilas($sql, $params);
             return $data;
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);

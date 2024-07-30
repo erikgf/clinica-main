@@ -34,10 +34,7 @@ try {
                 throw new Exception("Año no válido.", 1);
             }
 
-            $id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : "";
-            if ($id_promotora == ""){
-                throw new Exception("Año no válido.", 1);
-            }
+            $id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : NULL;
 
             $data = $obj->calcular($id_promotora, $mes, $anio);
             Funciones::imprimeJSON("200", "OK", $data);
@@ -53,18 +50,17 @@ try {
                 throw new Exception("Año no válido.", 1);
             }
 
-            $id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : "";
-            if ($id_promotora == ""){
-                throw new Exception("Año no válido.", 1);
-            }
-
+            $id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : NULL;
+        
             $data = $obj->obtenerLiquidacionesImprimir($id_promotora, $mes, $anio);
             Funciones::imprimeJSON("200", "OK", $data);
         break;
+        /*
         case "calcular_hasta_mayo_2024":
             $data = $obj->calcularHastaMayo2024();
             Funciones::imprimeJSON("200", "OK", $data);
             break;
+        */
         default:
             throw new Exception( "No existe la función consultada en el API.", 1);
         break;
