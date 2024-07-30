@@ -11,6 +11,7 @@
                 </div>
             </div>
         </td>
+        <td>{{id_medico}}</td>
         <td>{{sede}}</td>
         <td>{{medico}}</td>
         <td>{{colegiatura}}</td>

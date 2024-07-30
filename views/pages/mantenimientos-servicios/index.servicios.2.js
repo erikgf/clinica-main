@@ -187,14 +187,40 @@ var Servicio = function() {
                 TABLA_SERVICIOS = $tblServicios.DataTable({
                     dom: 'Bfrtip',
                     buttons: [
-                        'copy', 'csv', 'excel', 'pdf'
+                        {
+                            extend: 'copy',
+                            exportOptions: {
+                                columns: "thead th:not(.noExport)"
+                            }
+                        },
+                        {
+                            extend: 'excel',
+                            exportOptions: {
+                                columns: "thead th:not(.noExport)"
+                            }
+                        },
+                        {
+                            extend: 'csv',
+                            exportOptions: {
+                                columns: "thead th:not(.noExport)"
+                            }
+                        },
+                        {
+                            extend: 'print',
+                            exportOptions: {
+                                columns: "thead th:not(.noExport)"
+                            }
+                        },
+                        'colvis'
                     ],
                     "ordering":true,
                     "pageLength": 25,
                     "columns": [
                             { "width": "75px" },
+                            { "width": "55px" },
                             null,
                             { "width": "135px" },
+                            { "width": "115px" },
                             { "width": "115px" },
                             { "width": "115px" },
                             { "width": "115px" }
@@ -245,6 +271,7 @@ var Servicio = function() {
             },
             success: function(result){
                 ARREGLO_CATEGORIA_SERVICIO = result;
+                new SelectComponente({$select : $("#txt-serviciogeneral-categoriaservicio")}).render(result);
             },
             error: function (request) {
                 toastr.error(request.responseText);
@@ -254,6 +281,8 @@ var Servicio = function() {
             }
         );
     };
+
+    ARREGLO_CATEGORIA_PRODUCCION = null;
 
     this.getTemplates();
     this.setDOM();

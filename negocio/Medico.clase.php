@@ -23,6 +23,7 @@ class Medico extends Conexion {
     public $fecha_nacimiento;
     public $puede_tener_usuario;
     public $estado_acceso;
+    public $firma;
 
     public $clave;
 
@@ -77,10 +78,29 @@ class Medico extends Conexion {
                 "puede_tener_usuario"=>$this->puede_tener_usuario
             ];
 
+            $this->beginTransaction();
+
             if ($this->id_medico == NULL){
                 $campos_valores["fecha_hora_registro"] = $fecha_ahora;
                 $this->insert("medico", $campos_valores);
                 $this->id_medico = $this->getLastID();
+
+                if ($this->firma){
+                    $nombreCarpetaImg = "../impresiones/medicos-firmas";
+                    if (!file_exists($nombreCarpetaImg)) { 
+                        mkdir($nombreCarpetaImg, 0777, true); 
+                    }
+
+                    $ext = pathinfo($this->firma["archivo"], PATHINFO_EXTENSION);
+                    $nombreArchivoFirma = "{$this->id_medico}.{$ext}";
+                    if (!move_uploaded_file($this->firma["archivo"], "{$nombreCarpetaImg}/{$nombreArchivoFirma}")) {
+                        $this->rollBack();
+                        throw new Exception("Error al subir la imagen de la firma.");
+                    }
+
+                    $this->update("medico", ["firma"=>$nombreArchivoFirma], ["id_medico" => $this->id_medico]);
+                }
+
             } else {
                 $campos_valores["fecha_hora_edicion"] = $fecha_ahora;
 
@@ -107,6 +127,7 @@ class Medico extends Conexion {
                     es_realizante,
                     id_sede,
                     puede_tener_usuario,
+                    firma,
                     id_usuario_registrado,
                     fecha_hora_registrado)
                     SELECT  id_medico, 
@@ -127,13 +148,32 @@ class Medico extends Conexion {
                             es_realizante,
                             id_sede,
                             puede_tener_usuario,
+                            firma,
                             :0,
                             CURRENT_TIMESTAMP
                             FROM medico WHERE id_medico = :1 AND estado_mrcb";
 
                 $this->ejecutarSimple($sql, [$this->id_usuario_registrado, $this->id_medico]);
                 $this->update("medico", $campos_valores, $campos_valores_where);
+                
+                if ($this->firma){
+                    $nombreCarpetaImg = "../impresiones/medicos-firmas";
+                    if (!file_exists($nombreCarpetaImg)) { 
+                        mkdir($nombreCarpetaImg, 0777, true); 
+                    }
+
+                    $ext = pathinfo($this->firma["nombre"], PATHINFO_EXTENSION);
+                    $nombreArchivoFirma = "{$this->id_medico}.{$ext}";
+                    if (!move_uploaded_file($this->firma["archivo"],  "{$nombreCarpetaImg}/{$nombreArchivoFirma}")) {
+                        $this->rollBack();
+                        throw new Exception("Error al subir la imagen de la firma.");
+                    }
+
+                    $this->update("medico", ["firma"=>$nombreArchivoFirma], ["id_medico" => $this->id_medico]);
+                }
             }
+
+            $this->commit();
 
             $sql = "SELECT 
                         m.id_medico,
@@ -230,7 +270,8 @@ class Medico extends Conexion {
                         tipo_personal_medico,
                         es_realizante,
                         id_sede,
-                        puede_tener_usuario
+                        puede_tener_usuario,
+                        firma
                     FROM medico
                     WHERE estado_mrcb AND id_medico = :0";
                     

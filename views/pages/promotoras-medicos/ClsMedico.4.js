@@ -1,5 +1,6 @@
 var Medico = function(_template, _$tabla, _$tbody){
     var $mdl,   
+        $frm,
         $txtIdMedico,
         $txtNumeroDocumento,
         $txtApellidosNombres,
@@ -14,6 +15,8 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtSede,
         $txtPromotora,
         $txtObservaciones,
+        $imgFirma,
+        $blkFirma,
         $btnEliminar,
         $btnGuardar;
 
@@ -49,6 +52,7 @@ var Medico = function(_template, _$tabla, _$tbody){
 
     this.setDOM = function(){
         $mdl = $("#mdl-medico");
+        $frm = $("#frm-medico");
         $txtIdMedico = $("#txt-medico-seleccionado");
         $txtNumeroDocumento = $("#txt-medico-numerodocumento");
         $txtApellidosNombres = $("#txt-medico-apellidosnombres");
@@ -74,6 +78,8 @@ var Medico = function(_template, _$tabla, _$tbody){
         $btnCumpleaños = $("#btn-imprimir-fc-medicos");
         $txtMesesCumpleaños = $("#txt-medico-cumpleaños-mes");
         $mdlCumpleaños = $("#mdl-medico-cumpleaños");
+        $imgFirma = $("#img-medico-firma");
+        $blkFirma = $("#blk-medico-firma");
 
         const year = new Date().getFullYear();
         $txtFechaNacimiento.attr("min", year + "-01-01");
@@ -89,7 +95,8 @@ var Medico = function(_template, _$tabla, _$tbody){
             self.anular($txtIdMedico.val(), TR_FILA);
         });
         
-        $btnGuardar.on("click", function(e){
+        $frm.on("submit", function(e){
+            e.preventDefault();
             self.guardar();
         });
 
@@ -114,6 +121,15 @@ var Medico = function(_template, _$tabla, _$tbody){
             e.preventDefault();
             const params = new URLSearchParams({ m : $txtMesesCumpleaños.val() });
             window.open(`../../../impresiones/medicos.cumpleaños.mes.xls.php?${params.toString()}`,"_blank")
+        });
+
+        $imgFirma.on("change", (e) =>{
+            this.printImagenFirma(e.currentTarget.files);            
+        });
+
+        $blkFirma.on("click", "a", (e) => {
+            e.preventDefault();
+            this.cleanImagenFirma();
         });
     };
 
@@ -173,6 +189,12 @@ var Medico = function(_template, _$tabla, _$tbody){
         $txtEsRealizante.val(dataMedico.es_realizante);
         $txtSede.val(dataMedico.id_sede);
         $txtPuedeTenerUsuario.val(dataMedico.puede_tener_usuario);
+
+        if (Boolean(dataMedico.firma)){
+            $blkFirma.find("img").prop("src", `../../../impresiones/medicos-firmas/${dataMedico.firma}`);
+            $blkFirma.show();
+        }
+
         
         $btnEliminar.show();
     };
@@ -215,34 +237,42 @@ var Medico = function(_template, _$tabla, _$tbody){
     this.guardar = function(){
         var self = this;
 
+        const data = new FormData();
+        if ($imgFirma[0].files){
+            data.append('p_firma', $imgFirma[0].files[0]);
+        }
+
+        data.append("p_id_medico", $txtIdMedico.val());
+        data.append("p_numero_documento", $txtNumeroDocumento.val());
+        data.append("p_apellidos_nombres", $txtApellidosNombres.val());
+        data.append("p_colegiatura", $txtColegiatura.val());
+        data.append("p_rne", $txtRne.val());
+        data.append("p_telefono_uno", $txtTelefonoUno.val());
+        data.append("p_telefono_dos", $txtTelefonoDos.val());
+        data.append("p_correo", $txtCorreo.val());
+        data.append("p_fecha_nacimiento", $txtFechaNacimiento.val());
+        data.append("p_domicilio", $txtDomicilio.val());
+        data.append("p_id_especialidad", $txtEspecialidadMedico.val());
+        data.append("p_id_promotora", $txtPromotora.val());
+        data.append("p_observaciones", $txtObservaciones.val());
+        data.append("p_es_informante", $txtEsInformante.val());
+        data.append("p_tipo_personal_medico", $txtTipoPersonalMedico.val());
+        data.append("p_es_realizante", $txtEsRealizante.val());
+        data.append("p_id_sede", $txtSede.val());
+        data.append("p_puede_tener_usuario", $txtPuedeTenerUsuario.val());
+
         $.ajax({ 
             url : VARS.URL_CONTROLADOR+"medico.controlador.php?op=guardar",
             type: "POST",
             dataType: 'json',
             delay: 250,
-            data: {
-                p_id_medico : $txtIdMedico.val(),
-                p_numero_documento : $txtNumeroDocumento.val(),
-                p_apellidos_nombres : $txtApellidosNombres.val(),
-                p_colegiatura : $txtColegiatura.val(),
-                p_rne : $txtRne.val(),
-                p_telefono_uno : $txtTelefonoUno.val(),
-                p_telefono_dos : $txtTelefonoDos.val(),
-                p_correo : $txtCorreo.val(),
-                p_fecha_nacimiento : $txtFechaNacimiento.val(),
-                p_domicilio : $txtDomicilio.val(),
-                p_id_especialidad : $txtEspecialidadMedico.val(),
-                p_id_promotora : $txtPromotora.val(),
-                p_observaciones : $txtObservaciones.val(),
-                p_es_informante: $txtEsInformante.val(),
-                p_tipo_personal_medico: $txtTipoPersonalMedico.val(),
-                p_es_realizante: $txtEsRealizante.val(),
-                p_id_sede : $txtSede.val(),
-                p_puede_tener_usuario : $txtPuedeTenerUsuario.val()
-            },
+            enctype: 'multipart/form-data',
+            processData: false,  // tell jQuery not to process the data
+            contentType: false,
+            data: data,
             success: function(result){
                 toastr.success(result.msj);
-                var arr = [].slice.call($(tplMedicos([result.registro])).find("td")),
+                const arr = [].slice.call($(tplMedicos([result.registro])).find("td")),
                     dataNuevaFila = $.map(arr, function(item) {
                         return item.innerHTML;
                     });
@@ -289,16 +319,21 @@ var Medico = function(_template, _$tabla, _$tbody){
                     scrollX: true,
                     dom: 'Bfrtip',
                     buttons: [
-                        'copy',
+                        {
+                            extend: 'copy',
+                            exportOptions: {
+                                columns: "thead th:not(.noExport)"
+                            },
+                        },
                         {
                             extend: 'excelHtml5',
                             exportOptions: {
-                                columns: Array.from({length: 8}, (_, i) => i + 1)
+                                columns: "thead th:not(.noExport)"
                             },
                             title: 'Médicos DMI'
-                        }
+                        },
+                        'colvis'
                     ],
-                    
                     "ordering": false
                 });
                 
@@ -367,7 +402,23 @@ var Medico = function(_template, _$tabla, _$tbody){
             $html += `<option value="${item.id}">${item.descripcion}</option>`
         });
         $txtMesesCumpleaños.html($html);
-    }
+    };
+
+    this.printImagenFirma  = (files) => {
+        const file = files[0];
+        let fileReader = new FileReader();
+        fileReader.readAsDataURL(file);
+        fileReader.onload = function (){
+            $blkFirma.find("img").prop("src", fileReader.result);
+            $blkFirma.show();
+        }
+    };
+
+    this.cleanImagenFirma = () => {
+        $blkFirma.find("img").prop("src", null);
+        $blkFirma.hide();
+        $imgFirma.val(null);
+    };
 
     return this.setInit();
 };

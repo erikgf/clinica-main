@@ -360,7 +360,8 @@
                             <table class="table table-sm" style="font-size: .85em;" id="tbl-medicos" cellspacing="0" style="width:100%">
                                 <thead>
                                     <tr>
-                                        <th style="width: 75px">Opc.</th>
+                                        <th style="width: 75px" class="noExport">Opc.</th>
+                                        <th>ID</th>
                                         <th>Sede</th>
                                         <th>Médico</th>
                                         <th>Colegiatura</th>

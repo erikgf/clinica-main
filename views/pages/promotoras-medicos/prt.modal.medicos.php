@@ -1,11 +1,11 @@
 <div class="modal fade" id="mdl-medico"  role="dialog" aria-labelledby="mdl-medicolabel">
     <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content" id="frm-medico">
+        <form class="modal-content" id="frm-medico">
             <div class="modal-header">
                 <h4 class="modal-title" id="mdl-medicolabel">Gestionar Médico</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
-            <form class="modal-body">
+            <div class="modal-body">
                 <div class="card">
                     <div class="card-body">
                         <input type="hidden" id="txt-medico-seleccionado">
@@ -128,6 +128,17 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="img-medico-firma">Firma</label>
+                                    <input type="file" id="img-medico-firma" accept="image/*"/>
+                                    <div id="blk-medico-firma"  style="display:none">
+                                        <img  class="img-fluid p-2" src=""  alt="Firma"/>
+                                        <a href="#"><small>Limpiar Imagen</small></a>
+                                    </div>
+                                    
+                                </div>
+                            </div>
                         </div>
 
                         <div class="row">
@@ -153,13 +164,13 @@
 
                     </div>
                 </div>
-            </form>
+            </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">CERRAR</button>  
                 <button type="button" class="btn btn-danger" id="btn-medico-eliminar" style="display:none">ELIMINAR</button>
-                <button type="button" class="btn btn-success" id="btn-medico-guardar">GUARDAR</button>
+                <button type="submit" class="btn btn-success" id="btn-medico-guardar">GUARDAR</button>
             </div>
-        </div>
+        </form>
     </div>
 </div>
 

@@ -171,7 +171,7 @@ class Servicio extends Conexion {
                     COALESCE(comision * 100, '0.00') as porcentaje_comision,
                     IF (arreglo_paquete IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', 'PAQUETE', IF (arreglo_perfil IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', 'PERFIL LAB.', IF(se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', 'EXAMEN LAB.', 'SERVICIO'))) as tipo_servicio,
                     IF (arreglo_paquete IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '4', IF (arreglo_perfil IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '3', IF(se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '2', '1'))) as id_tipo_servicio,
-                    scat.descripcion as sub_categoria
+                    COALESCE(scat.descripcion,'') as sub_categoria
                     FROM servicio se 
                     LEFT JOIN categoria_servicio cat ON se.id_categoria_servicio =  cat.id_categoria_servicio
                     LEFT JOIN sub_categoria_servicio scat On se.id_sub_categoria_servicio = scat.id_sub_categoria_servicio

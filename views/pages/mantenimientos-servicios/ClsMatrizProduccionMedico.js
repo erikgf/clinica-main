@@ -113,7 +113,7 @@ const MatrizProduccionMedico = function(){
 
             this._registros = medicos;
             this._categorias = categorias;
-            this.renderMedicosLibres(medicosLibres)
+            this.renderMedicosLibres(medicosLibres);
 
         } catch (error) {
             console.error(error);

@@ -40,6 +40,7 @@ try {
             }
             
             $obj->id_categoria_servicio = isset($_POST["p_id_categoria_servicio"]) ? Funciones::sanitizar($_POST["p_id_categoria_servicio"]): NULL;
+            $obj->id_sub_categoria_servicio = isset($_POST["p_id_categoria_produccion"]) ? Funciones::sanitizar($_POST["p_id_categoria_produccion"]): NULL;
             $obj->comision =isset($_POST["p_comision"]) ? Funciones::sanitizar($_POST["p_comision"]): "0.00";
             $obj->cantidad_examenes = isset($_POST["p_cantidad_examenes"]) ? Funciones::sanitizar($_POST["p_cantidad_examenes"]): "1";
 

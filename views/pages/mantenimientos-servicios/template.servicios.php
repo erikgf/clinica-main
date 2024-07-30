@@ -11,8 +11,10 @@
                 </div>
             </div>
         </td>
+        <td>{{id}}</td>
         <td>{{descripcion}}</td>
         <td>{{area_categoria}}</td>
+        <td>{{sub_categoria}}</td>
         <td>{{tipo_servicio}}</td>
         <td>S/ {{round valor_venta 2}}</td>
         <td>S/ {{round precio_venta 2}}</td>

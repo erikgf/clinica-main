@@ -57,9 +57,39 @@ try {
             $obj->id_sede = isset($_POST["p_id_sede"]) ? $_POST["p_id_sede"] : NULL;
 
             $obj->puede_tener_usuario = isset($_POST["p_puede_tener_usuario"]) ? $_POST["p_puede_tener_usuario"] : "0";
+
+            $imagenes_invalidas = 0;
+            foreach ($_FILES as $i => $value) {
+                switch ($value["type"]){
+                    case image_type_to_mime_type(IMAGETYPE_GIF):
+                    case image_type_to_mime_type(IMAGETYPE_JPEG):
+                    case image_type_to_mime_type(IMAGETYPE_PNG):
+                    case image_type_to_mime_type(IMAGETYPE_BMP):
+                    break;
+                    default:
+                    $imagenes_invalidas++;
+                    break;
+                }
+
+                if ($imagenes_invalidas > 0){
+                    throw new Exception("No se puede procesar la imagen ".($i+1).". Seleccione un formato valido; jpg, png, bmp o gif.");
+                }
+
+                if ($value["size"] > 5 * 1024 * 1024){ /*Nax 5MB*/
+                    throw new Exception("No se puede procesar la imagen ".($i+1)." El tamano maximo por foto es de 5MB.");
+                }
+
+                $obj->firma  = [
+                    "nombre"=>$value["name"],
+                    "tipo"=>$value["type"],
+                    "tamano"=>$value["size"],
+                    "archivo"=>$value["tmp_name"]
+                ];
+            }
             
             $id_medico = isset($_POST["p_id_medico"]) ? $_POST["p_id_medico"] : NULL;
             $obj->id_medico = $id_medico;
+
             $data = $obj->guardar();
             Funciones::imprimeJSON("200", "OK", $data);
         break;

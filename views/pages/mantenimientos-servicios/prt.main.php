@@ -69,9 +69,11 @@
                                 <table class="table table-sm" id="tbl-servicios">
                                     <thead>
                                         <tr>
-                                            <th style="width: 75px">Opc.</th>
+                                            <th style="width: 75px" class="noExport">Opc.</th>
+                                            <th>ID</th>
                                             <th>Descripción</th>
                                             <th>Área/Categoría</th>
+                                            <th>Cat. Producción</th>
                                             <th>Tipo Servicio</th>
                                             <th>Valor Venta</th>
                                             <th>Precio Venta</th>
@@ -83,55 +85,6 @@
                             </div>
                         </div>
                     </div>
-                    <!--
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Promotoras</h3>  
-                                <div class="card-tools m-0">
-                                    <button id="btn-actualizar-promotoras" class="btn btn-sm btn-success"><span class="fa fa-refresh"></span> ACTUALIZAR </button>
-                                    <button id="btn-nuevo-promotoras" class="btn btn-sm bg-gradient-blue"><span class="fa fa-plus"></span> NUEVO </button>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-sm" style="font-size: .85em;" id="tbl-promotoras">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 75px">Opc.</th>
-                                            <th>Descripción</th>
-                                            <th style="width: 120px">% Comisión</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tbd-promotoras">
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Áreas</h3>
-                                <div class="card-tools m-0">
-                                    <button id="btn-actualizar-areas" class="btn btn-sm btn-success"><span class="fa fa-refresh"></span> ACTUALIZAR </button>
-                                    <button id="btn-nuevo-areas" class="btn btn-sm bg-gradient-blue"><span class="fa fa-plus"></span> NUEVO </button>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-sm" style="font-size: .85em;" id="tbl-areas">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 75px">Opc.</th>
-                                            <th>Descripción</th>
-                                            <th style="width: 120px">% Comisión</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tbd-areas">
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                -->
-
                 </div>
             </div>
             <div class="tab-pane fade show" id="blk-tab-categoriaproduccion" role="tabpanel" aria-labelledby="tab-categoriaproduccion">

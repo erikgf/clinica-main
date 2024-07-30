@@ -32,7 +32,7 @@ var InputSearch = function(data){
     this.render = () => {
         this.$.addClass("___input-search");
         this.$.html(`
-            <input type="text" class="form-control" placeholder=${this.placeholder}/>   
+            <input type="text" class="form-control" placeholder="${this.placeholder}"/>   
             <div class="___input-search-results"></div>
         `);
     };

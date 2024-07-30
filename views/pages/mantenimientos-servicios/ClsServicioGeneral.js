@@ -6,6 +6,7 @@ var ServicioGeneral = function(){
         $txtDescripcionDetallada,
         $txtCantidadExamenes,
         $txtIdCategoriaServicio,
+        $txtIdCategoriaProduccion,
         $txtComision,
         $txtIdTipoAfectacion,
         $txtPrecioVenta,
@@ -33,6 +34,7 @@ var ServicioGeneral = function(){
         $txtDescripcionDetallada = $("#txt-serviciogeneral-descripciondetallada");
         $txtCantidadExamenes = $("#txt-serviciogeneral-cantidadexamenes");
         $txtIdCategoriaServicio = $("#txt-serviciogeneral-categoriaservicio");
+        $txtIdCategoriaProduccion = $("#txt-serviciogeneral-categoriaproduccion");
         $txtComision = $("#txt-serviciogeneral-comision");
         $txtIdTipoAfectacion = $("#txt-serviciogeneral-tipoafectacion");
         $txtPrecioVenta = $("#txt-serviciogeneral-precioventa");
@@ -49,13 +51,13 @@ var ServicioGeneral = function(){
             self.anular($txtIdServicio.val());
         });
 
-        $btnGuardar.on("click", function(e){
+        $frm.on("submit", function(e){
+            e.preventDefault();
             self.guardar();
         });
 
         $mdl.on("shown.bs.modal", function(e){
             if (!COMBO_CONSTRUIDO){
-                new SelectComponente({$select : $txtIdCategoriaServicio}).render(ARREGLO_CATEGORIA_SERVICIO);
                 new SelectComponente({$select : $txtIdTipoAfectacion, opcion_vacia: false}).render(ARREGLO_TIPO_AFECTACION);
 
                 COMBO_CONSTRUIDO = true;
@@ -115,6 +117,7 @@ var ServicioGeneral = function(){
         $txtIdTipoAfectacion.val(data.idtipo_afectacion);
         $txtValorVenta.val(data.valor_venta);
         $txtPrecioVenta.val(data.precio_venta);
+        $txtIdCategoriaProduccion.val(data.id_sub_categoria_servicio);
         
         $btnEliminar.show();
     };
@@ -145,7 +148,8 @@ var ServicioGeneral = function(){
                 p_id_tipo_afectacion : $txtIdTipoAfectacion.val(),
                 p_valor_venta : $txtValorVenta.val(),
                 p_precio_venta : $txtPrecioVenta.val(),
-                p_comision :  $txtComision.val()
+                p_comision :  $txtComision.val(),
+                p_id_categoria_produccion : $txtIdCategoriaProduccion.val()
             },
             success: function(result){
                 toastr.success(result.msj);

@@ -258,6 +258,9 @@ var CategoriaProduccion = function(){
                 $btnActualizar.prop("disabled", false);
                 $overlayTabla.hide();
                 $tbb.html(tplCategoriasProduccionFormulario(result));
+
+                ARREGLO_CATEGORIA_PRODUCCION = result;
+                new SelectComponente({$select : $("#txt-serviciogeneral-categoriaproduccion")}).render(result);
             },
             error: function (request) {
                 $btnActualizar.prop("disabled", false);
