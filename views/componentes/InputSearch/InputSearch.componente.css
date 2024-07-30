@@ -1,0 +1,14 @@
+.___input-search-results{
+    padding-top: 10px;
+}
+
+.___input-search-results li{
+    cursor: pointer;
+    display: block;
+    padding: 6px 16px;
+}
+
+.___input-search-results li:hover{
+    background-color: #007bff;
+    color: white;
+}

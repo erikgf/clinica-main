@@ -1,0 +1,56 @@
+{{#.}}
+<tr>
+    <th style="vertical-align: middle;">
+        {{#if_ id_medico '==' '1'}}
+            <span>TODOS LOS DEMÁS MÉDICOS</span>
+        {{else}}
+            <button type="button"  data-idmedico="{{id_medico}}" data-nombresapellidos="{{nombres_apellidos}}" class="btn btn-xs bg-danger btn-produccionmedicos-eliminarmedico"><i class="fa fa-trash"></i></button> 
+            <span>Dr. {{nombres_apellidos}}</span>
+        {{/if_}}
+    </th>
+    {{#valores}}
+        <td  style="vertical-align: middle;"  data-idmedico="{{../id_medico}}" data-idcategoria="{{id_sub_categoria_servicio}}">
+            <div class="cell-readonly">
+                <div class="tipo-valor-desc">
+                    {{tipo_valor.key}}
+                </div>
+                <div class="valor-desc">
+                    {{valor}}
+                </div>
+                <button class="btn btn-xs btn-info btn-produccionmedicos-editar" type="button" title="Editar">
+                    <i class="fa fa-edit"></i>
+                </button>
+            </div>
+            <div class="cell-operating"  style="display: none;">
+                <div class="cell-operating-inputs">
+                    <div >
+                        <label>Tipo</label>
+                        <select style="max-width:120px" class="form-control tipo-valor">
+                            <option value="M" {{#if_ tipo_valor.value '==' 'M' }}selected{{/if_}}>Monto Fijo (S/)</option>
+                            <option value="P" {{#if_ tipo_valor.value '==' 'P' }}selected{{/if_}}>Porcentaje (%)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="">Monto</label>
+                        <input style="max-width:100px" type="number" step="0.01" value="{{valor}}" class="form-control valor" />
+                    </div>
+                </div>
+                <div class="cell-operating-buttons">
+                    <button type="button" class="btn btn-xs btn-danger btn-produccionmedicos-cancelar" title="Cancelar">
+                        <i class="fa fa-close"></i> CANCELAR
+                    </button>
+                    <button type="button" class="btn btn-xs btn-success btn-produccionmedicos-guardar" title="Guardar">
+                        <i class="fa fa-save"></i> GUARDAR
+                    </button>
+                </div>
+                
+            </div>
+        </td>
+    {{/valores}}
+</tr>
+{{/.}}
+{{^.}}
+<tr>
+    <td colspan="99" class="text-center"><em>Sin registros para mostrar</em></td>
+</tr>
+{{/.}}

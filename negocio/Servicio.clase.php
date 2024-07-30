@@ -23,6 +23,7 @@ class Servicio extends Conexion {
     public $ID_CATEGORIA_LABORATORIO = "14";
     public $id_usuario_registrado;
     public $cantidad_examenes;
+    public $id_sub_categoria_servicio;
 
     public function __construct($objDB = null){
         if ($objDB != null){
@@ -64,6 +65,7 @@ class Servicio extends Conexion {
                 "idtipo_afectacion"=>$this->idtipo_afectacion,
                 "arreglo_perfil"=>$this->arreglo_perfil,
                 "arreglo_paquete"=>$this->arreglo_paquete,
+                "id_sub_categoria_servicio"=>$this->id_sub_categoria_servicio
             ];
 
             if ($estoyEditando){
@@ -83,6 +85,7 @@ class Servicio extends Conexion {
                         cantidad_examenes,
                         arreglo_perfil,
                         arreglo_paquete,
+                        id_sub_categoria_servicio,
                         id_usuario_registrado,
                         fecha_hora_registrado)
                         SELECT  id_servicio,
@@ -95,6 +98,7 @@ class Servicio extends Conexion {
                                 cantidad_examenes,
                                 arreglo_perfil,
                                 arreglo_paquete,
+                                id_sub_categoria_servicio,
                                 :0,
                                 CURRENT_TIMESTAMP
                                 FROM servicio 
@@ -122,9 +126,11 @@ class Servicio extends Conexion {
                     precio_venta_sin_igv as valor_venta,
                     COALESCE(comision * 100, '0.00') as porcentaje_comision,
                     IF(arreglo_paquete IS NOT NULL AND se.id_categoria_servicio =  '".$this->ID_CATEGORIA_LABORATORIO."', 'PAQUETE', IF (arreglo_perfil IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', 'PERFIL LAB.', IF(se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', 'EXAMEN LAB.', 'SERVICIO'))) as tipo_servicio,
-                    IF(arreglo_paquete IS NOT NULL AND se.id_categoria_servicio =  '".$this->ID_CATEGORIA_LABORATORIO."', '4', IF (arreglo_perfil IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '3', IF(se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '2', '1'))) as id_tipo_servicio
+                    IF(arreglo_paquete IS NOT NULL AND se.id_categoria_servicio =  '".$this->ID_CATEGORIA_LABORATORIO."', '4', IF (arreglo_perfil IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '3', IF(se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '2', '1'))) as id_tipo_servicio,
+                    scat.descripcion as sub_categoria
                     FROM servicio se 
                     INNER JOIN categoria_servicio cat ON se.id_categoria_servicio =  cat.id_categoria_servicio
+                    INNER JOIN sub_categoria_servicio scat On se.id_sub_categoria_servicio = scat.id_sub_categoria_servicio
                     WHERE se.estado_mrcb  AND se.id_servicio = :0";
             $registro = $this->consultarFila($sql, [$this->id_servicio]);
 
@@ -164,9 +170,11 @@ class Servicio extends Conexion {
                     precio_venta_sin_igv as valor_venta,
                     COALESCE(comision * 100, '0.00') as porcentaje_comision,
                     IF (arreglo_paquete IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', 'PAQUETE', IF (arreglo_perfil IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', 'PERFIL LAB.', IF(se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', 'EXAMEN LAB.', 'SERVICIO'))) as tipo_servicio,
-                    IF (arreglo_paquete IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '4', IF (arreglo_perfil IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '3', IF(se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '2', '1'))) as id_tipo_servicio
+                    IF (arreglo_paquete IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '4', IF (arreglo_perfil IS NOT NULL AND se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '3', IF(se.id_categoria_servicio = '".$this->ID_CATEGORIA_LABORATORIO."', '2', '1'))) as id_tipo_servicio,
+                    scat.descripcion as sub_categoria
                     FROM servicio se 
                     LEFT JOIN categoria_servicio cat ON se.id_categoria_servicio =  cat.id_categoria_servicio
+                    LEFT JOIN sub_categoria_servicio scat On se.id_sub_categoria_servicio = scat.id_sub_categoria_servicio
                     WHERE se.estado_mrcb  AND $sqlFiltroCategoria
                     ORDER BY se.descripcion";
                     
@@ -211,6 +219,7 @@ class Servicio extends Conexion {
             $sql = "SELECT  id_servicio as id, 
                     se.descripcion as servicio, 
                     se.id_categoria_servicio as categoria,
+                    se.id_sub_categoria_servicio as sub_categoria,
                     precio_unitario as precioUnitario,
                     precio_venta_sin_igv
                     FROM servicio se 
@@ -235,7 +244,8 @@ class Servicio extends Conexion {
                     precio_venta_sin_igv as precio_sin_IGV,
                     COALESCE(arreglo_perfil,'') as arreglo_perfil,
                     COALESCE(arreglo_paquete,'') as arreglo_paquete,
-                    id_categoria_servicio
+                    id_categoria_servicio,
+                    id_sub_categoria_servicio
                     FROM servicio se 
                     WHERE se.estado_mrcb AND se.id_servicio = :0 ";
                     
@@ -298,6 +308,7 @@ class Servicio extends Conexion {
                     precio_unitario as precio_venta,
                     precio_venta_sin_igv as valor_venta,
                     id_categoria_servicio,
+                    id_sub_categoria_servicio,
                     idtipo_afectacion,
                     COALESCE(comision * 100, '0.00') as comision,
                     cantidad_examenes
