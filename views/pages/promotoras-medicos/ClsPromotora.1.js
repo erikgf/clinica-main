@@ -158,10 +158,11 @@ var Promotora = function(_template, _$tabla, _$tbody){
             delay: 250,
             data: {},
             success: function(result){
-                $tbbPromotoras.html(tplPromotoras(result));
+                const resPromotoras = result.filter( item => item.id != -1);
+                $tbbPromotoras.html(tplPromotoras(resPromotoras));
 
                 var $html = `<option value="">Sin Promotora</option>`;
-                result.forEach(promotora => {
+                resPromotoras.forEach(promotora => {
                     $html += `<option value="${promotora.id}">${promotora.descripcion}</option>`;
                 });
                 $("#txt-medico-promotora").html($html);

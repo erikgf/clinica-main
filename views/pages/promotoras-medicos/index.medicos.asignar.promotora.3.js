@@ -108,7 +108,16 @@ var MedicosAsignarPromotora = function() {
             success: function(result){
                 var html = ``;
 
-                result.forEach(promotora => {
+                result.map(item =>{
+                    if (item.id == -1){
+                        return {
+                            ...item,
+                            id: ""
+                        };
+                    }
+
+                    return item;
+                }).forEach(promotora => {
                     html += `<option value="${promotora.id}">${promotora.descripcion}</option>`;
                 });
 
@@ -187,6 +196,11 @@ var MedicosAsignarPromotora = function() {
     };
 
     var verificarMedicosCantidadAsignar = function(){
+        if ($txtPromotoraAsignar.val() == -1){
+            $btnAsignar.prop("disabled", true);
+            $btnQuitar.prop("disabled", true);
+            return;
+        }
         var cantidadSeleccionadas = parseInt(TABLA_MEDICOS_ASIGNAR.rows('.selected').data().length);
         if (cantidadSeleccionadas > 0){
             $btnAsignar.prop("disabled", false);
@@ -197,6 +211,12 @@ var MedicosAsignarPromotora = function() {
     };  
 
     var verificarMedicosCantidadQuitar = function(){
+        if ($txtPromotoraAsignar.val() == -1){
+            $btnAsignar.prop("disabled", true);
+            $btnQuitar.prop("disabled", true);
+            return;
+        }
+
         var cantidadSeleccionadas = parseInt(TABLA_MEDICOS_ASIGNADOS.rows('.selected').data().length);
         if (cantidadSeleccionadas > 0){
             $btnQuitar.prop("disabled", false);
@@ -211,6 +231,10 @@ var MedicosAsignarPromotora = function() {
 
         if (idPromotora == ""){
             alert("No hay PROMOTORA seleccionada.");
+            return;
+        }
+
+        if (idPromotora == -1){
             return;
         }
 

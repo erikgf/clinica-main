@@ -118,7 +118,7 @@ try {
 
         case "listar_medicos_x_promotora":
             $id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : "";
-            $obj->id_promotora = $id_promotora == "" ? NULL : $id_promotora;
+            $obj->id_promotora = $id_promotora == -1 ? NULL : $id_promotora;
             $data = $obj->listarMedicosXPromotora();
             Funciones::imprimeJSON("200", "OK", $data);
         break;

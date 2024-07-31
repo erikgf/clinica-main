@@ -32,39 +32,45 @@ class EntregaSobre extends Conexion {
             $params = [$mes, $año, (string) $mesTopInferior, (string) $añoTopInferior, $monto_minimo];
             $sqlPromotora = "";
 
+            $sqlJoinPromotora = "_l.id_promotora = m.id_promotora";
             if ($id_promotora != NULL){
-                array_push($params, $id_promotora);
-                $sqlPromotora = " AND pr.id_promotora = :5 ";
+                if ($id_promotora == -1){
+                    $sqlPromotora = " AND m.id_promotora IS NULL";
+                    $sqlJoinPromotora = " _l.id_promotora IS NULL ";
+                } else {
+                    array_push($params, $id_promotora);
+                    $sqlPromotora = " AND m.id_promotora = :5 ";
+                }
             }
-
+        
             $sql = "SELECT  
-                    CONCAT(m.id_medico,pr.id_promotora) as id,
+                    CONCAT(m.id_medico,COALESCE(m.id_promotora,'-')) as id,
                     m.id_medico,
                     m.nombres_apellidos as medico,
-                    pr.id_promotora,
-                    pr.descripcion as promotora,
+                    m.id_promotora,
+                    COALESCE(pr.descripcion, 'SIN PROMOTORA') as promotora,
                     :0 as mes,
                     :1 as anio,
                     COALESCE(((SELECT _ld.comision_sin_igv From liquidacion _l
                         INNER JOIN liquidacion_detalle _ld ON _l.id_liquidacion = _ld.id_liquidacion
                         WHERE CONCAT(_l.anio,_l.mes) = CONCAT(:1,:0) AND _ld.entregado = '0'
-                        AND  _l.id_promotora = m.id_promotora AND _ld.id_medico = m.id_medico
+                        AND  $sqlJoinPromotora AND _ld.id_medico = m.id_medico
                         ORDER BY _l.anio,_l.mes
                     )),0) as mes_actual,
                     COALESCE(((SELECT SUM(_ld.comision_sin_igv) From liquidacion _l
                         INNER JOIN liquidacion_detalle _ld ON _l.id_liquidacion = _ld.id_liquidacion
                         WHERE (CONCAT(_l.anio,_l.mes) <= CONCAT(:1,:0) AND CONCAT(_l.anio,_l.mes) > CONCAT(:3,:2)) AND _ld.entregado = '0'
-                        AND  _l.id_promotora = m.id_promotora AND _ld.id_medico = m.id_medico
+                        AND  $sqlJoinPromotora AND _ld.id_medico = m.id_medico
                         ORDER BY _l.anio,_l.mes
                     )),0) as acumulado, -- previo
                     COALESCE((SELECT GROUP_CONCAT(CONCAT(_l.mes,'|',_l.anio,'|',_ld.comision_sin_igv)) From liquidacion _l
                         INNER JOIN liquidacion_detalle _ld ON _l.id_liquidacion = _ld.id_liquidacion
                         WHERE (CONCAT(_l.anio,_l.mes) <= CONCAT(:1,:0) AND CONCAT(_l.anio,_l.mes) > CONCAT(:3,:2)) AND _ld.entregado = '0'
-                        AND  _l.id_promotora = m.id_promotora AND _ld.id_medico = m.id_medico
+                        AND  $sqlJoinPromotora AND _ld.id_medico = m.id_medico
                         ORDER BY CONCAT(_l.anio,_l.mes)
                     ),0) as liquidaciones_anteriores -- liquidaciones antetiroes
                     FROM medico m
-                    INNER JOIN promotora pr ON pr.id_promotora = m.id_promotora
+                    LEFT JOIN promotora pr ON pr.id_promotora = m.id_promotora
                     WHERE true $sqlPromotora
                     HAVING acumulado >= :4 AND (acumulado > 0 OR mes_actual > 0)
                     ORDER BY m.nombres_apellidos";
@@ -206,8 +212,12 @@ class EntregaSobre extends Conexion {
             $sqlPromotora = "";
 
             if ($id_promotora != NULL){
-                array_push($params, $id_promotora);
-                $sqlPromotora = " AND es.id_promotora = :1 ";
+                if ($id_promotora == -1){
+                    $sqlPromotora = " AND es.id_promotora IS NULL";
+                } else {
+                    array_push($params, $id_promotora);
+                    $sqlPromotora = " AND es.id_promotora = :1 ";
+                }
             }
 
             $sql = "SELECT  
@@ -239,12 +249,22 @@ class EntregaSobre extends Conexion {
         }
     }
 
-    private function actualizarColumnaEntregado($id_promotora, $id_medico, $mesesAniosMarcarEntregados, $fueEntregado){
+    private function actualizarColumnaEntregado($id_promotora = NULL, $id_medico, $mesesAniosMarcarEntregados, $fueEntregado){
         try{
+
+            $sqlPromotora = " AND l.id_promotora IS NULL";
+            $params = [$fueEntregado, $id_medico];
+            if ($id_promotora != NULL){
+                $sqlPromotora = " AND l.id_promotora = :2";
+                array_push($params, $id_promotora);
+            }
+
+            $strMesesAniosMarcarEntregados = join(",", $mesesAniosMarcarEntregados);
+
             $sql = "UPDATE liquidacion_detalle ld
                     INNER JOIN liquidacion l ON l.id_liquidacion = ld.id_liquidacion
-                    SET ld.entregado = :2
-                    WHERE CONCAT(l.anio,l.mes) IN (".join(",", $mesesAniosMarcarEntregados).") AND l.id_promotora = :0 AND ld.id_medico = :1";
+                    SET ld.entregado = :0
+                    WHERE CONCAT(l.anio,l.mes) IN ({$strMesesAniosMarcarEntregados}) AND ld.id_medico = :1 AND $sqlPromotora";
 
             return $this->ejecutarSimple($sql, [$id_promotora, $id_medico, $fueEntregado]);
         } catch (\Throwable $th) {

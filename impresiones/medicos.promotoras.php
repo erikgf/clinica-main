@@ -47,6 +47,10 @@ if ($año == NULL){
     exit;
 }
 
+if ($id_promotora == ""){
+    $id_promotora = NULL;
+}
+
 $FONT = isset($_GET["f"]) ? $_GET["f"] : 1;
 $FONT = $FONT == 1 ? "Arial" : "Courier";
 

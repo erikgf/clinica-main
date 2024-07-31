@@ -64,7 +64,7 @@ class Liquidacion extends Conexion {
                 $campos_valores = [
                     "anio"=>$anio,
                     "mes"=>$mes,
-                    "id_promotora"=>$id_promotora,
+                    "id_promotora"=>$id_promotora == "" ? NULL : $id_promotora,
                     "id_sede"=>$id_sede,
                     "porcentaje_promotora"=>$porcentaje_promotora,
                     "fecha_inicio"=>$fecha_inicio,
@@ -152,7 +152,7 @@ class Liquidacion extends Conexion {
         }
     }
 
-    public function obtenerLiquidacionesImprimir($id_promotora, string $mes, string $anio){
+    public function obtenerLiquidacionesImprimir($id_promotora = NULL, string $mes, string $anio){
         try {
 
             $sqlPromotora = " AND l.id_promotora IS NULL ";
@@ -162,7 +162,7 @@ class Liquidacion extends Conexion {
                 $sqlPromotora = " AND l.id_promotora = :2 ";
                 array_push($params, $id_promotora);
             }
-            
+
             $sql = "SELECT 
                         l.id_liquidacion,
                         COALESCE(pr.descripcion,'SIN PROMOTORA') as nombre_promotora,

@@ -38,7 +38,7 @@ try {
                 throw new Exception("Monto mínimo no válido.", 1);
             }
 
-            $id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : NULL;
+            $id_promotora = isset($_POST["p_id_promotora"]) ? $_POST["p_id_promotora"] : "";
 
             $data = $obj->listarParaRegistrar($mes, $año, $id_promotora, $monto_minimo);
             Funciones::imprimeJSON("200", "OK", $data);

@@ -30,7 +30,7 @@ class Promotora extends Conexion {
             $data =  $this->consultarFilas($sql);
 
             array_push($data, [
-                "id"=>"",
+                "id"=>"-1",
                 "numero_documento"=>"",
                 "descripcion"=>"SIN PROMOTORA",
                 "porcentaje_comision"=>"0.00"

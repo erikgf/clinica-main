@@ -40,8 +40,8 @@ include_once 'prt.modal.medico.cumpleaños.php';
 <script type="text/javascript" src="ClsMedico.4.js" defer></script>
 <script type="text/javascript" src="ClsMedicoAprobar.3.js" defer></script>
 <script type="text/javascript" src="ClsArea.js" defer></script>
-<script type="text/javascript" src="ClsPromotora.js" defer></script>
+<script type="text/javascript" src="ClsPromotora.1.js" defer></script>
 <script type="text/javascript" src="index.liquidaciones.individual.medicos.1.js" defer></script>
 <script type="text/javascript" src="index.liquidaciones.medicos.1.js" defer></script>
-<script type="text/javascript" src="index.medicos.asignar.promotora.2.js" defer></script>
+<script type="text/javascript" src="index.medicos.asignar.promotora.3.js" defer></script>
 <script type="text/javascript" src="index.promotoras.medicos.1.js" defer></script>
