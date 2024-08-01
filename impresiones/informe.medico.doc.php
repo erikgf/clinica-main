@@ -52,7 +52,7 @@ try {
   }
 $contenido = $data["contenido"];
 $contenido = str_replace("<br>", '<br/>', $contenido);
-$nombre_archivo = $data["nombre_archivo"];
+$nombre_archivo = str_replace("/","",$data["nombre_archivo"]);
 
 Html::addHtml($section, $contenido);
 
