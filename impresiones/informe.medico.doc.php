@@ -23,6 +23,9 @@ require '../vendor/autoload.php';
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\Shared\Html;
 use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\Shared\Converter;
+use PhpOffice\PhpWord\SimpleType\Jc;
+use PhpOffice\PhpWord\Style\Image;
 
 $phpWord = new PhpWord;
 
@@ -36,6 +39,7 @@ if ($logo === "1"){
       'marginLeft' => -75,
       'posHorizontal' => 'absolute',
       'posVertical' => 'absolute',
+      'wrappingStyle' => 'behind'
     )
   );
 }
@@ -55,6 +59,13 @@ $contenido = str_replace("<br>", '<br/>', $contenido);
 $nombre_archivo = str_replace("/","",$data["nombre_archivo"]);
 
 Html::addHtml($section, $contenido);
+
+$section->addImage('./medicos-firmas/7.jpg', array(
+  'width' => 140,
+  'height' => 70,
+  'wrappingStyle' => 'infront',
+  'positioning' => 'absolute'
+));
 
 $fileName = "{$nombre_archivo}.docx";
 

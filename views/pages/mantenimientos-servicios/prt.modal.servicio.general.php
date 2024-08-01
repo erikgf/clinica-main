@@ -19,7 +19,7 @@
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="txt-serviciogeneral-cantidadexamenes">Factor (<span style="color:red">*</span>)</label>
-                                    <input type="number"  step="1" required class="form-control" id="txt-serviciogeneral-cantidadexamenes"/>
+                                    <input type="number"  step="0.1" required class="form-control" id="txt-serviciogeneral-cantidadexamenes"/>
                                 </div>
                             </div>
                         </div>

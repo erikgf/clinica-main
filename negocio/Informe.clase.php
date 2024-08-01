@@ -280,6 +280,7 @@ class Informe extends Conexion {
                     fecha_atencion as fecha,
                     ser.descripcion as examen,
                     m.nombres_apellidos as medico,
+                    (SELECT firma FROM medico WHERE id_medico = ams.id_medico_atendido AND estado_mrcb) as firma_medico,
                     IF (p.fecha_nacimiento IS NOT NULL, DATE_FORMAT(FROM_DAYS(DATEDIFF(NOW(), p.fecha_nacimiento)), '%Y') + 0, '') as edad_paciente
                     FROM informe i
                     INNER JOIN atencion_medica_servicio ams ON ams.id_atencion_medica_servicio = i.id_atencion_medica_servicio AND ams.es_atendible
