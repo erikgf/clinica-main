@@ -373,7 +373,7 @@ class Informe extends Conexion {
                  </body>
                 EOD;
             
-            return [ "contenido"=>$contenido_word, "nombre_archivo"=>$nombre_archivo];
+            return [ "contenido"=>$contenido_word, "nombre_archivo"=>$nombre_archivo, "firma_medico"=>$informe["firma_medico"]];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage());
         }
