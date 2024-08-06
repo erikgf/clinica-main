@@ -9,6 +9,13 @@ class CategoriaProduccionMedico extends Conexion {
     public $id_sub_categoria_servicio;
     public $valor;
     public $tipo_valor;
+    
+    const TIPO_VALOR_MONTO_FIJO = "M";
+    const TIPO_VALOR_MONTO_FIJO_SIMBOLO = "S/";
+    const TIPO_VALOR_MONTO_FIJO_ROTULO = "Monto Fijo";
+    const TIPO_VALOR_PORCENTAJE = "P";
+    const TIPO_VALOR_PORCENTAJE_SIMBOLO = "%";
+    const TIPO_VALOR_PORCENTAJE_ROTULO = "Porcentaje";
 
     public function listar(){
         try {
@@ -46,9 +53,9 @@ class CategoriaProduccionMedico extends Conexion {
                         $ar_categoria = explode("|", $categoria);
                         $tipo_valor = $ar_categoria[2];
                         $tipo_valor = [
-                            "key"=> $tipo_valor == "M" ? "S/" : "%",
+                            "key"=> $tipo_valor == CategoriaProduccionMedico::TIPO_VALOR_MONTO_FIJO ? CategoriaProduccionMedico::TIPO_VALOR_MONTO_FIJO_SIMBOLO :  CategoriaProduccionMedico::TIPO_VALOR_PORCENTAJE_SIMBOLO,
                             "value"=> $tipo_valor,
-                            "desc"=>$tipo_valor == "M" ? "Monto Fijo" : "Porcentaje"
+                            "desc"=>$tipo_valor == CategoriaProduccionMedico::TIPO_VALOR_MONTO_FIJO ? CategoriaProduccionMedico::TIPO_VALOR_MONTO_FIJO_ROTULO : CategoriaProduccionMedico::TIPO_VALOR_PORCENTAJE_ROTULO
                         ];
 
                         return [

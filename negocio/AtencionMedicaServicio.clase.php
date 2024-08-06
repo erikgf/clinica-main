@@ -2,6 +2,7 @@
 
 require_once '../datos/Conexion.clase.php';
 require_once '../datos/variables.php';
+require_once 'Globals.clase.php';
 
 class AtencionMedicaServicio extends Conexion {
     public $id_atencion_medica;
@@ -20,7 +21,7 @@ class AtencionMedicaServicio extends Conexion {
     public $ID_TIPO_ACCION_RESULTADO = 3;
     public $ID_TIPO_ACCION_VALIDADO = 4;
     public $ID_TIPO_ACCION_CANCELAR_VALIDADO = 5;
-    
+
     public function listarExamenesAdministrador($fecha_inicio, $fecha_fin, $id_area = "*"){
         try {
             $sqlEstado = " ";
@@ -1130,6 +1131,62 @@ class AtencionMedicaServicio extends Conexion {
 
             $datos = $this->consultarFilas($sql, $params);
             return $datos;
+        } catch (Exception $exc) {
+            throw new Exception($exc->getMessage(), 1);
+        }
+    }
+
+    public function listarProduccionMedicos($fechaInicio, $fechaFin, $idMedico){
+        try{
+
+            require_once 'CategoriaProduccionMedico.clase.php';
+
+            $sql  = "SELECT 
+                    CONCAT(ca.serie_atencion,'-',cim.correlativo_atencion) as recibo, 
+                    DATE_FORMAT(am.fecha_atencion,'%d-%m-%Y') as fecha_atencion, 
+                    am.nombre_paciente, 
+                    amd.nombre_servicio as examen, 
+                    cs.descripcion as area, 
+                    s.cantidad_examenes as factor,
+                    cpm.valor,
+                    cpm.tipo_valor,
+                    'gradient-success' as rotulo_color_atendido,
+                    'REALIZADO' as rotulo_atendido,
+                    amd.sub_total as monto_examen
+                    FROM atencion_medica_servicio amd 
+                    INNER JOIN atencion_medica am ON am.id_atencion_medica = amd.id_atencion_medica
+                    INNER JOIN servicio s ON s.id_servicio = amd.id_servicio
+                    INNER JOIN categoria_servicio cs ON cs.id_categoria_servicio = s.id_categoria_servicio
+                    INNER JOIN caja_instancia_movimiento cim ON am.id_atencion_medica = cim.id_registro_atencion
+                    INNER JOIN caja_instancia ci ON ci.id_caja_instancia = cim.id_caja_instancia
+                    INNER JOIN caja ca oN ca.id_caja = ci.id_caja
+                    LEFT JOIN categoria_produccion_medico cpm ON cpm.id_medico = amd.id_medico_atendido AND s.id_sub_categoria_servicio = cpm.id_sub_categoria_servicio
+                    WHERE am.estado_mrcb AND amd.estado_mrcb AND (am.fecha_atencion BETWEEN :0 AND :1) 
+                        AND cs.es_mostrado_asistentes = 1
+                        AND amd.es_atendible AND id_medico_atendido = :2
+                        AND fue_atendido = '1'
+                    ORDER BY am.fecha_atencion";
+
+            $datos = $this->consultarFilas($sql, [$fechaInicio, $fechaFin, $idMedico]);
+
+            foreach ($datos as $key => $dato) {
+                if ($dato["factor"] == 0){
+                    $datos[$key]["monto"] = "0.00";
+                    continue;
+                }
+                if ($dato["tipo_valor"] === CategoriaProduccionMedico::TIPO_VALOR_MONTO_FIJO){
+                    $datos[$key]["monto"] = $dato["valor"] * $dato["factor"];
+                    continue;
+                }
+                
+                $monto_examen_descontando_igv = $dato["monto_examen"] / (1 + Globals::$IGV);
+                $datos[$key]["monto"] = $monto_examen_descontando_igv * ($dato["valor"] / 100) * $dato["factor"];
+            }
+
+            $sql = "SELECT  COALESCE(nombres_apellidos,'-') FROM medico WHERE id_medico = :0";
+            $medico = $this->consultarValor($sql, [$idMedico]);
+
+            return ["datos"=>$datos, "medico"=>$medico];
         } catch (Exception $exc) {
             throw new Exception($exc->getMessage(), 1);
         }

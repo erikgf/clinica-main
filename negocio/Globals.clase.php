@@ -1,6 +1,7 @@
 <?php 
 
 class Globals{
+    public static $IGV = 0.18;
     //HTTP CODES USED
     public static $HTTP_OK = 200;
     public static $HTTP_ERROR = 500;

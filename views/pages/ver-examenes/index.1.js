@@ -135,12 +135,11 @@ var GestionAtenciones = function() {
                 $tblExamenes.find("tbody").html(tplExamenes(datos));
                 if (datos.length){
                     TABLA_EXAMENES = $tblExamenes.DataTable({
-                        "ordering": true,
-                        "scrollX": true
+                        "ordering": false,
+                        "scrollX": true,
                     });
                 }
 
-                console.log({datosResumen});
                 objResumenCantidadExamenes.show(datosResumen);
             },
             error: function (request) {

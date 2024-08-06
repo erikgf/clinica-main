@@ -1,0 +1,17 @@
+{{#.}}
+    <tr >
+        <td class="text-center"><span class="badge bg-{{rotulo_color_atendido}}">{{rotulo_atendido}}</span></td>
+        <td class="text-center">{{fecha_atencion}}</td>
+        <td  class="text-center">{{recibo}}</td>
+        <td>{{nombre_paciente}}</td>
+        <td>{{area}}</td>
+        <td>{{examen}}</td>
+        <td class="text-center">S/ {{round monto 2}}</td>
+    </tr>
+{{else}}
+    <tr>
+        <td colspan="15" class="text-center">
+            <i>Sin registros que mostrar</i>   
+        </td>
+    </tr>
+{{/.}}

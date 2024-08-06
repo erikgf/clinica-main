@@ -1,0 +1,1 @@
+ALTER TABLE `categoria_produccion_medico` ADD PRIMARY KEY(`id_medico`, `id_sub_categoria_servicio`);
