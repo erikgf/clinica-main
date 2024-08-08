@@ -1,5 +1,5 @@
 <div class="modal fade" id="mdl-informe"  role="dialog" aria-labelledby="mdl-informelabel">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content" id="frm-informe">
             <div class="modal-header">
                 <h4 class="modal-title" id="mdl-informelabel">Redactar Informe</h4>
@@ -16,7 +16,7 @@
                         </table>
                         
                         <h6><strong>Contenido del Informe</strong></h6>
-                        <div id="editor"></div>
+                        <div id="editor" style="min-height: 450px;"></div>
                     </div>
                 </div>
             </form>

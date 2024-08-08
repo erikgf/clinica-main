@@ -29,15 +29,16 @@ $phpWord = new PhpWord;
 
 $section = $phpWord->addSection();
 if ($logo === "1"){
-  $header = $section->addHeader();
-  $header->addWatermark('../icon/fondo_impresionword.jpeg', 
+ // $header = $section->addHeader();
+  $section->addImage('../icon/fondo_impresionword.jpeg', 
     array(
-      'width' => 596, 
-      'marginTop' => -36,
+      'width' => 600, 
+      'marginTop' => -70,
       'marginLeft' => -75,
       'posHorizontal' => 'absolute',
       'posVertical' => 'absolute',
-      'wrappingStyle' => 'behind'
+      'positioning'=>'relative',
+      'wrappingStyle' => 'behind',
     )
   );
 }
