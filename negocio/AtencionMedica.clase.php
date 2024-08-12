@@ -1624,15 +1624,25 @@ class AtencionMedica extends Conexion {
     public function obtenerTicketConvenioFactura($numero_ticket){
         try {
 
+            $arreglo_numero_ticket = explode("-", $numero_ticket);
+
+            if (count($arreglo_numero_ticket) != 2){
+                return ["msj"=>"No Encontrado.", "registro"=>false];
+            }
+
+            $serie_atencion = $arreglo_numero_ticket[0];
+            $correlativo_atencion = $arreglo_numero_ticket[1];
+
             $sql = "SELECT 
                     am.id_atencion_medica,
                     am.monto_descuento as monto_cubierto,
                     COALESCE(ec.numero_documento,'') as numero_documento
                     FROM atencion_medica am
                     INNER JOIN empresa_convenio ec ON ec.id_empresa_convenio = am.id_empresa_convenio
-                    WHERE am.numero_acto_medico = :0 AND am.estado_mrcb AND am.id_empresa_convenio IS NOT NULL";
+                    INNER JOIN caja_instancia_movimiento cim ON cim.id_registro_atencion = am.id_atencion_medica
+                    WHERE cim.serie_atencion = :0 AND cim.correlativo_atencion = :1 AND am.estado_mrcb AND am.id_empresa_convenio IS NOT NULL";
 
-            $registro = $this->consultarFila($sql, [$numero_ticket]);
+            $registro = $this->consultarFila($sql, [$serie_atencion, $correlativo_atencion]);
 
             if ($registro == false){
                 return ["msj"=>"No Encontrado.", "registro"=>false];
