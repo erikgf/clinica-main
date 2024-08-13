@@ -482,6 +482,8 @@ class Funciones {
 
         $data_input = trim($data_input);
         $data_input = htmlspecialchars($data_input);
+        $data_input = str_replace("&amp;", "&", $data_input);
+
         return $data_input;
    }
     

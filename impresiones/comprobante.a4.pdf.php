@@ -160,7 +160,7 @@ class PDFComprobante extends PDF{
       $this->SetFont("Arial","B");
       $this->Cell($ANCHO_COLUMNAS[0], $ALTO_FILA, "CLIENTE",$BORDES,0);
       $this->SetFont("Arial","");
-      $this->Cell($ANCHO_COLUMNAS[1], $ALTO_FILA, utf8_decode($obj["razon_social_cliente"]),$BORDES,0);
+      $this->Cell($ANCHO_COLUMNAS[1], $ALTO_FILA, $obj["razon_social_cliente"],$BORDES,0);
 
       $this->SetFont("Arial","B");
       $this->Cell($ANCHO_COLUMNAS[2], $ALTO_FILA, "FECHA VENCIMIENTO",$BORDES,0);

@@ -171,7 +171,7 @@ $pdf->Ln($SALTO_LINEA);
 
 $pdf->Cell($ANCHO_COLS[0], $ALTO_LINEA + .5, "CLIENTE", $BORDES,0);
 $pdf->Cell($ANCHO_COLS[1], $ALTO_LINEA + .5, ":", $BORDES,0);
-$pdf->CellFitScale($ANCHO_COLS[2], $ALTO_LINEA + .5, utf8_decode($cliente), $BORDES,1);
+$pdf->CellFitScale($ANCHO_COLS[2], $ALTO_LINEA + .5, $cliente, $BORDES,1);
 
 $pdf->Ln($SALTO_LINEA);
 
