@@ -127,8 +127,10 @@ const GenerarReportePromotora = function({id}){
 
         const meses = Util.getMeses();
         let mesAñoSeleccionado = "";
+
+        console.log({meses});
         $txtMesAnio.html(templateSelect(mesesAños.map( mesAño => {
-            const { descripcion: nombreMes} = meses.find( mes => mes.id === mesAño.mes);
+            const { descripcion: nombreMes} = meses.find( mes => mes.id == mesAño.mes);
             const id =  `${mesAño.mes}_${mesAño.año}`;
             mesAñoSeleccionado = id;
             return {

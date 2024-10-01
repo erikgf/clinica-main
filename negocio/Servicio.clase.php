@@ -396,14 +396,20 @@ class Servicio extends Conexion {
 
             if ($registro != false){
                 $cadena_id_servicios = $registro["arreglo_perfil"];
-                $sql = "SELECT 
+
+                if ($cadena_id_servicios == "" || $cadena_id_servicios == NULL){
+                    $registro["detalle"] = [];
+                } else {
+                    $sql = "SELECT 
                             id_servicio,
                             descripcion as nombre_servicio,
                             precio_unitario as precio_venta,
                             precio_venta_sin_igv as valor_venta
                             FROM servicio se
                             WHERE se.estado_mrcb AND se.id_servicio IN ($cadena_id_servicios)";
-                $registro["detalle"] =$this->consultarFilas($sql); 
+
+                    $registro["detalle"] =$this->consultarFilas($sql);
+                }
             }
 
             return $registro;
@@ -712,7 +718,9 @@ class Servicio extends Conexion {
             $this->descripcion = mb_strtoupper($this->descripcion,'UTF-8');
             $this->arreglo_detalle = json_decode($this->arreglo_detalle, true);
 
-            $arreglo_perfil = implode(',', $this->arreglo_detalle);
+            $arreglo_perfil = implode(',', array_filter($this->arreglo_detalle, function($item){
+                return $item != "";
+            }));
 
             $campos_valores = [
                 "id_servicio"=>$this->id_servicio,

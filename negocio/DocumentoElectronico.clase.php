@@ -666,7 +666,7 @@ class DocumentoElectronico extends Conexion {
 			CURLOPT_URL => $ruta,
 			CURLOPT_USERAGENT => 'Consulta Datos',
 			CURLOPT_CONNECTTIMEOUT => 0,
-			CURLOPT_TIMEOUT => 400,
+			CURLOPT_TIMEOUT => 40,
 			CURLOPT_FAILONERROR => true
 		));
 
@@ -1457,7 +1457,7 @@ class DocumentoElectronico extends Conexion {
             if ($forzado){
                 $sql  = "SELECT iddocumento_electronico as id, xml_filename as nombre_archivo, fecha_emision 
                         FROM documento_electronico
-                        WHERE estado_mrcb AND  (fecha_emision BETWEEN :1 AND :2) and not (cdr_estado = 0)
+                        WHERE estado_mrcb AND  (fecha_emision BETWEEN :1 AND :2) and cdr_estado IS NULL
                         AND idtipo_comprobante IN (:0) AND serie LIKE 'F%'";
             } else {
                 $sql  = "SELECT de.iddocumento_electronico as id, de.xml_filename as nombre_archivo, de.fecha_emision
